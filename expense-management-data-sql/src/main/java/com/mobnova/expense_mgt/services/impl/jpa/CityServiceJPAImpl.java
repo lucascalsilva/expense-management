@@ -1,0 +1,68 @@
+package com.mobnova.expense_mgt.services.impl.jpa;
+
+import com.mobnova.expense_mgt.exceptions.InvalidDataException;
+import com.mobnova.expense_mgt.model.City;
+import com.mobnova.expense_mgt.model.County;
+import com.mobnova.expense_mgt.model.StateOrProvince;
+import com.mobnova.expense_mgt.repositories.CityRepository;
+import com.mobnova.expense_mgt.repositories.CountyRepository;
+import com.mobnova.expense_mgt.repositories.StateOrProvinceRepository;
+import com.mobnova.expense_mgt.services.CityService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.context.annotation.Profile;
+import org.springframework.stereotype.Service;
+
+import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+@Service
+@Profile("jpa")
+@RequiredArgsConstructor
+public class CityServiceJPAImpl implements CityService {
+
+    private final CityRepository cityRepository;
+    private final CountyRepository countyRepository;
+    private final StateOrProvinceRepository stateOrProvinceRepository;
+
+    @Override
+    public City save(City city) {
+        if (city.getCounty() != null && city.getCounty().getCode() != null) {
+            String countyCode = city.getCounty().getCode();
+            countyRepository.findByCode(countyCode).ifPresentOrElse(county -> {
+                city.setCounty(county);
+            }, () -> {
+                throw new InvalidDataException(County.class, "countyCode", countyCode);
+            });
+        }
+        if (city.getStateOrProvince() != null && city.getStateOrProvince().getCode() != null) {
+            String stateOrProvinceCode = city.getStateOrProvince().getCode();
+            stateOrProvinceRepository.findByCode(stateOrProvinceCode).ifPresentOrElse(stateOrProvince -> {
+                city.setStateOrProvince(stateOrProvince);
+            }, () -> {
+                throw new InvalidDataException(StateOrProvince.class, "stateOrProvinceCode", stateOrProvinceCode);
+            });
+        }
+        return cityRepository.save(city);
+    }
+
+    @Override
+    public Set<City> saveBulk(Set<City> cities) {
+        return cities.stream().map(this::save).collect(Collectors.toSet());
+    }
+
+    @Override
+    public Optional<City> findById(Long id) {
+        return cityRepository.findById(id);
+    }
+
+    @Override
+    public void deleteById(Long id) {
+        cityRepository.deleteById(id);
+    }
+
+    @Override
+    public Optional<City> findByCode(String code) {
+        return cityRepository.findByCode(code);
+    }
+}

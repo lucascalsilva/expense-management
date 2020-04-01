@@ -1,0 +1,56 @@
+[
+  {
+    "referenceID": "1",
+    "tripDescription": "Some trip description...",
+    "justification": "Some justification...",
+    "tripStartDate": "2020-02-29",
+    "tripEndDate": "2020-02-29",
+    "country":{
+      "code": "BR"
+    },
+    "user": {
+      "username": "jlucasca"
+    },
+    "expenses": [
+      {
+        "expenseItemNumber": 1,
+        "amount": 10,
+        "expenseDate": "2020-02-29",
+        "picture": "picture this"
+      },
+      {
+        "expenseItemNumber": 2,
+        "amount": 10,
+        "expenseDate": "2020-02-29",
+        "picture": "picture this"
+      }
+    ]
+  },
+  {
+    "referenceID": "2",
+    "tripDescription": "Some trip description 999...",
+    "justification": "Some justification 8888...",
+    "tripStartDate": "2020-02-29",
+    "tripEndDate": "2020-02-29",
+    "country":{
+      "code": "BR"
+    },
+    "user": {
+      "username": "jlucasca"
+    },
+    "expenses": [
+      {
+        "expenseItemNumber": 1,
+        "amount": 15,
+        "expenseDate": "2020-02-29",
+        "picture": "picture this"
+      },
+      {
+        "expenseItemNumber": 2,
+        "amount": 20,
+        "expenseDate": "2020-02-29",
+        "picture": "picture this"
+      }
+    ]
+  }
+]

@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>com.mobnova</groupId>
+    <artifactId>expense-management</artifactId>
+    <packaging>pom</packaging>
+    <version>0.0.1-SNAPSHOT</version>
+
+    <parent>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-parent</artifactId>
+        <version>2.2.1.RELEASE</version>
+    </parent>
+
+    <properties>
+        <maven.compiler.target>1.8</maven.compiler.target>
+        <maven.compiler.source>1.8</maven.compiler.source>
+        <expense-management-data-sql-version>0.0.1-SNAPSHOT</expense-management-data-sql-version>
+        <expense-management-web-version>0.0.1-SNAPSHOT</expense-management-web-version>
+        <expense-management-util-version>0.0.1-SNAPSHOT</expense-management-util-version>
+    </properties>
+
+    <modules>
+        <module>expense-management-data-sql</module>
+        <module>expense-management-web</module>
+        <module>expense-management-util</module>
+    </modules>
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>com.mobnova</groupId>
+                <artifactId>expense-management-data-sql</artifactId>
+                <version>${expense-management-data-sql-version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.mobnova</groupId>
+                <artifactId>expense-management-web</artifactId>
+                <version>${expense-management-web-version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.mobnova</groupId>
+                <artifactId>expense-management-util</artifactId>
+                <version>${expense-management-util-version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.fasterxml.jackson</groupId>
+                <artifactId>jackson-bom</artifactId>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-configuration-processor</artifactId>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+        </dependency>
+    </dependencies>
+
+</project>
