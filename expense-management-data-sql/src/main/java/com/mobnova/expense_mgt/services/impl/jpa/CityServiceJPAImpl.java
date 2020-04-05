@@ -8,6 +8,7 @@ import com.mobnova.expense_mgt.repositories.CityRepository;
 import com.mobnova.expense_mgt.repositories.CountyRepository;
 import com.mobnova.expense_mgt.repositories.StateOrProvinceRepository;
 import com.mobnova.expense_mgt.services.CityService;
+import com.mobnova.expense_mgt.validation.BeanValidator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
@@ -24,9 +25,12 @@ public class CityServiceJPAImpl implements CityService {
     private final CityRepository cityRepository;
     private final CountyRepository countyRepository;
     private final StateOrProvinceRepository stateOrProvinceRepository;
+    private final BeanValidator beanValidator;
 
     @Override
     public City save(City city) {
+        beanValidator.validateObject(city);
+
         if (city.getCounty() != null && city.getCounty().getCode() != null) {
             String countyCode = city.getCounty().getCode();
             countyRepository.findByCode(countyCode).ifPresentOrElse(county -> {
@@ -35,14 +39,13 @@ public class CityServiceJPAImpl implements CityService {
                 throw new InvalidDataException(County.class, "countyCode", countyCode);
             });
         }
-        if (city.getStateOrProvince() != null && city.getStateOrProvince().getCode() != null) {
-            String stateOrProvinceCode = city.getStateOrProvince().getCode();
-            stateOrProvinceRepository.findByCode(stateOrProvinceCode).ifPresentOrElse(stateOrProvince -> {
-                city.setStateOrProvince(stateOrProvince);
-            }, () -> {
-                throw new InvalidDataException(StateOrProvince.class, "stateOrProvinceCode", stateOrProvinceCode);
-            });
-        }
+
+        String stateOrProvinceCode = city.getStateOrProvince().getCode();
+        stateOrProvinceRepository.findByCode(stateOrProvinceCode).ifPresentOrElse(stateOrProvince -> {
+            city.setStateOrProvince(stateOrProvince);
+        }, () -> {
+            throw new InvalidDataException(StateOrProvince.class, "stateOrProvinceCode", stateOrProvinceCode);
+        });
         return cityRepository.save(city);
     }
 

@@ -16,13 +16,25 @@
         "expenseItemNumber": 1,
         "amount": 10,
         "expenseDate": "2020-02-29",
-        "picture": "picture this"
+        "picture": "picture this",
+        "category": {
+          "code": "MEAL"
+        },
+        "currency": {
+          "code": "BRL"
+        }
       },
       {
         "expenseItemNumber": 2,
         "amount": 10,
         "expenseDate": "2020-02-29",
-        "picture": "picture this"
+        "picture": "picture this",
+        "category": {
+          "code": "MEAL"
+        },
+        "currency": {
+          "code": "BRL"
+        }
       }
     ]
   },
@@ -43,13 +55,25 @@
         "expenseItemNumber": 1,
         "amount": 15,
         "expenseDate": "2020-02-29",
-        "picture": "picture this"
+        "picture": "picture this",
+        "category": {
+          "code": "MEAL"
+        },
+        "currency": {
+          "code": "BRL"
+        }
       },
       {
         "expenseItemNumber": 2,
         "amount": 20,
         "expenseDate": "2020-02-29",
-        "picture": "picture this"
+        "picture": "picture this",
+        "category": {
+          "code": "FLIGHT"
+        },
+        "currency": {
+          "code": "BRL"
+        }
       }
     ]
   }

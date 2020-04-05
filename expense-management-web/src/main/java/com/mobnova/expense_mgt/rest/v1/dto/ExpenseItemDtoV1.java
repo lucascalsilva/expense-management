@@ -15,10 +15,12 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Map;
 
-@Data
+@Getter
+@Setter
+@ToString(callSuper = true)
 @Builder
-@AllArgsConstructor
 @NoArgsConstructor
+@AllArgsConstructor
 public class ExpenseItemDtoV1 extends BaseDtoV1 {
 
     @NotNull

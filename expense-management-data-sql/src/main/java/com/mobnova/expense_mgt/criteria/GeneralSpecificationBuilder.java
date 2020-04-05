@@ -1,6 +1,6 @@
 package com.mobnova.expense_mgt.criteria;
 
-import com.mobnova.expense_mgt.config.CriteriaConfig;
+import com.mobnova.expense_mgt.config.CriteriaConfigBean;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.jpa.domain.Specification;
 
@@ -11,7 +11,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class GeneralSpecificationBuilder {
 
-    private final CriteriaConfig criteriaConfig;
+    private final CriteriaConfigBean criteriaConfigBean;
     private List<SearchCriteria> params = new ArrayList<SearchCriteria>();
 
     public GeneralSpecificationBuilder with(String key, String operation, Object value) {
@@ -26,7 +26,7 @@ public class GeneralSpecificationBuilder {
 
         List<Specification> specs = params.stream()
                 .map(searchCriteria -> {
-                    return new GeneralSpecification(searchCriteria, criteriaConfig);
+                    return new GeneralSpecification(searchCriteria, criteriaConfigBean);
                 })
                 .collect(Collectors.toList());
 

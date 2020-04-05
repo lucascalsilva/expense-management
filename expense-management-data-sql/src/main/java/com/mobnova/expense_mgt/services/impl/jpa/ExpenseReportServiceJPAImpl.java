@@ -1,11 +1,11 @@
 package com.mobnova.expense_mgt.services.impl.jpa;
 
-import com.mobnova.expense_mgt.config.CriteriaConfig;
+import com.mobnova.expense_mgt.config.CriteriaConfigBean;
 import com.mobnova.expense_mgt.model.*;
 import com.mobnova.expense_mgt.repositories.*;
 import com.mobnova.expense_mgt.exceptions.InvalidDataException;
 import com.mobnova.expense_mgt.services.*;
-import com.mobnova.expense_mgt.services.UserService;
+import com.mobnova.expense_mgt.validation.BeanValidator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Profile;
 import org.springframework.data.jpa.domain.Specification;
@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 import com.mobnova.expense_mgt.criteria.CriteriaUtil;
 
 import javax.transaction.Transactional;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
@@ -29,10 +30,14 @@ public class ExpenseReportServiceJPAImpl implements ExpenseReportService {
     private final CurrencyRepository currencyRepository;
     private final CityRepository cityRepository;
     private final ExpenseCategoryRepository categoryRepository;
-    private final CriteriaConfig criteriaConfig;
+    private final BeanValidator beanValidator;
+    private final CriteriaConfigBean criteriaConfigBean;
 
     @Override
     public ExpenseReport save(ExpenseReport expenseReport) {
+        beanValidator.validateObject(expenseReport);
+        beanValidator.validateObjects(expenseReport.getExpenses());
+
         if (expenseReport.getId() != null) {
             expenseReportRepository.findById(expenseReport.getId())
                     .ifPresent(currentObject -> {
@@ -41,63 +46,46 @@ public class ExpenseReportServiceJPAImpl implements ExpenseReportService {
                     });
         }
 
-        if (expenseReport.getUser() != null && expenseReport.getUser().getUsername() != null) {
-            String username = expenseReport.getUser().getUsername();
-            userRepository.findByUsername(username)
-                    .ifPresentOrElse(user -> {
-                                expenseReport.setUser(user);
-                            },
-                            () -> {
-                                throw new InvalidDataException(User.class, "username", username);
-                            });
+        String username = expenseReport.getUser().getUsername();
+        userRepository.findByUsername(username)
+                .ifPresentOrElse(expenseReport::setUser,
+                        () -> {
+                            throw new InvalidDataException(User.class, "username", username);
+                        });
 
-        }
 
-        if (expenseReport.getCountry() != null && expenseReport.getCountry().getCode() != null) {
-            String countryCode = expenseReport.getCountry().getCode();
-            countryRepository.findByCode(countryCode)
-                    .ifPresentOrElse(country -> {
-                                expenseReport.setCountry(country);
-                            },
-                            () -> {
-                                throw new InvalidDataException(Country.class, "countryCode", countryCode);
-                            });
+        String countryCode = expenseReport.getCountry().getCode();
+        countryRepository.findByCode(countryCode)
+                .ifPresentOrElse(expenseReport::setCountry,
+                        () -> {
+                            throw new InvalidDataException(Country.class, "countryCode", countryCode);
+                        });
 
-        }
 
         for (ExpenseItem expenseItem : expenseReport.getExpenses()) {
-            if (expenseItem.getCurrency() != null && expenseItem.getCurrency().getCode() != null) {
-                String currencyCode = expenseItem.getCurrency().getCode();
-                currencyRepository.findByCode(currencyCode)
-                        .ifPresentOrElse(currency -> {
-                                    expenseItem.setCurrency(currency);
-                                },
-                                () -> {
-                                    throw new InvalidDataException(Currency.class, "currencyCode", currencyCode);
-                                });
-            }
+            String currencyCode = expenseItem.getCurrency().getCode();
+            currencyRepository.findByCode(currencyCode)
+                    .ifPresentOrElse(expenseItem::setCurrency,
+                            () -> {
+                                throw new InvalidDataException(Currency.class, "currencyCode", currencyCode);
+                            });
 
-            if (expenseItem.getExpenseCity() != null && expenseItem.getExpenseCity().getCode() != null) {
+            if(expenseItem.getExpenseCity() != null && expenseItem.getExpenseCity().getCode() != null) {
                 String expenseCityCode = expenseItem.getExpenseCity().getCode();
                 cityRepository.findByCode(expenseCityCode)
-                        .ifPresentOrElse(city -> {
-                                    expenseItem.setExpenseCity(city);
-                                },
+                        .ifPresentOrElse(expenseItem::setExpenseCity,
                                 () -> {
                                     throw new InvalidDataException(City.class, "expenseCityCode", expenseCityCode);
                                 });
+
             }
 
-            if (expenseItem.getCategory() != null && expenseItem.getCategory().getCode() != null) {
-                String categoryCode = expenseItem.getCategory().getCode();
-                categoryRepository.findByCode(categoryCode)
-                        .ifPresentOrElse(expenseCategory -> {
-                                    expenseItem.setCategory(expenseCategory);
-                                },
-                                () -> {
-                                    throw new InvalidDataException(ExpenseCategory.class, "expenseCategoryCode", categoryCode);
-                                });
-            }
+            String categoryCode = expenseItem.getCategory().getCode();
+            categoryRepository.findByCode(categoryCode)
+                    .ifPresentOrElse(expenseItem::setCategory,
+                            () -> {
+                                throw new InvalidDataException(ExpenseCategory.class, "expenseCategoryCode", categoryCode);
+                            });
         }
 
         return expenseReportRepository.save(expenseReport);
@@ -111,7 +99,7 @@ public class ExpenseReportServiceJPAImpl implements ExpenseReportService {
 
     @Override
     public Set<ExpenseReport> search(String search) {
-        Specification specification = CriteriaUtil.extractSpecification(search, criteriaConfig);
+        Specification specification = CriteriaUtil.extractSpecification(search, criteriaConfigBean);
         return new HashSet(expenseReportRepository.findAll(specification));
     }
 

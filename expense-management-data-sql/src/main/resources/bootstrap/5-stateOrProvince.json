@@ -1,0 +1,16 @@
+[
+  {
+    "code": "RS",
+    "name": "Rio do Grande do Sul",
+    "country": {
+      "code": "BR"
+    }
+  },
+  {
+    "code": "TX",
+    "name": "Texas",
+    "country": {
+      "code": "US"
+    }
+  }
+]

@@ -1,17 +1,22 @@
 package com.mobnova.expense_mgt.model;
 
 import lombok.*;
+import lombok.experimental.SuperBuilder;
 import org.hibernate.annotations.NaturalId;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Table;
+import javax.validation.constraints.NotNull;
 
 
 @ToString(callSuper = true)
+@Getter
+@Setter
+@SuperBuilder
+@NoArgsConstructor
 @Entity
 @Table(name = "USERS")
-@Data
 public class User extends BaseEntity{
 
     @Column(name = "FIRST_NAME")
@@ -22,6 +27,7 @@ public class User extends BaseEntity{
 
     @Column(name = "USERNAME")
     @NaturalId
+    @NotNull
     private String username;
 
     @Column(name = "PASSWORD")

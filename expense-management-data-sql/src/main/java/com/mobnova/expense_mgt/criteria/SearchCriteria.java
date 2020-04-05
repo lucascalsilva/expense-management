@@ -1,9 +1,10 @@
 package com.mobnova.expense_mgt.criteria;
 
-import lombok.Data;
-import lombok.RequiredArgsConstructor;
+import lombok.*;
 
-@Data
+@Getter
+@Setter
+@ToString
 @RequiredArgsConstructor
 public class SearchCriteria {
 

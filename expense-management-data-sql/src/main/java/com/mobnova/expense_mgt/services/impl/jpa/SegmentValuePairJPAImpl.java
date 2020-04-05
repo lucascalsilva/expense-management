@@ -7,6 +7,7 @@ import com.mobnova.expense_mgt.model.StateOrProvince;
 import com.mobnova.expense_mgt.repositories.SegmentTypeRepository;
 import com.mobnova.expense_mgt.repositories.SegmentValuePairRepository;
 import com.mobnova.expense_mgt.services.SegmentValuePairService;
+import com.mobnova.expense_mgt.validation.BeanValidator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
@@ -22,18 +23,19 @@ public class SegmentValuePairJPAImpl implements SegmentValuePairService {
 
     private final SegmentValuePairRepository segmentValuePairRepository;
     private final SegmentTypeRepository segmentTypeRepository;
+    private final BeanValidator beanValidator;
 
     @Override
     public SegmentValuePair save(SegmentValuePair segmentValuePair) {
-        if (segmentValuePair.getSegmentType() != null && segmentValuePair.getSegmentType().getCode() != null) {
+        beanValidator.validateObject(segmentValuePair);
 
-            String segmentTypeCode = segmentValuePair.getSegmentType().getCode();
-            segmentTypeRepository.findByCode(segmentTypeCode).ifPresentOrElse(segmentType -> {
-                segmentValuePair.setSegmentType(segmentType);
-            }, () -> {
-                throw new InvalidDataException(SegmentType.class, "segmentTypeCode", segmentTypeCode);
-            });
-        }
+        String segmentTypeCode = segmentValuePair.getSegmentType().getCode();
+        segmentTypeRepository.findByCode(segmentTypeCode).ifPresentOrElse(segmentType -> {
+            segmentValuePair.setSegmentType(segmentType);
+        }, () -> {
+            throw new InvalidDataException(SegmentType.class, "segmentTypeCode", segmentTypeCode);
+        });
+
         return segmentValuePairRepository.save(segmentValuePair);
     }
 

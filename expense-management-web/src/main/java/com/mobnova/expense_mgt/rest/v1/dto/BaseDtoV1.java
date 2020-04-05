@@ -1,15 +1,14 @@
 package com.mobnova.expense_mgt.rest.v1.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.time.LocalDateTime;
 import java.util.Objects;
 
-@Data
+@Getter
+@Setter
+@ToString
 @NoArgsConstructor
 @AllArgsConstructor
 public class BaseDtoV1 {
@@ -30,7 +29,7 @@ public class BaseDtoV1 {
 
         BaseDtoV1 baseDtoV1 = (BaseDtoV1) o;
 
-        return Objects.equals(id, baseDtoV1.id);
+        return id != null && Objects.equals(id, baseDtoV1.id);
     }
 
     @Override

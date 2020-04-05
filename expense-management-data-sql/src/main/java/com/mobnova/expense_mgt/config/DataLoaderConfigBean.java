@@ -10,8 +10,10 @@ import org.springframework.stereotype.Component;
 @Getter
 @Setter
 @PropertySource("classpath:custom.yaml")
-@ConfigurationProperties(prefix = "criteria")
-public class CriteriaConfig {
+@ConfigurationProperties(prefix = "dataloader")
+public class DataLoaderConfigBean {
 
-    private Integer minCharactersForLikeSearch = 3;
+    private String baseModelPackage = "com.mobnova.expense_mgt.model";
+    private String baseServicePackage = "com.mobnova.expense_mgt.services";
+    private String bootstrapFilesFolder = "bootstrap";
 }

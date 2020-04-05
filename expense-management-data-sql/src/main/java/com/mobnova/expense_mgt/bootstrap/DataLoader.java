@@ -3,7 +3,7 @@ package com.mobnova.expense_mgt.bootstrap;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import com.mobnova.expense_mgt.config.DataLoaderConfig;
+import com.mobnova.expense_mgt.config.DataLoaderConfigBean;
 import com.mobnova.expense_mgt.services.BaseService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -16,13 +16,15 @@ import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
+import javax.validation.ConstraintViolation;
+import javax.validation.ValidationException;
+import javax.validation.Validator;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Array;
 import java.net.URL;
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.Optional;
+import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 
 @Component
 @RequiredArgsConstructor
@@ -31,9 +33,9 @@ import java.util.Optional;
 public class DataLoader implements CommandLineRunner, ApplicationContextAware {
 
     private ApplicationContext applicationContext;
-    private final DataLoaderConfig dataLoaderConfig;
-    private final Environment environment;
+    private final DataLoaderConfigBean dataLoaderConfigBean;
     private final ObjectMapper mapper;
+    private final Validator validator;
 
     @Override
     public void run(String... args) throws Exception {
@@ -45,7 +47,7 @@ public class DataLoader implements CommandLineRunner, ApplicationContextAware {
         mapper.registerModule(new JavaTimeModule());
         mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
 
-        URL bootstrapFolderUrl = Thread.currentThread().getContextClassLoader().getResource(dataLoaderConfig.getBootstrapFilesFolder());
+        URL bootstrapFolderUrl = Thread.currentThread().getContextClassLoader().getResource(dataLoaderConfigBean.getBootstrapFilesFolder());
         if (bootstrapFolderUrl != null) {
             Optional<File[]> files = Optional.ofNullable(new File(bootstrapFolderUrl.getPath()).listFiles());
             files.ifPresent(files_ -> {
@@ -63,16 +65,19 @@ public class DataLoader implements CommandLineRunner, ApplicationContextAware {
                     .split("-", 0)[1]);
             String serviceInterfaceName = typeClassName + "Service";
 
-            Class typeClass = Class.forName(dataLoaderConfig.getBaseModelPackage() + "." + typeClassName);
+            Class typeClass = Class.forName(dataLoaderConfigBean.getBaseModelPackage() + "." + typeClassName);
             Class arrayClass = Array.newInstance(typeClass, 0).getClass();
-            Class serviceClass = Class.forName(dataLoaderConfig.getBaseServicePackage() + "." + serviceInterfaceName);
+            Class serviceClass = Class.forName(dataLoaderConfigBean.getBaseServicePackage() + "." + serviceInterfaceName);
             Optional<Object[]> data = Optional.of((Object[]) mapper.readValue(file, arrayClass));
             BaseService service = (BaseService) applicationContext.getBean(serviceClass);
+
+            AtomicInteger loadedRecords = new AtomicInteger(0);
 
             data.ifPresent(objects -> {
                 Arrays.stream(objects).forEach(object -> {
                     try {
                         service.save(object);
+                        loadedRecords.incrementAndGet();
                         log.debug("Loaded record into {} ", file.getName());
                         log.debug("Record {} ", object.toString());
                     }
@@ -82,8 +87,14 @@ public class DataLoader implements CommandLineRunner, ApplicationContextAware {
                     }
                 });
             });
-            log.info("Loaded file {} ", file.getName());
-        } catch (IOException | ClassNotFoundException e) {
+            if(loadedRecords.get() > 0){
+                log.info("Loaded file {} ", file.getName());
+            }
+            else{
+                log.info("Couldn't load any record of file {}, please check the errors", file.getName());
+            }
+
+        } catch (IOException | ClassNotFoundException | ValidationException e) {
             log.error("Issue on loading data for file {}", file.getName());
             log.error("Exception: ", e);
         }

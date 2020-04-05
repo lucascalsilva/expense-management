@@ -1,18 +1,25 @@
 package com.mobnova.expense_mgt.model;
 
 import lombok.*;
+import lombok.experimental.SuperBuilder;
 
 import javax.persistence.*;
+import javax.validation.constraints.NotNull;
 
 @ToString(callSuper = true)
+@Getter
+@Setter
+@SuperBuilder
+@NoArgsConstructor
 @Entity
 @Table(name = "SEGMENT_VALUE_PAIRS")
-@Data
 public class SegmentValuePair extends BaseEntity {
 
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "SEGMENT_TYPE_ID")
+    @NotNull
     private SegmentType segmentType;
 
+    @NotNull
     private String segmentValue;
 }

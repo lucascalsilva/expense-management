@@ -48,6 +48,10 @@
             <version>2.10.2</version>
             <scope>compile</scope>
         </dependency>
+	    <dependency>
+		    <groupId>com.mobnova</groupId>
+		    <artifactId>expense-management-util</artifactId>
+	    </dependency>
     </dependencies>
 
 

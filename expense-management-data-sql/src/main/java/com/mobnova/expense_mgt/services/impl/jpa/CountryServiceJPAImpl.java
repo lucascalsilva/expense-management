@@ -3,6 +3,7 @@ package com.mobnova.expense_mgt.services.impl.jpa;
 import com.mobnova.expense_mgt.model.Country;
 import com.mobnova.expense_mgt.repositories.CountryRepository;
 import com.mobnova.expense_mgt.services.CountryService;
+import com.mobnova.expense_mgt.validation.BeanValidator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
@@ -17,9 +18,12 @@ import java.util.stream.Collectors;
 public class CountryServiceJPAImpl implements CountryService {
 
     private final CountryRepository countryRepository;
+    private final BeanValidator beanValidator;
 
     @Override
     public Country save(Country country) {
+        beanValidator.validateObject(country);
+
         return countryRepository.save(country);
     }
 

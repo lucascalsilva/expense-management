@@ -1,8 +1,9 @@
 package com.mobnova.expense_mgt.jpa;
 
-import com.mobnova.expense_mgt.config.CriteriaConfig;
+import com.mobnova.expense_mgt.config.CriteriaConfigBean;
 import com.mobnova.expense_mgt.criteria.GeneralSpecification;
 import com.mobnova.expense_mgt.criteria.SearchCriteria;
+import com.mobnova.expense_mgt.model.ExpenseCategory;
 import com.mobnova.expense_mgt.repositories.CountryRepository;
 import com.mobnova.expense_mgt.repositories.ExpenseReportRepository;
 import com.mobnova.expense_mgt.model.ExpenseReport;
@@ -37,19 +38,18 @@ public class JPASpecificationTest {
     @Autowired
     private UserRepository userRepository;
 
-    private CriteriaConfig criteriaConfig;
+    private CriteriaConfigBean criteriaConfigBean;
     private ExpenseReport expenseReport1;
     private ExpenseReport expenseReport2;
 
     @Before
     public void init(){
-        Country country = new Country();
-        country.setCode("BR");
+        ExpenseCategory expenseCategory = ExpenseCategory.builder().code("MEAL").build();
+        Country country = Country.builder().code("BR").build();
 
         countryRepository.save(country);
 
-        User user = new User();
-        user.setUsername("Lucas");
+        User user = User.builder().username("Lucas").build();
 
         userRepository.save(user);
 
@@ -68,13 +68,13 @@ public class JPASpecificationTest {
         expenseReportRepository.save(expenseReport1);
         expenseReportRepository.save(expenseReport2);
 
-        criteriaConfig = new CriteriaConfig();
+        criteriaConfigBean = new CriteriaConfigBean();
     }
 
     @Test
     public void givenExistingJustification_whenGettingExpenseReports_thenGetCorrectExpenseReport(){
         GeneralSpecification generalSpecification = new GeneralSpecification(
-                new SearchCriteria("justification", ":", "Justification 5678..."), criteriaConfig);
+                new SearchCriteria("justification", ":", "Justification 5678..."), criteriaConfigBean);
 
         List<ExpenseReport> expenseReports = expenseReportRepository.findAll(generalSpecification);
 
@@ -85,7 +85,7 @@ public class JPASpecificationTest {
     @Test
     public void givenExistingDescription_whenGettingExpenseReports_thenGetCorrectExpenseReport(){
         GeneralSpecification generalSpecification = new GeneralSpecification(
-                new SearchCriteria("tripDescription", ":", "Some description 1234..."), criteriaConfig);
+                new SearchCriteria("tripDescription", ":", "Some description 1234..."), criteriaConfigBean);
 
         List<ExpenseReport> expenseReports = expenseReportRepository.findAll(generalSpecification);
 
@@ -96,7 +96,7 @@ public class JPASpecificationTest {
     @Test
     public void givenNotDescription_whenGettingExpenseReports_thenGetNoExpenseReport(){
         GeneralSpecification generalSpecification = new GeneralSpecification(
-                new SearchCriteria("tripDescription", ":", "XYZ"), criteriaConfig);
+                new SearchCriteria("tripDescription", ":", "XYZ"), criteriaConfigBean);
 
         List<ExpenseReport> expenseReports = expenseReportRepository.findAll(generalSpecification);
 

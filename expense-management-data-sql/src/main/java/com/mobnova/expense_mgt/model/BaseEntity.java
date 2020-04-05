@@ -1,19 +1,23 @@
 package com.mobnova.expense_mgt.model;
 
-import lombok.Data;
-import lombok.EqualsAndHashCode;
+import lombok.*;
+import lombok.experimental.SuperBuilder;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
 import java.util.Objects;
 
+@Getter
+@ToString
+@SuperBuilder
+@NoArgsConstructor
 @MappedSuperclass
-@Data
 public class BaseEntity {
 
     @Id
-    @GeneratedValue
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name="ID")
+    @Setter
     private Long id;
 
     @Column(name="CREATION_DATE", updatable = false)
@@ -24,6 +28,7 @@ public class BaseEntity {
 
     @Version
     @Column(name="VERSION")
+    @Setter
     private Integer version;
 
     @PrePersist
@@ -43,7 +48,7 @@ public class BaseEntity {
 
         BaseEntity that = (BaseEntity) o;
 
-        return Objects.equals(id, that.id);
+        return id != null && Objects.equals(id, that.id);
     }
 
     @Override

@@ -1,0 +1,16 @@
+[
+  {
+    "code": "POA",
+    "name": "Porto Alegre",
+    "stateOrProvince": {
+      "code": "RS"
+    }
+  },
+  {
+    "code": "HST",
+    "name": "Houston",
+    "stateOrProvince": {
+      "code": "TX"
+    }
+  }
+]

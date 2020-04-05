@@ -1,6 +1,6 @@
 package com.mobnova.expense_mgt.criteria;
 
-import com.mobnova.expense_mgt.config.CriteriaConfig;
+import com.mobnova.expense_mgt.config.CriteriaConfigBean;
 import com.mobnova.expense_mgt.exceptions.InvalidCriteriaException;
 import org.springframework.data.jpa.domain.Specification;
 
@@ -10,8 +10,8 @@ import java.util.regex.Pattern;
 
 public class CriteriaUtil {
 
-    public static Specification extractSpecification(String search, CriteriaConfig criteriaConfig) {
-        GeneralSpecificationBuilder specificationBuilder = new GeneralSpecificationBuilder(criteriaConfig);
+    public static Specification extractSpecification(String search, CriteriaConfigBean criteriaConfigBean) {
+        GeneralSpecificationBuilder specificationBuilder = new GeneralSpecificationBuilder(criteriaConfigBean);
         Pattern pattern = Pattern.compile("(\\w+?)(:|<|>|>=|<=)(\\w+?),");
         Matcher matcher = pattern.matcher(search + ",");
         while (matcher.find()) {

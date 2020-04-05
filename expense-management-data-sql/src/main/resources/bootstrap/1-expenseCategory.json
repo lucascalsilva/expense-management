@@ -1,11 +1,14 @@
 [
   {
-    "code": "MEAL"
+    "code": "MEAL",
+    "name": "Meal"
   },
   {
-    "code": "FLIGHT"
+    "code": "FLIGHT",
+    "name": "Flight"
   },
   {
-    "code": "TAXI"
+    "code": "TAXI",
+    "name": "Taxi"
   }
 ]

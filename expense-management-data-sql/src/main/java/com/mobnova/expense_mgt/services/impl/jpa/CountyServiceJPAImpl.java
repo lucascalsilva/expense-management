@@ -6,6 +6,7 @@ import com.mobnova.expense_mgt.model.StateOrProvince;
 import com.mobnova.expense_mgt.repositories.CountyRepository;
 import com.mobnova.expense_mgt.repositories.StateOrProvinceRepository;
 import com.mobnova.expense_mgt.services.CountyService;
+import com.mobnova.expense_mgt.validation.BeanValidator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
@@ -21,9 +22,12 @@ public class CountyServiceJPAImpl implements CountyService {
 
     private final CountyRepository countyRepository;
     private final StateOrProvinceRepository stateOrProvinceRepository;
+    private final BeanValidator beanValidator;
 
     @Override
     public County save(County county) {
+        beanValidator.validateObject(county);
+
         if (county.getStateOrProvince() != null && county.getStateOrProvince().getCode() != null) {
             String stateOrProvinceCode = county.getStateOrProvince().getCode();
             stateOrProvinceRepository.findByCode(stateOrProvinceCode).ifPresentOrElse(stateOrProvince -> {
