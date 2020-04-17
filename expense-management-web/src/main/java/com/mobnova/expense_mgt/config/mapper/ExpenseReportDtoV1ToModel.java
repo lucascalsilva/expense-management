@@ -1,6 +1,5 @@
 package com.mobnova.expense_mgt.config.mapper;
 
-import com.mobnova.expense_mgt.model.City;
 import com.mobnova.expense_mgt.model.ExpenseReport;
 import com.mobnova.expense_mgt.model.User;
 import com.mobnova.expense_mgt.rest.v1.dto.ExpenseReportDtoV1;

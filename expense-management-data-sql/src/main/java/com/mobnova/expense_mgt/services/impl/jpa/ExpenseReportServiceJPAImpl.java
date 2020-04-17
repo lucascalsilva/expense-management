@@ -1,19 +1,18 @@
 package com.mobnova.expense_mgt.services.impl.jpa;
 
 import com.mobnova.expense_mgt.config.CriteriaConfigBean;
+import com.mobnova.expense_mgt.criteria.CriteriaUtil;
+import com.mobnova.expense_mgt.exceptions.InvalidDataException;
 import com.mobnova.expense_mgt.model.*;
 import com.mobnova.expense_mgt.repositories.*;
-import com.mobnova.expense_mgt.exceptions.InvalidDataException;
-import com.mobnova.expense_mgt.services.*;
+import com.mobnova.expense_mgt.services.ExpenseReportService;
 import com.mobnova.expense_mgt.validation.BeanValidator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Profile;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
-import com.mobnova.expense_mgt.criteria.CriteriaUtil;
 
 import javax.transaction.Transactional;
-import java.util.Collection;
 import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
@@ -38,13 +37,14 @@ public class ExpenseReportServiceJPAImpl implements ExpenseReportService {
         beanValidator.validateObject(expenseReport);
         beanValidator.validateObjects(expenseReport.getExpenses());
 
-        if (expenseReport.getId() != null) {
+        //TODO should I allow save to update as well?
+        /*if (expenseReport.getId() != null) {
             expenseReportRepository.findById(expenseReport.getId())
                     .ifPresent(currentObject -> {
                         expenseReport.setId(currentObject.getId());
                         expenseReport.setVersion(currentObject.getVersion());
                     });
-        }
+        }*/
 
         String username = expenseReport.getUser().getUsername();
         userRepository.findByUsername(username)

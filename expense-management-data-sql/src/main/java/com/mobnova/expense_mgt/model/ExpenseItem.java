@@ -1,13 +1,16 @@
 package com.mobnova.expense_mgt.model;
 
-import lombok.*;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.ToString;
 import lombok.experimental.SuperBuilder;
 
 import javax.persistence.*;
-import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.HashSet;
 import java.util.Set;
 
 @ToString(callSuper = true)
@@ -47,9 +50,15 @@ public class ExpenseItem extends BaseEntity {
 
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinColumn(name = "CODE_COMBINATION_ID")
-    private Set<SegmentValuePair> segmentValuePair;
+    private Set<SegmentValuePair> segmentValuePair = new HashSet<SegmentValuePair>();
 
     @Column(name = "PICTURE")
     @Lob
     private String picture;
+
+    /*@ManyToOne
+    @JoinColumn(name="EXPENSE_ITEM_ID")
+    @NotNull
+    @ToString.Exclude
+    private ExpenseReport expenseReport;*/
 }

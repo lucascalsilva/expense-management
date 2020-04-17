@@ -13,6 +13,7 @@ import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.HashSet;
 import java.util.Set;
 
 @Getter
@@ -52,6 +53,6 @@ public class ExpenseReportDtoV1 extends BaseDtoV1 {
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private BigDecimal totalAmount;
     private String creator;
-    private Set<ExpenseItemDtoV1> expenses;
+    private Set<ExpenseItemDtoV1> expenses = new HashSet<ExpenseItemDtoV1>();
 
 }

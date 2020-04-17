@@ -3,7 +3,6 @@ package com.mobnova.expense_mgt.services.impl.jpa;
 import com.mobnova.expense_mgt.exceptions.InvalidDataException;
 import com.mobnova.expense_mgt.model.SegmentType;
 import com.mobnova.expense_mgt.model.SegmentValuePair;
-import com.mobnova.expense_mgt.model.StateOrProvince;
 import com.mobnova.expense_mgt.repositories.SegmentTypeRepository;
 import com.mobnova.expense_mgt.repositories.SegmentValuePairRepository;
 import com.mobnova.expense_mgt.services.SegmentValuePairService;

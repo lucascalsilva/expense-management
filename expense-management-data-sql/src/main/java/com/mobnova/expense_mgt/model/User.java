@@ -1,12 +1,16 @@
 package com.mobnova.expense_mgt.model;
 
-import lombok.*;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.ToString;
 import lombok.experimental.SuperBuilder;
 import org.hibernate.annotations.NaturalId;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Table;
+import javax.validation.constraints.Email;
 import javax.validation.constraints.NotNull;
 
 
@@ -20,9 +24,11 @@ import javax.validation.constraints.NotNull;
 public class User extends BaseEntity{
 
     @Column(name = "FIRST_NAME")
+    @NotNull
     private String firstName;
 
     @Column(name = "LAST_NAME")
+    @NotNull
     private String lastName;
 
     @Column(name = "USERNAME")
@@ -31,9 +37,12 @@ public class User extends BaseEntity{
     private String username;
 
     @Column(name = "PASSWORD")
+    @NotNull
     private String password;
 
     @Column(name = "EMAIL")
+    @NotNull
+    @Email
     private String email;
 
 }

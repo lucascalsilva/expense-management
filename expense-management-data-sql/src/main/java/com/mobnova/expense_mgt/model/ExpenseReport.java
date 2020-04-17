@@ -1,6 +1,9 @@
 package com.mobnova.expense_mgt.model;
 
-import lombok.*;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.ToString;
 import lombok.experimental.SuperBuilder;
 import org.hibernate.annotations.NaturalId;
 
@@ -8,6 +11,7 @@ import javax.persistence.*;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import java.time.LocalDate;
+import java.util.HashSet;
 import java.util.Set;
 
 @ToString(callSuper = true)
@@ -53,6 +57,11 @@ public class ExpenseReport extends BaseEntity {
     @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     @JoinColumn(name="EXPENSE_ITEM_ID")
     @NotEmpty
-    private Set<ExpenseItem> expenses;
+    private Set<ExpenseItem> expenses = new HashSet<ExpenseItem>();
+
+    /*public void addExpense(ExpenseItem expenseItem){
+        this.expenses.add(expenseItem);
+        expenseItem.setExpenseReport(this);
+    }*/
 
 }

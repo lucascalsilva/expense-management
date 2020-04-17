@@ -4,24 +4,12 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <parent>
         <artifactId>expense-management</artifactId>
-        <groupId>com.mobnova</groupId>
+        <groupId>com.com.mobnova</groupId>
         <version>0.0.1-SNAPSHOT</version>
     </parent>
+	<artifactId>expense-management-data-sql</artifactId>
     <modelVersion>4.0.0</modelVersion>
     <version>0.0.1-SNAPSHOT</version>
-	<build>
-		<plugins>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-compiler-plugin</artifactId>
-				<configuration>
-					<source>9</source>
-					<target>9</target>
-				</configuration>
-			</plugin>
-		</plugins>
-	</build>
-	<artifactId>expense-management-data-sql</artifactId>
 
     <dependencies>
         <dependency>
@@ -42,17 +30,16 @@
             <version>2.10.2</version>
             <scope>compile</scope>
         </dependency>
-        <dependency>
-            <groupId>com.fasterxml.jackson.datatype</groupId>
-            <artifactId>jackson-datatype-jsr310</artifactId>
-            <version>2.10.2</version>
-            <scope>compile</scope>
-        </dependency>
 	    <dependency>
-		    <groupId>com.mobnova</groupId>
+		    <groupId>io.github.benas</groupId>
+		    <artifactId>random-beans</artifactId>
+		    <version>3.9.0</version>
+		    <scope>test</scope>
+	    </dependency>
+	    <dependency>
+		    <groupId>com.com.mobnova</groupId>
 		    <artifactId>expense-management-util</artifactId>
 	    </dependency>
     </dependencies>
-
 
 </project>

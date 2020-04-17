@@ -4,7 +4,7 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>com.mobnova</groupId>
+    <groupId>com.com.mobnova</groupId>
     <artifactId>expense-management</artifactId>
     <packaging>pom</packaging>
     <version>0.0.1-SNAPSHOT</version>
@@ -16,11 +16,12 @@
     </parent>
 
     <properties>
-        <maven.compiler.target>1.8</maven.compiler.target>
-        <maven.compiler.source>1.8</maven.compiler.source>
         <expense-management-data-sql-version>0.0.1-SNAPSHOT</expense-management-data-sql-version>
         <expense-management-web-version>0.0.1-SNAPSHOT</expense-management-web-version>
         <expense-management-util-version>0.0.1-SNAPSHOT</expense-management-util-version>
+	    <maven-surefire-plugin-version>2.22.2</maven-surefire-plugin-version>
+	    <maven-failsafe-plugin-version>2.22.2</maven-failsafe-plugin-version>
+	    <java-target-version>12</java-target-version>
     </properties>
 
     <modules>
@@ -32,17 +33,17 @@
     <dependencyManagement>
         <dependencies>
             <dependency>
-                <groupId>com.mobnova</groupId>
+                <groupId>com.com.mobnova</groupId>
                 <artifactId>expense-management-data-sql</artifactId>
                 <version>${expense-management-data-sql-version}</version>
             </dependency>
             <dependency>
-                <groupId>com.mobnova</groupId>
+                <groupId>com.com.mobnova</groupId>
                 <artifactId>expense-management-web</artifactId>
                 <version>${expense-management-web-version}</version>
             </dependency>
             <dependency>
-                <groupId>com.mobnova</groupId>
+                <groupId>com.com.mobnova</groupId>
                 <artifactId>expense-management-util</artifactId>
                 <version>${expense-management-util-version}</version>
             </dependency>
@@ -73,4 +74,47 @@
         </dependency>
     </dependencies>
 
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<configuration>
+					<source>${java-target-version}</source>
+					<target>${java-target-version}</target>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-surefire-plugin</artifactId>
+				<version>${maven-surefire-plugin-version}</version>
+			</plugin>
+			<plugin>
+				<groupId>org.springframework.boot</groupId>
+				<artifactId>spring-boot-maven-plugin</artifactId>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-failsafe-plugin</artifactId>
+				<version>${maven-failsafe-plugin-version}</version>
+				<configuration>
+					<additionalClasspathElements>${basedir}/target/classes</additionalClasspathElements>
+					<parallel>none</parallel>
+				</configuration>
+				<executions>
+					<execution>
+						<goals>
+							<goal>integration-test</goal>
+							<goal>verify</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+		</plugins>
+	</build>
+
+	<scm>
+		<developerConnection>scm:git:git@github.com:lucascalsilva/sfg-pet-clinic.git</developerConnection>
+		<tag>HEAD</tag>
+	</scm>
 </project>

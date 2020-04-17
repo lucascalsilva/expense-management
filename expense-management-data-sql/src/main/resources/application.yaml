@@ -1,13 +1,4 @@
 spring:
-  h2:
-    console:
-      enabled: true
-  profiles:
-    active: bootstrap, jpa
   jackson:
     serialization:
       WRITE_DATES_AS_TIMESTAMPS: false
-#logging:
-  #level:
-    #org.hibernate.SQL: DEBUG
-    #org.hibernate.type.descriptor.sql.BasicBinder: TRACE
