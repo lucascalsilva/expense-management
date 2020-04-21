@@ -12,13 +12,13 @@ public class CriteriaUtil {
 
     public static Specification extractSpecification(String search, CriteriaConfigBean criteriaConfigBean) {
         GeneralSpecificationBuilder specificationBuilder = new GeneralSpecificationBuilder(criteriaConfigBean);
-        Pattern pattern = Pattern.compile("(\\w+?)(:|<|>|>=|<=)(\\w+?),");
+        Pattern pattern = Pattern.compile("(\\w+?)(:|<|>|>=|<=)(.+?),");
         Matcher matcher = pattern.matcher(search + ",");
         while (matcher.find()) {
             specificationBuilder.with(matcher.group(1), matcher.group(2), matcher.group(3));
         }
 
-        return Optional.of(specificationBuilder.build())
+        return Optional.ofNullable(specificationBuilder.build())
                 .orElseThrow(() -> new InvalidCriteriaException("Informed search criteria is invalid " + "\'" + search + "\'"));
 
     }
