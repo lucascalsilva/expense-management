@@ -12,6 +12,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.jpa.domain.Specification;
 
+import javax.swing.text.html.Option;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
@@ -42,9 +43,6 @@ class ExpenseReportServiceJPAImplTest {
     private CurrencyRepository currencyRepository;
 
     @Mock
-    private StateOrProvinceRepository stateOrProvinceRepository;
-
-    @Mock
     private CityRepository cityRepository;
 
     @Mock
@@ -65,7 +63,8 @@ class ExpenseReportServiceJPAImplTest {
 
     @Test
     void save() {
-        ExpenseReport expenseReport = getDummyExpenseReportAndSetupSaveMocks();
+        ExpenseReport expenseReport = demoDataGenerator.createRandomExpenseReport(expenseItemQuantity);
+        setupMocks(expenseReport);
 
         expenseReportServiceJPA.save(expenseReport);
 
@@ -81,7 +80,7 @@ class ExpenseReportServiceJPAImplTest {
 
     @Test
     void saveBulk() {
-        getDummyExpenseReportAndSetupSaveMocks();
+        setupMocks(demoDataGenerator.createRandomExpenseReport(expenseItemQuantity));
 
         List<ExpenseReport> randomExpenseReports = demoDataGenerator
                 .createRandomExpenseReports(expenseReportQuantity, expenseItemQuantity);
@@ -104,21 +103,32 @@ class ExpenseReportServiceJPAImplTest {
 
     @Test
     void findById() {
-
+        ExpenseReport expenseReport = demoDataGenerator.createRandomExpenseReport(expenseItemQuantity);
+        when(expenseReportRepository.findById(anyLong())).thenReturn(Optional.of(expenseReport));
+        expenseReportServiceJPA.findById(1L);
+        verify(expenseReportRepository, times(1)).findById(1L);
     }
 
     @Test
     void deleteById() {
+        ExpenseReport expenseReport = demoDataGenerator.createRandomExpenseReport(expenseItemQuantity);
+        expenseReportServiceJPA.deleteById(1L);
+        verify(expenseReportRepository, times(1)).deleteById(anyLong());
     }
 
     @Test
     void findByReferenceID() {
+        ExpenseReport expenseReport = demoDataGenerator.createRandomExpenseReport(expenseItemQuantity);
+        String expenseReportReferenceID = expenseReport.getReferenceID();
+
+        when(expenseReportRepository.findByReferenceID(anyString())).thenReturn(Optional.of(expenseReport));
+        expenseReportServiceJPA.findByReferenceID(expenseReportReferenceID);
+
+        verify(expenseReportRepository).findByReferenceID(anyString());
 
     }
 
-    ExpenseReport getDummyExpenseReportAndSetupSaveMocks(){
-        ExpenseReport expenseReport = demoDataGenerator.createRandomExpenseReport(expenseItemQuantity);
-
+    void setupMocks(ExpenseReport expenseReport){
         ExpenseItem oneExpenseItem = expenseReport.getExpenses().stream().findFirst().get();
 
         Country country = expenseReport.getCountry();
@@ -133,7 +143,5 @@ class ExpenseReportServiceJPAImplTest {
         when(expenseCategoryRepository.findByCode(anyString())).thenReturn(Optional.of(expenseCategory));
         when(userRepository.findByUsername(anyString())).thenReturn(Optional.of(user));
         when(expenseReportRepository.save(any())).thenReturn(expenseReport);
-
-        return expenseReport;
     }
 }

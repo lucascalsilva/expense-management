@@ -1,7 +1,9 @@
 package com.mobnova.expense_mgt.util;
 
 import com.mobnova.expense_mgt.model.*;
+import com.mobnova.expense_mgt.repositories.*;
 import lombok.Getter;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -22,7 +24,6 @@ public class DemoDataGenerator {
     private List<StateOrProvince> stateOrProvinces = new ArrayList<>();
     private List<City> cities = new ArrayList<>();
     private List<User> users = new ArrayList<>();
-    private Long sequenceNum = 0L;
 
     public DemoDataGenerator() {
         init();
@@ -94,11 +95,4 @@ public class DemoDataGenerator {
 
         return expenseReport;
     }
-
-    public Long nextSequenceNum() {
-        sequenceNum += 1;
-        return sequenceNum;
-    }
-
-
 }
