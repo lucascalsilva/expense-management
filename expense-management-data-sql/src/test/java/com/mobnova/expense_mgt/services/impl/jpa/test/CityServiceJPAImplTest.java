@@ -1,0 +1,168 @@
+package com.mobnova.expense_mgt.services.impl.jpa.test;
+
+import com.mobnova.expense_mgt.model.City;
+import com.mobnova.expense_mgt.model.County;
+import com.mobnova.expense_mgt.model.StateOrProvince;
+import com.mobnova.expense_mgt.repositories.CityRepository;
+import com.mobnova.expense_mgt.repositories.CountyRepository;
+import com.mobnova.expense_mgt.repositories.StateOrProvinceRepository;
+import com.mobnova.expense_mgt.services.impl.jpa.CityServiceJPAImpl;
+import com.mobnova.expense_mgt.validation.BeanValidator;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+
+import java.util.HashSet;
+import java.util.Optional;
+import java.util.Set;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.AdditionalAnswers.returnsFirstArg;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.*;
+
+@ExtendWith(MockitoExtension.class)
+class CityServiceJPAImplTest {
+
+    @InjectMocks
+    private CityServiceJPAImpl cityServiceJPA;
+
+    @Mock
+    private CityRepository cityRepository;
+
+    @Mock
+    private CountyRepository countyRepository;
+
+    @Mock
+    private StateOrProvinceRepository stateOrProvinceRepository;
+
+    @Mock
+    private BeanValidator beanValidator;
+
+    private StateOrProvince stateOrProvince;
+    private County county;
+
+    @BeforeEach
+    void init(){
+        stateOrProvince = StateOrProvince.builder().id(1L).code("RS")
+                .name("Rio Grande do Sul").build();
+        county = County.builder().id(1L).code("POA").name("Porto Alegre").build();
+    }
+
+
+    @Test
+    void save() {
+        City city = City.builder().code("POA").name("Porto Alegre")
+                .stateOrProvince(StateOrProvince.builder().code("RS").build())
+                .county(County.builder().code("POA").build()).build();
+
+        doAnswer(returnsFirstArg()).when(cityRepository).save(any(City.class));
+
+        when(stateOrProvinceRepository.findByCode(eq("RS"))).thenReturn(Optional.of(stateOrProvince));
+        when(countyRepository.findByCode(eq("POA"))).thenReturn(Optional.of(county));
+
+        City savedCity = cityServiceJPA.save(city);
+
+        verify(stateOrProvinceRepository, times(1)).findByCode(anyString());
+        verify(countyRepository, times(1)).findByCode(anyString());
+        verify(cityRepository, times(1)).save(any(City.class));
+
+        assertThat(savedCity.getStateOrProvince().getId()).isEqualTo(1L);
+        assertThat(savedCity.getCounty().getId()).isEqualTo(1L);
+    }
+
+
+    @Test
+    void saveNoCounty() {
+        City city = City.builder().code("POA").name("Porto Alegre")
+                .stateOrProvince(StateOrProvince.builder().code("RS").build()).build();
+
+        doAnswer(returnsFirstArg()).when(cityRepository).save(any(City.class));
+
+        when(stateOrProvinceRepository.findByCode(eq("RS"))).thenReturn(Optional.of(stateOrProvince));
+
+        City savedCity = cityServiceJPA.save(city);
+
+        verify(stateOrProvinceRepository, times(1)).findByCode(anyString());
+        verify(countyRepository, times(0)).findByCode(anyString());
+        verify(cityRepository, times(1)).save(any(City.class));
+
+        assertThat(savedCity.getStateOrProvince().getId()).isEqualTo(1L);
+        assertThat(savedCity.getCounty()).isNull();
+    }
+
+    @Test
+    void saveBulk() {
+        City city1 = City.builder().code("POA").name("Porto Alegre")
+                .stateOrProvince(StateOrProvince.builder().code("RS").build())
+                .county(County.builder().code("POA").build()).build();
+
+        City city2 = City.builder().code("CAN").name("Canoas")
+                .stateOrProvince(StateOrProvince.builder().code("RS").build())
+                .county(County.builder().code("POA").build()).build();
+
+        Set<City> cities = new HashSet<>();
+        cities.add(city1);
+        cities.add(city2);
+
+        when(stateOrProvinceRepository.findByCode(eq("RS"))).thenReturn(Optional.of(stateOrProvince));
+        when(countyRepository.findByCode(eq("POA"))).thenReturn(Optional.of(county));
+
+        doAnswer(returnsFirstArg()).when(cityRepository).save(any(City.class));
+
+        Set<City> savedCities = cityServiceJPA.saveBulk(cities);
+
+        verify(stateOrProvinceRepository, times(2)).findByCode(anyString());
+        verify(countyRepository, times(2)).findByCode(anyString());
+        verify(cityRepository, times(2)).save(any(City.class));
+
+        for(City city : savedCities){
+            assertThat(city.getStateOrProvince().getId()).isEqualTo(1L);
+            assertThat(city.getCounty().getId()).isEqualTo(1L);
+        }
+    }
+
+    @Test
+    void findById() {
+        City city = City.builder().id(1L).code("POA").name("Porto Alegre")
+                .stateOrProvince(StateOrProvince.builder().code("RS").build()).build();
+
+        when(cityRepository.findById(1L)).thenReturn(Optional.of(city));
+
+        Optional<City> cityById = cityServiceJPA.findById(1L);
+
+        verify(cityRepository, times(1)).findById(1L);
+
+        assertThat(cityById.isPresent());
+        assertThat(cityById.get()).isEqualTo(city);
+
+
+    }
+
+    @Test
+    void deleteById() {
+        cityServiceJPA.deleteById(1L);
+
+        verify(cityRepository, times(1)).deleteById(1L);
+    }
+
+    @Test
+    void findByCode() {
+        City city = City.builder().id(1L).code("POA").name("Porto Alegre")
+                .stateOrProvince(StateOrProvince.builder().code("RS").build()).build();
+
+        when(cityRepository.findByCode("POA")).thenReturn(Optional.of(city));
+
+        Optional<City> cityByCode = cityServiceJPA.findByCode("POA");
+
+        verify(cityRepository, times(1)).findByCode("POA");
+
+        assertThat(cityByCode.isPresent());
+        assertThat(cityByCode.get()).isEqualTo(city);
+
+
+    }
+}
