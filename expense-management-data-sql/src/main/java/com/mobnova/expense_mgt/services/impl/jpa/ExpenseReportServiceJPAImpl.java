@@ -37,14 +37,13 @@ public class ExpenseReportServiceJPAImpl implements ExpenseReportService {
         beanValidator.validateObject(expenseReport);
         beanValidator.validateObjects(expenseReport.getExpenses());
 
-        //TODO should I allow save to update as well?
-        /*if (expenseReport.getId() != null) {
+        if (expenseReport.getId() != null) {
             expenseReportRepository.findById(expenseReport.getId())
                     .ifPresent(currentObject -> {
                         expenseReport.setId(currentObject.getId());
                         expenseReport.setVersion(currentObject.getVersion());
                     });
-        }*/
+        }
 
         String username = expenseReport.getUser().getUsername();
         userRepository.findByUsername(username)

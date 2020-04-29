@@ -1,5 +1,6 @@
 package com.mobnova.expense_mgt.services.impl.jpa;
 
+import com.mobnova.expense_mgt.model.City;
 import com.mobnova.expense_mgt.model.SegmentType;
 import com.mobnova.expense_mgt.repositories.SegmentTypeRepository;
 import com.mobnova.expense_mgt.services.SegmentTypeService;
@@ -39,5 +40,10 @@ public class SegmentTypeJPAImpl implements SegmentTypeService {
     @Override
     public void deleteById(Long id) {
         segmentTypeRepository.deleteById(id);
+    }
+
+    @Override
+    public Optional<SegmentType> findByCode(String code) {
+        return segmentTypeRepository.findByCode(code);
     }
 }

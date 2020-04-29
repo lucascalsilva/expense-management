@@ -53,4 +53,9 @@ public class CountyServiceJPAImpl implements CountyService {
     public void deleteById(Long id) {
         countyRepository.deleteById(id);
     }
+
+    @Override
+    public Optional<County> findByCode(String code) {
+        return countyRepository.findByCode(code);
+    }
 }

@@ -54,4 +54,9 @@ public class StateOrProvinceServiceJPAImpl implements StateOrProvinceService {
     public void deleteById(Long id) {
         stateOrProvinceRepository.deleteById(id);
     }
+
+    @Override
+    public Optional<StateOrProvince> findByCode(String code) {
+        return stateOrProvinceRepository.findByCode(code);
+    }
 }
