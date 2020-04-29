@@ -52,4 +52,9 @@ public class SegmentValuePairJPAImpl implements SegmentValuePairService {
     public void deleteById(Long id) {
         segmentValuePairRepository.deleteById(id);
     }
+
+    @Override
+    public Optional<SegmentValuePair> findByValueAndSegmentTypeCode(String segmentValue, String segmentTypeCode) {
+        return segmentValuePairRepository.findByValueAndSegmentTypeCode(segmentValue, segmentTypeCode);
+    }
 }
