@@ -13,6 +13,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.HashSet;
@@ -28,6 +29,7 @@ import static org.mockito.Mockito.*;
 class CityServiceJPAImplTest {
 
     @InjectMocks
+    @Spy
     private CityServiceJPAImpl cityServiceJPA;
 
     @Mock
@@ -61,14 +63,14 @@ class CityServiceJPAImplTest {
 
         doAnswer(returnsFirstArg()).when(cityRepository).save(any(City.class));
 
-        when(stateOrProvinceRepository.findByCode(eq("RS"))).thenReturn(Optional.of(stateOrProvince));
-        when(countyRepository.findByCode(eq("POA"))).thenReturn(Optional.of(county));
+        when(stateOrProvinceRepository.findByCode(stateOrProvince.getCode())).thenReturn(Optional.of(stateOrProvince));
+        when(countyRepository.findByCode(county.getCode())).thenReturn(Optional.of(county));
 
         City savedCity = cityServiceJPA.save(city);
 
-        verify(stateOrProvinceRepository, times(1)).findByCode(anyString());
-        verify(countyRepository, times(1)).findByCode(anyString());
-        verify(cityRepository, times(1)).save(any(City.class));
+        verify(stateOrProvinceRepository, times(1)).findByCode(stateOrProvince.getCode());
+        verify(countyRepository, times(1)).findByCode(county.getCode());
+        verify(cityRepository, times(1)).save(city);
 
         assertThat(savedCity.getStateOrProvince().getId()).isEqualTo(1L);
         assertThat(savedCity.getCounty().getId()).isEqualTo(1L);
@@ -82,13 +84,13 @@ class CityServiceJPAImplTest {
 
         doAnswer(returnsFirstArg()).when(cityRepository).save(any(City.class));
 
-        when(stateOrProvinceRepository.findByCode(eq("RS"))).thenReturn(Optional.of(stateOrProvince));
+        when(stateOrProvinceRepository.findByCode(stateOrProvince.getCode())).thenReturn(Optional.of(stateOrProvince));
 
         City savedCity = cityServiceJPA.save(city);
 
-        verify(stateOrProvinceRepository, times(1)).findByCode(anyString());
-        verify(countyRepository, times(0)).findByCode(anyString());
-        verify(cityRepository, times(1)).save(any(City.class));
+        verify(stateOrProvinceRepository, times(1)).findByCode(stateOrProvince.getCode());
+        verify(countyRepository, times(0)).findByCode(county.getCode());
+        verify(cityRepository, times(1)).save(city);
 
         assertThat(savedCity.getStateOrProvince().getId()).isEqualTo(1L);
         assertThat(savedCity.getCounty()).isNull();
@@ -108,18 +110,20 @@ class CityServiceJPAImplTest {
         cities.add(city1);
         cities.add(city2);
 
-        when(stateOrProvinceRepository.findByCode(eq("RS"))).thenReturn(Optional.of(stateOrProvince));
-        when(countyRepository.findByCode(eq("POA"))).thenReturn(Optional.of(county));
-
         doAnswer(returnsFirstArg()).when(cityRepository).save(any(City.class));
+
+        when(stateOrProvinceRepository.findByCode(stateOrProvince.getCode())).thenReturn(Optional.of(stateOrProvince));
+        when(countyRepository.findByCode(county.getCode())).thenReturn(Optional.of(county));
 
         Set<City> savedCities = cityServiceJPA.saveBulk(cities);
 
-        verify(stateOrProvinceRepository, times(2)).findByCode(anyString());
-        verify(countyRepository, times(2)).findByCode(anyString());
-        verify(cityRepository, times(2)).save(any(City.class));
+        verify(stateOrProvinceRepository, times(cities.size())).findByCode(stateOrProvince.getCode());
+        verify(countyRepository, times(cities.size())).findByCode(county.getCode());
 
         for(City city : savedCities){
+            verify(cityRepository, times(1)).save(city);
+            verify(cityServiceJPA, times(1)).save(city);
+
             assertThat(city.getStateOrProvince().getId()).isEqualTo(1L);
             assertThat(city.getCounty().getId()).isEqualTo(1L);
         }
@@ -130,7 +134,7 @@ class CityServiceJPAImplTest {
         City city = City.builder().id(1L).code("POA").name("Porto Alegre")
                 .stateOrProvince(StateOrProvince.builder().code("RS").build()).build();
 
-        when(cityRepository.findById(1L)).thenReturn(Optional.of(city));
+        when(cityRepository.findById(city.getId())).thenReturn(Optional.of(city));
 
         Optional<City> cityById = cityServiceJPA.findById(1L);
 
@@ -138,8 +142,6 @@ class CityServiceJPAImplTest {
 
         assertThat(cityById.isPresent());
         assertThat(cityById.get()).isEqualTo(city);
-
-
     }
 
     @Test
@@ -154,15 +156,13 @@ class CityServiceJPAImplTest {
         City city = City.builder().id(1L).code("POA").name("Porto Alegre")
                 .stateOrProvince(StateOrProvince.builder().code("RS").build()).build();
 
-        when(cityRepository.findByCode("POA")).thenReturn(Optional.of(city));
+        when(cityRepository.findByCode(city.getCode())).thenReturn(Optional.of(city));
 
         Optional<City> cityByCode = cityServiceJPA.findByCode("POA");
 
-        verify(cityRepository, times(1)).findByCode("POA");
+        verify(cityRepository, times(1)).findByCode(city.getCode());
 
         assertThat(cityByCode.isPresent());
         assertThat(cityByCode.get()).isEqualTo(city);
-
-
     }
 }
