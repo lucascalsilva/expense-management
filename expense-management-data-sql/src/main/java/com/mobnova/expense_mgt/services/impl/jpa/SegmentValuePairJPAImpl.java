@@ -11,6 +11,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
+import java.util.HashSet;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -54,7 +56,7 @@ public class SegmentValuePairJPAImpl implements SegmentValuePairService {
     }
 
     @Override
-    public Optional<SegmentValuePair> findByValueAndSegmentTypeCode(String segmentValue, String segmentTypeCode) {
-        return segmentValuePairRepository.findByValueAndSegmentTypeCode(segmentValue, segmentTypeCode);
+    public Set<SegmentValuePair> findByValueAndSegmentTypeCode(String segmentValue, String segmentTypeCode) {
+        return new HashSet<>(segmentValuePairRepository.findByValueAndSegmentTypeCode(segmentValue, segmentTypeCode));
     }
 }
