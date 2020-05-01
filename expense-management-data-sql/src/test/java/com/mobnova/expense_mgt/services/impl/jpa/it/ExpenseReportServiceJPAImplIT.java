@@ -1,24 +1,19 @@
 package com.mobnova.expense_mgt.services.impl.jpa.it;
 
 import com.mobnova.expense_mgt.model.*;
+import com.mobnova.expense_mgt.repositories.*;
 import com.mobnova.expense_mgt.services.impl.jpa.ExpenseReportServiceJPAImpl;
 import com.mobnova.expense_mgt.util.ExpenseReportTestHelper;
-import org.junit.Before;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.MockitoAnnotations;
-import org.mockito.Spy;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.util.HashSet;
-import java.util.List;
 import java.util.Optional;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 
@@ -27,25 +22,64 @@ import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 class ExpenseReportServiceJPAImplIT {
 
     @Autowired
-    @Spy
     private ExpenseReportServiceJPAImpl expenseReportServiceJPA;
 
     @Autowired
+    private CountryRepository countryRepository;
+
+    @Autowired
+    private StateOrProvinceRepository stateOrProvinceRepository;
+
+    @Autowired
+    private CountyRepository countyRepository;
+
+    @Autowired
+    private CityRepository cityRepository;
+
+    @Autowired
+    private CurrencyRepository currencyRepository;
+
+    @Autowired
+    private UserRepository userRepository;
+
+    @Autowired
+    private ExpenseCategoryRepository expenseCategoryRepository;
+
+
     private static ExpenseReportTestHelper expenseReportTestHelper;
 
     private Integer expenseReportQuantity = 3;
     private Integer expenseItemQuantity = 3;
 
-    private static Boolean baseDataPersisted = false;
+    private static Boolean dbInitialized = false;
 
-    @BeforeAll
-    public static void initGlobal(){
-        expenseReportTestHelper = new ExpenseReportTestHelper();
-    }
-
-    @Before
+    @BeforeEach
     public void init(){
-        MockitoAnnotations.initMocks(this);
+        expenseReportTestHelper = new ExpenseReportTestHelper();
+
+        if(!dbInitialized) {
+            Country country = Country.builder().code("BR").name("Brazil").build();
+            StateOrProvince stateOrProvince = StateOrProvince.builder().code("RS").name("Rio Grande do Sul")
+                    .country(country).build();
+            County county = County.builder().code("POA").name("Condado de Porto Alegre")
+                    .stateOrProvince(stateOrProvince).build();
+            City city = City.builder().code("POA").name("Porto Alegre").stateOrProvince(stateOrProvince)
+                    .county(county).build();
+            User user = User.builder().username("user_one").password("123456").email("lucas.silva@camunda.com")
+                    .firstName("Lucas").lastName("Silva").build();
+            ExpenseCategory expenseCategory = ExpenseCategory.builder().code("MEAL").name("Meal").build();
+            Currency currency = Currency.builder().code("BRL").name("Real").build();
+
+            countryRepository.save(country);
+            stateOrProvinceRepository.save(stateOrProvince);
+            countyRepository.save(county);
+            cityRepository.save(city);
+            currencyRepository.save(currency);
+            expenseCategoryRepository.save(expenseCategory);
+            userRepository.save(user);
+
+            dbInitialized = true;
+        }
     }
 
     @Test

@@ -31,26 +31,31 @@ class CityServiceJPAImplIT {
     private CityServiceJPAImpl cityServiceJPA;
 
     @Autowired
-    private static CountryRepository countryRepository;
+    private CountryRepository countryRepository;
 
     @Autowired
-    private static StateOrProvinceRepository stateOrProvinceRepository;
+    private StateOrProvinceRepository stateOrProvinceRepository;
 
     @Autowired
-    private static CountyRepository countyRepository;
+    private CountyRepository countyRepository;
+
+    private static Boolean dbInitialized = false;
 
 
-    @BeforeAll
-    public static void init(){
-        Country country = Country.builder().code("BR").name("Brazil").build();
-        StateOrProvince stateOrProvince = StateOrProvince.builder().code("RS").name("Rio Grande do Sul")
-                .country(country).build();
-        County county = County.builder().code("POA").name("Condado de Porto Alegre")
-                .stateOrProvince(stateOrProvince).build();
+    @BeforeEach
+    public void init(){
+        if(!dbInitialized) {
+            Country country = Country.builder().code("BR").name("Brazil").build();
+            StateOrProvince stateOrProvince = StateOrProvince.builder().code("RS").name("Rio Grande do Sul")
+                    .country(country).build();
+            County county = County.builder().code("POA").name("Condado de Porto Alegre")
+                    .stateOrProvince(stateOrProvince).build();
 
-        countryRepository.save(country);
-        stateOrProvinceRepository.save(stateOrProvince);
-        countyRepository.save(county);
+            countryRepository.save(country);
+            stateOrProvinceRepository.save(stateOrProvince);
+            countyRepository.save(county);
+            dbInitialized = true;
+        }
     }
 
     @Test
