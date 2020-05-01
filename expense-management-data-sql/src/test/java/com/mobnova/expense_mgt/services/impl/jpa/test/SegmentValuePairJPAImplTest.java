@@ -14,9 +14,7 @@ import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.util.HashSet;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.AdditionalAnswers.returnsFirstArg;
@@ -101,14 +99,16 @@ class SegmentValuePairJPAImplTest {
         SegmentValuePair segmentValuePair = SegmentValuePair.builder().id(1L).segmentValue("1001")
                 .segmentType(segmentType).build();
 
-        when(segmentValuePairRepository.findByValueAndSegmentTypeCode(segmentValuePair.getSegmentValue(),
-                segmentValuePair.getSegmentType().getCode())).thenReturn(Optional.of(segmentValuePair));
+        List<SegmentValuePair> segmentValuePairs = new ArrayList<SegmentValuePair>();
+        segmentValuePairs.add(segmentValuePair);
 
-        Optional<SegmentValuePair> segmentValuePairByQuery = segmentValuePairJPA
+        when(segmentValuePairRepository.findByValueAndSegmentTypeCode(segmentValuePair.getSegmentValue(),
+                segmentType.getCode())).thenReturn(segmentValuePairs);
+
+        Set<SegmentValuePair> segmentValuePairByQuerySet = segmentValuePairJPA
                 .findByValueAndSegmentTypeCode(segmentValuePair.getSegmentValue(), segmentType.getCode());
 
-        assertThat(segmentValuePairByQuery.isPresent());
-        assertThat(segmentValuePairByQuery.get()).isEqualTo(segmentValuePair);
+        assertThat(segmentValuePairByQuerySet).hasAtLeastOneElementOfType(SegmentValuePair.class);
     }
 
     @Test
