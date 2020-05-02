@@ -2,9 +2,7 @@ package com.mobnova.expense_mgt.util;
 
 import com.mobnova.expense_mgt.model.*;
 import com.mobnova.expense_mgt.model.Currency;
-import com.mobnova.expense_mgt.repositories.*;
 import lombok.Getter;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -23,6 +21,10 @@ public class ExpenseReportTestHelper {
     private Currency currency;
     private ExpenseCategory expenseCategory;
     private User user;
+    private SegmentType segmentTypeCC;
+    private SegmentType segmentTypeAC;
+    private SegmentValuePair segmentValuePairCC;
+    private SegmentValuePair segmentValuePairAC;
 
     public ExpenseReportTestHelper() {
         init();
@@ -36,6 +38,10 @@ public class ExpenseReportTestHelper {
         user = User.builder().username("user_one").build();
         expenseCategory = ExpenseCategory.builder().code("MEAL").build();
         currency = Currency.builder().code("BRL").build();
+        segmentTypeCC = SegmentType.builder().code("CC").build();
+        segmentTypeAC = SegmentType.builder().code("AC").build();
+        segmentValuePairCC = SegmentValuePair.builder().segmentValue("1000").segmentType(segmentTypeCC).build();
+        segmentValuePairAC = SegmentValuePair.builder().segmentValue("5000").segmentType(segmentTypeAC).build();
     }
 
     public Set<ExpenseReport> createDummyExpenseReports(Integer expenseReportQuantity, Integer expenseItemQuantity) {
@@ -58,11 +64,16 @@ public class ExpenseReportTestHelper {
                 .user(user).build();
 
         IntStream.range(0, expenseItemQuantity).forEach(value -> {
+            List<SegmentValuePair> segmentValuePairs = new ArrayList<>();
+            segmentValuePairs.add(segmentValuePairCC);
+            segmentValuePairs.add(segmentValuePairAC);
+
             ExpenseItem expenseItem = ExpenseItem.builder().expenseItemNumber((long) value)
                     .amount(new BigDecimal(1000))
                     .currency(currency)
                     .expenseCity(city)
                     .category(expenseCategory)
+                    .segmentValuePairs(segmentValuePairs)
                     .expenseDate(LocalDate.now().plusDays(getRandomNumberInRange(1, 100))).build();
 
             expenseReport.getExpenses().add(expenseItem);

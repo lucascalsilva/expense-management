@@ -99,16 +99,14 @@ class SegmentValuePairJPAImplTest {
         SegmentValuePair segmentValuePair = SegmentValuePair.builder().id(1L).segmentValue("1001")
                 .segmentType(segmentType).build();
 
-        List<SegmentValuePair> segmentValuePairs = new ArrayList<SegmentValuePair>();
-        segmentValuePairs.add(segmentValuePair);
-
         when(segmentValuePairRepository.findByValueAndSegmentTypeCode(segmentValuePair.getSegmentValue(),
-                segmentType.getCode())).thenReturn(segmentValuePairs);
+                segmentType.getCode())).thenReturn(Optional.of(segmentValuePair));
 
-        Set<SegmentValuePair> segmentValuePairByQuerySet = segmentValuePairJPA
+        Optional<SegmentValuePair> segmentValuePairByQuery = segmentValuePairJPA
                 .findByValueAndSegmentTypeCode(segmentValuePair.getSegmentValue(), segmentType.getCode());
 
-        assertThat(segmentValuePairByQuerySet).hasAtLeastOneElementOfType(SegmentValuePair.class);
+        assertThat(segmentValuePairByQuery).isPresent();
+        assertThat(segmentValuePairByQuery.get()).isEqualTo(segmentValuePair);
     }
 
     @Test

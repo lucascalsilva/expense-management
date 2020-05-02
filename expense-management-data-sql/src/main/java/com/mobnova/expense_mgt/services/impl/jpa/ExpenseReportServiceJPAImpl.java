@@ -4,6 +4,7 @@ import com.mobnova.expense_mgt.config.CriteriaConfigBean;
 import com.mobnova.expense_mgt.criteria.CriteriaUtil;
 import com.mobnova.expense_mgt.exceptions.InvalidDataException;
 import com.mobnova.expense_mgt.model.*;
+import com.mobnova.expense_mgt.model.Currency;
 import com.mobnova.expense_mgt.repositories.*;
 import com.mobnova.expense_mgt.services.ExpenseReportService;
 import com.mobnova.expense_mgt.validation.BeanValidator;
@@ -13,10 +14,9 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
-import java.util.HashSet;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Service
 @Profile("jpa")
@@ -31,6 +31,7 @@ public class ExpenseReportServiceJPAImpl implements ExpenseReportService {
     private final ExpenseCategoryRepository categoryRepository;
     private final BeanValidator beanValidator;
     private final CriteriaConfigBean criteriaConfigBean;
+    private final SegmentValuePairRepository segmentValuePairRepository;
 
     @Override
     public ExpenseReport save(ExpenseReport expenseReport) {
@@ -69,7 +70,7 @@ public class ExpenseReportServiceJPAImpl implements ExpenseReportService {
                                 throw new InvalidDataException(Currency.class, "currencyCode", currencyCode);
                             });
 
-            if(expenseItem.getExpenseCity() != null && expenseItem.getExpenseCity().getCode() != null) {
+            if (expenseItem.getExpenseCity() != null && expenseItem.getExpenseCity().getCode() != null) {
                 String expenseCityCode = expenseItem.getExpenseCity().getCode();
                 cityRepository.findByCode(expenseCityCode)
                         .ifPresentOrElse(expenseItem::setExpenseCity,
@@ -85,6 +86,23 @@ public class ExpenseReportServiceJPAImpl implements ExpenseReportService {
                             () -> {
                                 throw new InvalidDataException(ExpenseCategory.class, "expenseCategoryCode", categoryCode);
                             });
+
+            List<SegmentValuePair> segmentValuePairs = expenseItem.getSegmentValuePairs().stream().map(segmentValuePair -> {
+                String segmentValuePairValue = segmentValuePair.getSegmentValue();
+                String segmentTypeCode = segmentValuePair.getSegmentType().getCode();
+
+                SegmentValuePair currentObject = segmentValuePairRepository.findByValueAndSegmentTypeCode(segmentValuePairValue, segmentTypeCode)
+                        .orElseThrow(() -> {
+                            Map<String, String> fieldValuePairs = new HashMap<String, String>();
+                            fieldValuePairs.put("segmentValuePairValue", segmentValuePairValue);
+                            fieldValuePairs.put("segmentTypeCode", segmentTypeCode);
+                            throw new InvalidDataException(SegmentValuePair.class, fieldValuePairs);
+                        });
+
+                return currentObject;
+            }).collect(Collectors.toList());
+
+            expenseItem.setSegmentValuePairs(segmentValuePairs);
         }
 
         return expenseReportRepository.save(expenseReport);

@@ -35,7 +35,7 @@ class UserServiceJPAImplTest {
 
     @Test
     void save() {
-        User user = User.builder().username("lucas.silva").password("123456").email("lucas.silva@camunda.com")
+        User user = User.builder().username("user_one").password("123456").email("lucas.silva@domain.com")
                 .firstName("Lucas").lastName("Silva").build();
 
         doAnswer(returnsFirstArg()).when(userRepository).save(any(User.class));
@@ -47,10 +47,10 @@ class UserServiceJPAImplTest {
 
     @Test
     void saveBulk() {
-        User user1 = User.builder().username("lucas.silva").password("123456").email("lucas.silva@email.com")
+        User user1 = User.builder().username("user_one").password("123456").email("lucas.silva@domain.com")
                 .firstName("Lucas").lastName("Silva").build();
 
-        User user2 = User.builder().username("silva.lucas").password("123456").email("silva.lucas@email.com")
+        User user2 = User.builder().username("user_two").password("123456").email("silva.lucas@domain.com")
                 .firstName("Silva").lastName("Lucas").build();
 
         Set<User> users = new HashSet<>();
@@ -69,7 +69,7 @@ class UserServiceJPAImplTest {
 
     @Test
     void findById() {
-        User user = User.builder().id(1L).username("lucas.silva").password("123456").email("lucas.silva@camunda.com")
+        User user = User.builder().id(1L).username("user_one").password("123456").email("lucas.silva@domain.com")
                 .firstName("Lucas").lastName("Silva").build();
 
         when(userRepository.findById(user.getId())).thenReturn(Optional.of(user));
@@ -91,12 +91,12 @@ class UserServiceJPAImplTest {
 
     @Test
     void findByUsername() {
-        User user = User.builder().username("lucas.silva").password("123456").email("lucas.silva@camunda.com")
+        User user = User.builder().username("user_one").password("123456").email("lucas.silva@domain.com")
                 .firstName("Lucas").lastName("Silva").build();
 
         when(userRepository.findByUsername(user.getUsername())).thenReturn(Optional.of(user));
 
-        Optional<User> userByUsername = userServiceJPA.findByUsername("lucas.silva");
+        Optional<User> userByUsername = userServiceJPA.findByUsername("user_one");
 
         verify(userRepository, times(1)).findByUsername(user.getUsername());
 

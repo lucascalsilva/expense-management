@@ -37,7 +37,7 @@ class CountryServiceJPAImplTest {
     @Test
     void save() {
         Country country = Country.builder().id(1L).code("BR")
-                .name("Brasil").build();
+                .name("Brazil").build();
 
         doAnswer(returnsFirstArg()).when(countryRepository).save(country);
 
@@ -49,7 +49,7 @@ class CountryServiceJPAImplTest {
     @Test
     void saveBulk() {
         Country country1 = Country.builder().code("BR")
-                .name("Brasil").build();
+                .name("Brazil").build();
         Country country2 = Country.builder().code("US")
                 .name("United States of America").build();
 
@@ -71,7 +71,7 @@ class CountryServiceJPAImplTest {
     @Test
     void findById() {
         Country country = Country.builder().id(1L).code("BR")
-                .name("Brasil").build();
+                .name("Brazil").build();
 
         when(countryRepository.findById(country.getId())).thenReturn(Optional.of(country));
 
@@ -91,7 +91,7 @@ class CountryServiceJPAImplTest {
     @Test
     void findByCode() {
         Country country = Country.builder().id(1L).code("BR")
-                .name("Brasil").build();
+                .name("Brazil").build();
 
         when(countryRepository.findByCode(country.getCode())).thenReturn(Optional.of(country));
 

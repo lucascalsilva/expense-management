@@ -56,7 +56,7 @@ public class SegmentValuePairJPAImpl implements SegmentValuePairService {
     }
 
     @Override
-    public Set<SegmentValuePair> findByValueAndSegmentTypeCode(String segmentValue, String segmentTypeCode) {
-        return new HashSet<>(segmentValuePairRepository.findByValueAndSegmentTypeCode(segmentValue, segmentTypeCode));
+    public Optional<SegmentValuePair> findByValueAndSegmentTypeCode(String segmentValue, String segmentTypeCode) {
+        return segmentValuePairRepository.findByValueAndSegmentTypeCode(segmentValue, segmentTypeCode);
     }
 }

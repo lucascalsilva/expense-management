@@ -1,15 +1,12 @@
 package com.mobnova.expense_mgt.services.impl.jpa.it;
 
-import com.mobnova.expense_mgt.model.City;
 import com.mobnova.expense_mgt.model.Country;
 import com.mobnova.expense_mgt.model.County;
 import com.mobnova.expense_mgt.model.StateOrProvince;
 import com.mobnova.expense_mgt.repositories.CountryRepository;
-import com.mobnova.expense_mgt.repositories.CountyRepository;
 import com.mobnova.expense_mgt.repositories.StateOrProvinceRepository;
-import com.mobnova.expense_mgt.services.impl.jpa.CityServiceJPAImpl;
+import com.mobnova.expense_mgt.services.impl.jpa.CountyServiceJPAImpl;
 import com.mobnova.expense_mgt.util.IntegrationTestHelper;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -17,28 +14,26 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
+import javax.validation.constraints.NotNull;
 import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
 
-import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
-
+import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
+import static org.junit.jupiter.api.Assertions.*;
 
 @ExtendWith(SpringExtension.class)
 @SpringBootTest
-class CityServiceJPAImplIT {
+class CountyServiceJPAImplIT {
 
     @Autowired
-    private CityServiceJPAImpl cityServiceJPA;
+    private CountyServiceJPAImpl countyServiceJPA;
 
     @Autowired
     private CountryRepository countryRepository;
 
     @Autowired
     private StateOrProvinceRepository stateOrProvinceRepository;
-
-    @Autowired
-    private CountyRepository countyRepository;
 
     @Autowired
     private IntegrationTestHelper integrationTestHelper;
@@ -52,90 +47,88 @@ class CityServiceJPAImplIT {
             Country country = Country.builder().code("BR").name("Brazil").build();
             StateOrProvince stateOrProvince = StateOrProvince.builder().code("RS").name("Rio Grande do Sul")
                     .country(country).build();
-            County county = County.builder().code("POA").name("Condado de Porto Alegre")
-                    .stateOrProvince(stateOrProvince).build();
 
             countryRepository.save(country);
             stateOrProvinceRepository.save(stateOrProvince);
-            countyRepository.save(county);
             dbInitialized = true;
         }
     }
 
+
     @Test
     void save() {
-        City city = City.builder().code("POA").name("Porto Alegre")
+        County county = County.builder().code("POA").name("Condado de Porto Alegre")
                 .stateOrProvince(StateOrProvince.builder().code("RS").build()).build();
 
-        City citySaved = cityServiceJPA.save(city);
+        County savedCounty = countyServiceJPA.save(county);
 
-        assertThat(citySaved.getId()).isNotNull();
-        assertThat(citySaved.getCreationDate()).isNotNull();
+        assertThat(savedCounty.getId()).isNotNull();
+        assertThat(savedCounty.getCreationDate()).isNotNull();
 
-        assertThat(citySaved.getStateOrProvince()).isNotNull();
-        assertThat(citySaved.getStateOrProvince().getCode()).isEqualTo("RS");
+        assertThat(savedCounty.getStateOrProvince().getId()).isNotNull();
+        assertThat(savedCounty.getStateOrProvince().getCreationDate()).isNotNull();
     }
 
     @Test
     void saveBulk() {
-        City city1 = City.builder().code("EST").name("Esteio")
+        County county1 = County.builder().code("CAX").name("Condado de Caxias")
                 .stateOrProvince(StateOrProvince.builder().code("RS").build()).build();
-        City city2 = City.builder().code("CAN").name("Canoas")
+        County county2 = County.builder().code("PEL").name("Condado de Pelotas")
                 .stateOrProvince(StateOrProvince.builder().code("RS").build()).build();
-        Set<City> cities = new HashSet<>();
 
-        cities.add(city1);
-        cities.add(city2);
+        Set<County> counties = new HashSet<>();
 
-        Set<City> savedCities = cityServiceJPA.saveBulk(cities);
+        counties.add(county1);
+        counties.add(county2);
 
-        for(City city : savedCities){
-            assertThat(city.getId()).isNotNull();
-            assertThat(city.getCreationDate()).isNotNull();
+        Set<County> savedCounties = countyServiceJPA.saveBulk(counties);
+
+        for(County county : savedCounties){
+            assertThat(county.getId()).isNotNull();
+            assertThat(county.getCreationDate()).isNotNull();
         }
     }
 
     @Test
     void findById() {
-        City city = City.builder().code("CAC").name("Cachoerinha")
+        County county = County.builder().code("ALG").name("Condado do Alegrete")
                 .stateOrProvince(StateOrProvince.builder().code("RS").build()).build();
 
-        City savedCity = cityServiceJPA.save(city);
-        Long cityId = savedCity.getId();
+        County savedCounty = countyServiceJPA.save(county);
+        Long countyId = savedCounty.getId();
 
-        Optional<City> cityById = cityServiceJPA.findById(cityId);
+        Optional<County> countyById = countyServiceJPA.findById(countyId);
 
-        assertThat(cityById).isPresent();
-        assertThat(cityById.get()).isEqualTo(city);
+        assertThat(countyById).isPresent();
+        assertThat(countyById.get()).isEqualTo(savedCounty);
     }
 
     @Test
     void deleteById() {
-        City city = City.builder().code("GRV").name("Gravatai")
+        County county = County.builder().code("CHU").name("Condado do Chui")
                 .stateOrProvince(StateOrProvince.builder().code("RS").build()).build();
 
-        City savedCity = cityServiceJPA.save(city);
-        Long cityId = savedCity.getId();
+        County savedCounty = countyServiceJPA.save(county);
+        Long countyId = savedCounty.getId();
 
-        cityServiceJPA.deleteById(cityId);
+        countyServiceJPA.deleteById(countyId);
 
-        Optional<City> cityById = cityServiceJPA.findById(cityId);
+        Optional<County> countyById = countyServiceJPA.findById(countyId);
 
-        assertThat(cityById.isEmpty());
-
+        assertThat(countyById).isEmpty();
     }
 
     @Test
     void findByCode() {
-        City city = City.builder().code("ALV").name("Alvorada")
+        County county = County.builder().code("STC").name("Condado do Santa Cruz")
                 .stateOrProvince(StateOrProvince.builder().code("RS").build()).build();
 
-        City savedCity = cityServiceJPA.save(city);
-        String cityCode = savedCity.getCode();
+        County savedCounty = countyServiceJPA.save(county);
+        String countyCode = savedCounty.getCode();
 
-        Optional<City> cityByCode = cityServiceJPA.findByCode(cityCode);
+        Optional<County> countyByCode = countyServiceJPA.findByCode(countyCode);
 
-        assertThat(cityByCode).isPresent();
-        assertThat(cityByCode.get()).isEqualTo(city);
+        assertThat(countyByCode).isPresent();
+        assertThat(countyByCode.get()).isEqualTo(savedCounty);
     }
 }

@@ -7,11 +7,11 @@ import lombok.ToString;
 import lombok.experimental.SuperBuilder;
 
 import javax.persistence.*;
+import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
 @ToString(callSuper = true)
 @Getter
@@ -50,7 +50,8 @@ public class ExpenseItem extends BaseEntity {
 
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinColumn(name = "CODE_COMBINATION_ID")
-    private Set<SegmentValuePair> segmentValuePair = new HashSet<SegmentValuePair>();
+    @NotEmpty
+    private List<SegmentValuePair> segmentValuePairs = new ArrayList<>();
 
     @Column(name = "PICTURE")
     @Lob

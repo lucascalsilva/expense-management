@@ -4,6 +4,7 @@ import com.mobnova.expense_mgt.model.*;
 import com.mobnova.expense_mgt.repositories.*;
 import com.mobnova.expense_mgt.services.impl.jpa.ExpenseReportServiceJPAImpl;
 import com.mobnova.expense_mgt.util.ExpenseReportTestHelper;
+import com.mobnova.expense_mgt.util.IntegrationTestHelper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -45,6 +46,14 @@ class ExpenseReportServiceJPAImplIT {
     @Autowired
     private ExpenseCategoryRepository expenseCategoryRepository;
 
+    @Autowired
+    private SegmentTypeRepository segmentTypeRepository;
+
+    @Autowired
+    private SegmentValuePairRepository segmentValuePairRepository;
+
+    @Autowired
+    private IntegrationTestHelper integrationTestHelper;
 
     private static ExpenseReportTestHelper expenseReportTestHelper;
 
@@ -58,6 +67,7 @@ class ExpenseReportServiceJPAImplIT {
         expenseReportTestHelper = new ExpenseReportTestHelper();
 
         if(!dbInitialized) {
+            integrationTestHelper.cleanAllData();
             Country country = Country.builder().code("BR").name("Brazil").build();
             StateOrProvince stateOrProvince = StateOrProvince.builder().code("RS").name("Rio Grande do Sul")
                     .country(country).build();
@@ -65,10 +75,14 @@ class ExpenseReportServiceJPAImplIT {
                     .stateOrProvince(stateOrProvince).build();
             City city = City.builder().code("POA").name("Porto Alegre").stateOrProvince(stateOrProvince)
                     .county(county).build();
-            User user = User.builder().username("user_one").password("123456").email("lucas.silva@camunda.com")
+            User user = User.builder().username("user_one").password("123456").email("lucas.silva@domain.com")
                     .firstName("Lucas").lastName("Silva").build();
             ExpenseCategory expenseCategory = ExpenseCategory.builder().code("MEAL").name("Meal").build();
             Currency currency = Currency.builder().code("BRL").name("Real").build();
+            SegmentType segmentTypeCC = SegmentType.builder().code("CC").name("Cost Center").build();
+            SegmentType segmentTypeAC = SegmentType.builder().code("AC").name("Natural Account").build();
+            SegmentValuePair segmentValuePairCC = SegmentValuePair.builder().segmentValue("1000").segmentType(segmentTypeCC).build();
+            SegmentValuePair segmentValuePairAC = SegmentValuePair.builder().segmentValue("5000").segmentType(segmentTypeAC).build();
 
             countryRepository.save(country);
             stateOrProvinceRepository.save(stateOrProvince);
@@ -77,6 +91,10 @@ class ExpenseReportServiceJPAImplIT {
             currencyRepository.save(currency);
             expenseCategoryRepository.save(expenseCategory);
             userRepository.save(user);
+            segmentTypeRepository.save(segmentTypeCC);
+            segmentTypeRepository.save(segmentTypeAC);
+            segmentValuePairRepository.save(segmentValuePairCC);
+            segmentValuePairRepository.save(segmentValuePairAC);
 
             dbInitialized = true;
         }
@@ -100,6 +118,11 @@ class ExpenseReportServiceJPAImplIT {
 
             assertThat(expenseItem.getCurrency().getId()).isNotNull();
             assertThat(expenseItem.getCurrency().getCreationDate()).isNotNull();
+
+            for(SegmentValuePair segmentValuePair : expenseItem.getSegmentValuePairs()){
+                assertThat(segmentValuePair.getId()).isNotNull();
+                assertThat(segmentValuePair.getCreationDate()).isNotNull();
+            }
         }
     }
 

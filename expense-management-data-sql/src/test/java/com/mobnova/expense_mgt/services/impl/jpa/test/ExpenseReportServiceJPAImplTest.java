@@ -18,6 +18,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.jpa.domain.Specification;
 
 import java.math.BigDecimal;
@@ -61,6 +62,12 @@ class ExpenseReportServiceJPAImplTest {
     private ExpenseCategoryRepository expenseCategoryRepository;
 
     @Mock
+    private SegmentTypeRepository segmentTypeRepository;
+
+    @Mock
+    private SegmentValuePairRepository segmentValuePairRepository;
+
+    @Mock
     private BeanValidator beanValidator;
 
     @Mock
@@ -77,6 +84,10 @@ class ExpenseReportServiceJPAImplTest {
     private Currency currency;
     private ExpenseCategory expenseCategory;
     private User user;
+    private SegmentType segmentTypeCC;
+    private SegmentType segmentTypeAC;
+    private SegmentValuePair segmentValuePairCC;
+    private SegmentValuePair segmentValuePairAC;
 
     @BeforeEach
     public void init(){
@@ -87,6 +98,10 @@ class ExpenseReportServiceJPAImplTest {
         user = User.builder().id(1L).username("user_one").email("user_one@user.com").firstName("User").lastName("One").password("12345").build();
         expenseCategory = ExpenseCategory.builder().id(1L).code("MEAL").name("Meal").build();
         currency = Currency.builder().id(1L).code("BRL").name("Brazilian Real").build();
+        segmentTypeCC = SegmentType.builder().id(1L).code("CC").name("Cost Center").build();
+        segmentTypeAC = SegmentType.builder().id(2L).code("AC").name("Natural Account").build();
+        segmentValuePairCC = SegmentValuePair.builder().id(1L).segmentValue("1000").segmentType(segmentTypeCC).build();
+        segmentValuePairAC = SegmentValuePair.builder().id(2L).segmentValue("5000").segmentType(segmentTypeAC).build();
 
         expenseReportTestHelper = new ExpenseReportTestHelper();
     }
@@ -187,6 +202,10 @@ class ExpenseReportServiceJPAImplTest {
         when(currencyRepository.findByCode(currency.getCode())).thenReturn(Optional.of(currency));
         when(expenseCategoryRepository.findByCode(expenseCategory.getCode())).thenReturn(Optional.of(expenseCategory));
         when(userRepository.findByUsername(user.getUsername())).thenReturn(Optional.of(user));
+        when(segmentValuePairRepository.findByValueAndSegmentTypeCode(segmentValuePairAC.getSegmentValue(),
+                segmentTypeAC.getCode())).thenReturn(Optional.of(segmentValuePairAC));
+        when(segmentValuePairRepository.findByValueAndSegmentTypeCode(segmentValuePairCC.getSegmentValue(),
+                segmentTypeCC.getCode())).thenReturn(Optional.of(segmentValuePairCC));
     }
 
     void expenseReportAssertions(Set<ExpenseReport> savedExpenseReports){
@@ -209,6 +228,13 @@ class ExpenseReportServiceJPAImplTest {
                 assertThat(expenseItem.getExpenseCity().getId()).isEqualTo(1L);
                 assertThat(expenseItem.getCategory().getId()).isEqualTo(1L);
                 assertThat(expenseItem.getCurrency().getId()).isEqualTo(1L);
+
+                for(SegmentValuePair segmentValuePair : expenseItem.getSegmentValuePairs()){
+                    verify(segmentValuePairRepository, times(totalExpenseItems))
+                            .findByValueAndSegmentTypeCode(segmentValuePair.getSegmentValue(), segmentValuePair.getSegmentType().getCode());
+                    assertThat(segmentValuePair.getId()).isIn(1L, 2L);
+                    assertThat(segmentValuePair.getSegmentType().getId()).isIn(1L, 2L);
+                }
             }
         }
     }

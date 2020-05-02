@@ -5,6 +5,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 import lombok.experimental.SuperBuilder;
+import org.hibernate.annotations.NaturalId;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
@@ -21,8 +22,10 @@ public class SegmentValuePair extends BaseEntity {
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "SEGMENT_TYPE_ID")
     @NotNull
+    @NaturalId
     private SegmentType segmentType;
 
     @NotNull
+    @NaturalId
     private String segmentValue;
 }
