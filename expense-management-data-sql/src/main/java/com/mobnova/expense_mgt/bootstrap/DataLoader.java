@@ -3,7 +3,7 @@ package com.mobnova.expense_mgt.bootstrap;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import com.mobnova.expense_mgt.config.DataLoaderConfigBean;
+import com.mobnova.expense_mgt.config.DataLoaderConfig;
 import com.mobnova.expense_mgt.services.BaseService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -33,7 +33,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class DataLoader implements CommandLineRunner, ApplicationContextAware {
 
     private ApplicationContext applicationContext;
-    private final DataLoaderConfigBean dataLoaderConfigBean;
+    private final DataLoaderConfig dataLoaderConfig;
     private final ObjectMapper mapper;
     private final Validator validator;
 
@@ -47,7 +47,7 @@ public class DataLoader implements CommandLineRunner, ApplicationContextAware {
         mapper.registerModule(new JavaTimeModule());
         mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
 
-        URL bootstrapFolderUrl = Thread.currentThread().getContextClassLoader().getResource(dataLoaderConfigBean.getBootstrapFilesFolder());
+        URL bootstrapFolderUrl = Thread.currentThread().getContextClassLoader().getResource(dataLoaderConfig.getBootstrapFilesFolder());
         if (bootstrapFolderUrl != null) {
             Optional<File[]> files = Optional.ofNullable(new File(bootstrapFolderUrl.getPath()).listFiles());
             files.ifPresent(files_ -> {
@@ -65,9 +65,9 @@ public class DataLoader implements CommandLineRunner, ApplicationContextAware {
                     .split("-", 0)[1]);
             String serviceInterfaceName = typeClassName + "Service";
 
-            Class typeClass = Class.forName(dataLoaderConfigBean.getBaseModelPackage() + "." + typeClassName);
+            Class typeClass = Class.forName(dataLoaderConfig.getBaseModelPackage() + "." + typeClassName);
             Class arrayClass = Array.newInstance(typeClass, 0).getClass();
-            Class serviceClass = Class.forName(dataLoaderConfigBean.getBaseServicePackage() + "." + serviceInterfaceName);
+            Class serviceClass = Class.forName(dataLoaderConfig.getBaseServicePackage() + "." + serviceInterfaceName);
             Optional<Object[]> data = Optional.of((Object[]) mapper.readValue(file, arrayClass));
             BaseService service = (BaseService) applicationContext.getBean(serviceClass);
 

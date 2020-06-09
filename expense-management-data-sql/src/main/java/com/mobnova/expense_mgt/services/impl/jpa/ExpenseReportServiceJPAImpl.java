@@ -103,6 +103,11 @@ public class ExpenseReportServiceJPAImpl implements ExpenseReportService {
             }).collect(Collectors.toList());
 
             expenseItem.setSegmentValuePairs(segmentValuePairs);
+
+            if(expenseItem.getExpenseReport() == null){
+                expenseItem.setExpenseReport(expenseReport);
+            }
+
         }
 
         return expenseReportRepository.save(expenseReport);

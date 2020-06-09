@@ -57,9 +57,8 @@ public class ExpenseItem extends BaseEntity {
     @Lob
     private String picture;
 
-    /*@ManyToOne
-    @JoinColumn(name="EXPENSE_ITEM_ID")
-    @NotNull
+    @ManyToOne
+    @JoinColumn(name="EXPENSE_REPORT_ID")
     @ToString.Exclude
-    private ExpenseReport expenseReport;*/
+    private ExpenseReport expenseReport;
 }

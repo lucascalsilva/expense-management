@@ -5,7 +5,7 @@
     "justification": "Some justification...",
     "tripStartDate": "2020-02-29",
     "tripEndDate": "2020-02-29",
-    "country":{
+    "country": {
       "code": "BR"
     },
     "user": {
@@ -22,7 +22,15 @@
         },
         "currency": {
           "code": "BRL"
-        }
+        },
+        "segmentValuePairs": [
+          {
+            "segmentType": {
+              "code": "CC"
+            },
+            "segmentValue": "10001"
+          }
+        ]
       },
       {
         "expenseItemNumber": 2,
@@ -34,7 +42,15 @@
         },
         "currency": {
           "code": "BRL"
-        }
+        },
+        "segmentValuePairs": [
+          {
+            "segmentType": {
+              "code": "CC"
+            },
+            "segmentValue": "10001"
+          }
+        ]
       }
     ]
   },
@@ -44,7 +60,7 @@
     "justification": "Some justification 8888...",
     "tripStartDate": "2020-02-29",
     "tripEndDate": "2020-02-29",
-    "country":{
+    "country": {
       "code": "BR"
     },
     "user": {
@@ -61,7 +77,15 @@
         },
         "currency": {
           "code": "BRL"
-        }
+        },
+        "segmentValuePairs": [
+          {
+            "segmentType": {
+              "code": "CC"
+            },
+            "segmentValue": "10001"
+          }
+        ]
       },
       {
         "expenseItemNumber": 2,
@@ -73,7 +97,15 @@
         },
         "currency": {
           "code": "BRL"
-        }
+        },
+        "segmentValuePairs": [
+          {
+            "segmentType": {
+              "code": "CC"
+            },
+            "segmentValue": "10001"
+          }
+        ]
       }
     ]
   }

@@ -59,9 +59,4 @@ public class ExpenseReport extends BaseEntity {
     @NotEmpty
     private Set<ExpenseItem> expenses = new HashSet<ExpenseItem>();
 
-    /*public void addExpense(ExpenseItem expenseItem){
-        this.expenses.add(expenseItem);
-        expenseItem.setExpenseReport(this);
-    }*/
-
 }

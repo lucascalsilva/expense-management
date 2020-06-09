@@ -110,6 +110,7 @@ class ExpenseReportServiceJPAImplIT {
         assertThat(savedExpenseReport.getUser().getId()).isNotNull();
 
         for(ExpenseItem expenseItem : savedExpenseReport.getExpenses()){
+            assertThat(expenseItem.getExpenseReport()).isNotNull();
             assertThat(expenseItem.getExpenseCity().getId()).isNotNull();
             assertThat(expenseItem.getExpenseCity().getCreationDate()).isNotNull();
 
