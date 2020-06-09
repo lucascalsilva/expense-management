@@ -19,6 +19,7 @@
 		<expense-management-data-sql-version>0.0.1-SNAPSHOT</expense-management-data-sql-version>
 		<expense-management-web-version>0.0.1-SNAPSHOT</expense-management-web-version>
 		<expense-management-util-version>0.0.1-SNAPSHOT</expense-management-util-version>
+		<expense-management-common-version>0.0.1-SNAPSHOT</expense-management-common-version>
 		<maven-surefire-plugin-version>2.22.2</maven-surefire-plugin-version>
 		<maven-failsafe-plugin-version>2.22.2</maven-failsafe-plugin-version>
 		<java-target-version>11</java-target-version>
@@ -28,7 +29,8 @@
 		<module>expense-management-data-sql</module>
 		<module>expense-management-web</module>
 		<module>expense-management-util</module>
-	</modules>
+        <module>expense-management-common</module>
+    </modules>
 
 	<dependencyManagement>
 		<dependencies>
@@ -46,6 +48,11 @@
 				<groupId>com.com.mobnova</groupId>
 				<artifactId>expense-management-util</artifactId>
 				<version>${expense-management-util-version}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.com.mobnova</groupId>
+				<artifactId>expense-management-common</artifactId>
+				<version>${expense-management-common-version}</version>
 			</dependency>
 			<dependency>
 				<groupId>com.fasterxml.jackson</groupId>

@@ -34,7 +34,7 @@ class CountryServiceJPAImplTest {
     @Mock
     private BeanValidator beanValidator;
 
-    @Test
+    /*@Test
     void save() {
         Country country = Country.builder().id(1L).code("BR")
                 .name("Brazil").build();
@@ -101,5 +101,5 @@ class CountryServiceJPAImplTest {
 
         assertThat(countryByCode.isPresent());
         assertThat(countryByCode.get()).isEqualTo(country);
-    }
+    }*/
 }

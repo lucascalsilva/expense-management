@@ -1,10 +1,12 @@
 package com.mobnova.expense_mgt.services.impl.jpa;
 
+import com.mobnova.expense_mgt.dto.CountryDto;
+import com.mobnova.expense_mgt.dto.CountyDto;
+import com.mobnova.expense_mgt.mapper.CountryEntityMapper;
 import com.mobnova.expense_mgt.model.Country;
 import com.mobnova.expense_mgt.repositories.CountryRepository;
-import com.mobnova.expense_mgt.services.CountryService;
+import com.mobnova.expense_mgt.services.dto.CountryService;
 import com.mobnova.expense_mgt.validation.BeanValidator;
-import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
@@ -14,36 +16,24 @@ import java.util.stream.Collectors;
 
 @Service
 @Profile("jpa")
-@RequiredArgsConstructor
-public class CountryServiceJPAImpl implements CountryService {
+public class CountryServiceJPAImpl extends BaseAbstractServiceJPA<Country, CountryDto, Long> implements CountryService {
 
-    private final CountryRepository countryRepository;
-    private final BeanValidator beanValidator;
+    private CountryRepository countryRepository;
 
-    @Override
-    public Country save(Country country) {
-        beanValidator.validateObject(country);
-
-        return countryRepository.save(country);
+    public CountryServiceJPAImpl(CountryRepository countryRepository, CountryEntityMapper countryEntityMapper, BeanValidator beanValidator) {
+        super(countryRepository, countryEntityMapper, beanValidator, CountryDto.class);
+        this.countryRepository = countryRepository;
     }
 
     @Override
-    public Set<Country> saveBulk(Set<Country> countries) {
-        return countries.stream().map(this::save).collect(Collectors.toSet());
-    }
+    public CountryDto findByCode(String code) {
+        Optional<Country> countryByCode = countryRepository.findByCode(code);
 
-    @Override
-    public Optional<Country> findById(Long id) {
-        return countryRepository.findById(id);
-    }
-
-    @Override
-    public void deleteById(Long id) {
-        countryRepository.deleteById(id);
-    }
-
-    @Override
-    public Optional<Country> findByCode(String code) {
-        return countryRepository.findByCode(code);
+        if(countryByCode.isEmpty()){
+            throw new RuntimeException("Entity with id " + CountryDto.class.getName() + " not found");
+        }
+        else{
+            return baseMapper.toDto(countryByCode.get());
+        }
     }
 }

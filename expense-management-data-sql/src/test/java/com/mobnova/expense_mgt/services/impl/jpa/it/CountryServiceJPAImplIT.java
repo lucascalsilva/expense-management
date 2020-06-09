@@ -1,5 +1,6 @@
 package com.mobnova.expense_mgt.services.impl.jpa.it;
 
+import com.mobnova.expense_mgt.dto.CountryDto;
 import com.mobnova.expense_mgt.model.Country;
 import com.mobnova.expense_mgt.services.impl.jpa.CountryServiceJPAImpl;
 import com.mobnova.expense_mgt.util.IntegrationTestHelper;
@@ -39,68 +40,66 @@ class CountryServiceJPAImplIT {
 
     @Test
     void save() {
-        Country country = Country.builder().code("BR").name("Brazil").build();
+        CountryDto countryDto = CountryDto.builder().code("BR").name("Brazil").build();
 
-        Country savedCountry = countryServiceJPA.save(country);
+        CountryDto savedCountryDto = countryServiceJPA.save(countryDto);
 
-        assertThat(savedCountry.getId()).isNotNull();
-        assertThat(savedCountry.getCreationDate()).isNotNull();
+        assertThat(savedCountryDto.getId()).isNotNull();
+        assertThat(savedCountryDto.getCreationDate()).isNotNull();
     }
 
     @Test
     void saveBulk() {
-        Country country1 = Country.builder().code("US").name("United States").build();
-        Country country2 = Country.builder().code("UK").name("United Kingdom").build();
+        CountryDto countryDto1 = CountryDto.builder().code("US").name("United States").build();
+        CountryDto countryDto2 = CountryDto.builder().code("UK").name("United Kingdom").build();
 
-        Set<Country> countries = new HashSet<>();
-        countries.add(country1);
-        countries.add(country2);
+        Set<CountryDto> countriesDto = new HashSet<>();
+        countriesDto.add(countryDto1);
+        countriesDto.add(countryDto2);
 
-        Set<Country> savedCountries = countryServiceJPA.saveBulk(countries);
+        Set<CountryDto> savedCountriesDto = countryServiceJPA.saveBulk(countriesDto);
 
-        for(Country country : countries){
-            assertThat(country.getId()).isNotNull();
-            assertThat(country.getCreationDate()).isNotNull();
+        for(CountryDto countryDto : countriesDto){
+            assertThat(countryDto.getId()).isNotNull();
+            assertThat(countryDto.getCreationDate()).isNotNull();
         }
     }
 
     @Test
     void findById() {
-        Country country = Country.builder().code("AR").name("Argentina").build();
+        CountryDto countryDto = CountryDto.builder().code("AR").name("Argentina").build();
 
-        Country savedCountry = countryServiceJPA.save(country);
-        Long countryId = savedCountry.getId();
+        CountryDto savedCountryDto = countryServiceJPA.save(countryDto);
+        Long countryId = savedCountryDto.getId();
 
-        Optional<Country> countryById = countryServiceJPA.findById(countryId);
+        CountryDto countryDtoById = countryServiceJPA.findById(countryId);
 
-        assertThat(countryById).isPresent();
-        assertThat(countryById.get()).isEqualTo(savedCountry);
+        assertThat(countryDtoById).isEqualTo(savedCountryDto);
     }
 
     @Test
     void deleteById() {
-        Country country = Country.builder().code("DE").name("Germany").build();
+        CountryDto countryDto = CountryDto.builder().code("DE").name("Germany").build();
 
-        Country savedCountry = countryServiceJPA.save(country);
-        Long countryId = savedCountry.getId();
+        CountryDto savedCountryDto = countryServiceJPA.save(countryDto);
+        Long countryId = savedCountryDto.getId();
 
         countryServiceJPA.deleteById(countryId);
 
-        Optional<Country> countryById = countryServiceJPA.findById(countryId);
-
-        assertThat(countryById).isEmpty();
+        assertThrows(RuntimeException.class, () -> {
+            countryServiceJPA.findById(countryId);
+        });
     }
 
     @Test
     void findByCode() {
-        Country country = Country.builder().code("PE").name("Peru").build();
+        CountryDto countryDto = CountryDto.builder().code("PE").name("Peru").build();
 
-        Country savedCountry = countryServiceJPA.save(country);
-        String countryCode = savedCountry.getCode();
+        CountryDto savedCountryDto = countryServiceJPA.save(countryDto);
+        String countryCode = savedCountryDto.getCode();
 
-        Optional<Country> countryByCode = countryServiceJPA.findByCode(countryCode);
+        CountryDto countryDtoByCode = countryServiceJPA.findByCode(countryCode);
 
-        assertThat(countryByCode).isPresent();
-        assertThat(countryByCode.get()).isEqualTo(country);
+        assertThat(countryDtoByCode).isEqualTo(countryDto);
     }
 }

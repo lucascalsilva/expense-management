@@ -14,6 +14,6 @@ import org.springframework.stereotype.Component;
 public class DataLoaderConfigBean {
 
     private String baseModelPackage = "com.mobnova.expense_mgt.model";
-    private String baseServicePackage = "com.mobnova.expense_mgt.services";
+    private String baseServicePackage = "com.mobnova.expense_mgt.com.mobnova.expense_mgt.services";
     private String bootstrapFilesFolder = "bootstrap";
 }
