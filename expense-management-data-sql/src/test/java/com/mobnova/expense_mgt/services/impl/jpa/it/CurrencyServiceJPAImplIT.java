@@ -1,5 +1,6 @@
 package com.mobnova.expense_mgt.services.impl.jpa.it;
 
+import com.mobnova.expense_mgt.exceptions.DataNotFoundException;
 import com.mobnova.expense_mgt.model.Currency;
 import com.mobnova.expense_mgt.services.impl.jpa.CurrencyServiceJPAImpl;
 import com.mobnova.expense_mgt.util.IntegrationTestHelper;
@@ -70,10 +71,9 @@ class CurrencyServiceJPAImplIT {
         Currency savedCurrency  = currencyServiceJPA.save(currency);
         Long currencyId = savedCurrency.getId();
 
-        Optional<Currency> currencyById = currencyServiceJPA.findById(currencyId);
+        Currency currencyById = currencyServiceJPA.findById(currencyId);
 
-        assertThat(currencyById).isPresent();
-        assertThat(currencyById.get()).isEqualTo(savedCurrency);
+        assertThat(currencyById).isEqualTo(savedCurrency);
     }
 
     @Test
@@ -85,9 +85,7 @@ class CurrencyServiceJPAImplIT {
 
         currencyServiceJPA.deleteById(currencyId);
 
-        Optional<Currency> currencyById = currencyServiceJPA.findById(currencyId);
-
-        assertThat(currencyById).isEmpty();
+        assertThrows(DataNotFoundException.class, () -> currencyServiceJPA.findById(currencyId));
     }
 
     @Test
@@ -97,9 +95,8 @@ class CurrencyServiceJPAImplIT {
         Currency savedCurrency  = currencyServiceJPA.save(currency);
         Long currencyId = savedCurrency.getId();
 
-        Optional<Currency> currencyById = currencyServiceJPA.findById(currencyId);
+        Currency currencyById = currencyServiceJPA.findById(currencyId);
 
-        assertThat(currencyById).isPresent();
-        assertThat(currencyById.get()).isEqualTo(savedCurrency);
+        assertThat(currencyById).isEqualTo(savedCurrency);
     }
 }

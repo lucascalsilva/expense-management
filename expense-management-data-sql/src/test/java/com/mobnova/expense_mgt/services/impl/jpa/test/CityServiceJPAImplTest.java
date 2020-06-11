@@ -136,12 +136,11 @@ class CityServiceJPAImplTest {
 
         when(cityRepository.findById(city.getId())).thenReturn(Optional.of(city));
 
-        Optional<City> cityById = cityServiceJPA.findById(1L);
+        City cityById = cityServiceJPA.findById(1L);
 
         verify(cityRepository, times(1)).findById(1L);
 
-        assertThat(cityById.isPresent());
-        assertThat(cityById.get()).isEqualTo(city);
+        assertThat(cityById).isEqualTo(city);
     }
 
     @Test
@@ -158,11 +157,10 @@ class CityServiceJPAImplTest {
 
         when(cityRepository.findByCode(city.getCode())).thenReturn(Optional.of(city));
 
-        Optional<City> cityByCode = cityServiceJPA.findByCode("POA");
+        City cityByCode = cityServiceJPA.findByCode("POA");
 
         verify(cityRepository, times(1)).findByCode(city.getCode());
 
-        assertThat(cityByCode.isPresent());
-        assertThat(cityByCode.get()).isEqualTo(city);
+        assertThat(cityByCode).isEqualTo(city);
     }
 }

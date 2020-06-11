@@ -7,5 +7,5 @@ import java.util.Set;
 
 public interface SegmentValuePairService extends BaseService<SegmentValuePair, Long> {
 
-    Optional<SegmentValuePair> findByValueAndSegmentTypeCode(String segmentValue, String segmentTypeCode);
+    SegmentValuePair findByValueAndSegmentTypeCode(String segmentValue, String segmentTypeCode);
 }

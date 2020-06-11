@@ -1,5 +1,6 @@
 package com.mobnova.expense_mgt.services.impl.jpa.it;
 
+import com.mobnova.expense_mgt.exceptions.DataNotFoundException;
 import com.mobnova.expense_mgt.model.Country;
 import com.mobnova.expense_mgt.model.StateOrProvince;
 import com.mobnova.expense_mgt.repositories.CountryRepository;
@@ -86,10 +87,9 @@ class StateOrProvinceServiceJPAImplIT {
         StateOrProvince savedStateOrProvince = stateOrProvinceServiceJPA.save(stateOrProvince);
         Long stateOrProvinceId = savedStateOrProvince.getId();
 
-        Optional<StateOrProvince> stateOrProvinceById = stateOrProvinceServiceJPA.findById(stateOrProvinceId);
+        StateOrProvince stateOrProvinceById = stateOrProvinceServiceJPA.findById(stateOrProvinceId);
 
-        assertThat(stateOrProvinceById).isPresent();
-        assertThat(stateOrProvinceById.get()).isEqualTo(savedStateOrProvince);
+        assertThat(stateOrProvinceById).isEqualTo(savedStateOrProvince);
     }
 
     @Test
@@ -102,9 +102,7 @@ class StateOrProvinceServiceJPAImplIT {
 
         stateOrProvinceServiceJPA.deleteById(stateOrProvinceId);
 
-        Optional<StateOrProvince> stateOrProvinceById = stateOrProvinceServiceJPA.findById(stateOrProvinceId);
-
-        assertThat(stateOrProvinceById.isEmpty());
+        assertThrows(DataNotFoundException.class, () -> stateOrProvinceServiceJPA.findById(stateOrProvinceId));
 
     }
 
@@ -116,9 +114,8 @@ class StateOrProvinceServiceJPAImplIT {
         StateOrProvince savedStateOrProvince = stateOrProvinceServiceJPA.save(stateOrProvince);
         String stateOrProvinceCode = savedStateOrProvince.getCode();
 
-        Optional<StateOrProvince> stateOrProvinceByCode = stateOrProvinceServiceJPA.findByCode(stateOrProvinceCode);
+        StateOrProvince stateOrProvinceByCode = stateOrProvinceServiceJPA.findByCode(stateOrProvinceCode);
 
-        assertThat(stateOrProvinceByCode).isPresent();
-        assertThat(stateOrProvinceByCode.get()).isEqualTo(stateOrProvince);
+        assertThat(stateOrProvinceByCode).isEqualTo(stateOrProvince);
     }
 }

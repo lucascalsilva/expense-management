@@ -106,12 +106,11 @@ class StateOrProvinceServiceJPAImplTest {
 
         when(stateOrProvinceRepository.findById(stateOrProvince.getId())).thenReturn(Optional.of(stateOrProvince));
 
-        Optional<StateOrProvince> stateOrProvinceById = stateOrProvinceServiceJPA.findById(1L);
+        StateOrProvince stateOrProvinceById = stateOrProvinceServiceJPA.findById(1L);
 
         verify(stateOrProvinceRepository, times(1)).findById(1L);
 
-        assertThat(stateOrProvinceById.isPresent());
-        assertThat(stateOrProvinceById.get()).isEqualTo(stateOrProvince);
+        assertThat(stateOrProvinceById).isEqualTo(stateOrProvince);
     }
 
     @Test
@@ -129,11 +128,10 @@ class StateOrProvinceServiceJPAImplTest {
 
         when(stateOrProvinceRepository.findByCode(stateOrProvince.getCode())).thenReturn(Optional.of(stateOrProvince));
 
-        Optional<StateOrProvince> stateOrProvinceByCode = stateOrProvinceServiceJPA.findByCode("RS");
+        StateOrProvince stateOrProvinceByCode = stateOrProvinceServiceJPA.findByCode("RS");
 
         verify(stateOrProvinceRepository, times(1)).findByCode(stateOrProvince.getCode());
 
-        assertThat(stateOrProvinceByCode.isPresent());
-        assertThat(stateOrProvinceByCode.get()).isEqualTo(stateOrProvince);
+        assertThat(stateOrProvinceByCode).isEqualTo(stateOrProvince);
     }
 }

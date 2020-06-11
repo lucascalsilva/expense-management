@@ -105,12 +105,11 @@ class CountyServiceJPAImplTest {
 
         when(countyRepository.findById(county.getId())).thenReturn(Optional.of(county));
 
-        Optional<County> countyById = countyServiceJPA.findById(1L);
+        County countyById = countyServiceJPA.findById(1L);
 
         verify(countyRepository, times(1)).findById(1L);
 
-        assertThat(countyById.isPresent());
-        assertThat(countyById.get()).isEqualTo(county);
+        assertThat(countyById).isEqualTo(county);
     }
 
     @Test
@@ -128,11 +127,10 @@ class CountyServiceJPAImplTest {
 
         when(countyRepository.findByCode(county.getCode())).thenReturn(Optional.of(county));
 
-        Optional<County> countyByCode = countyServiceJPA.findByCode("POA");
+        County countyByCode = countyServiceJPA.findByCode("POA");
 
         verify(countyRepository, times(1)).findByCode(county.getCode());
 
-        assertThat(countyByCode.isPresent());
-        assertThat(countyByCode.get()).isEqualTo(county);
+        assertThat(countyByCode).isEqualTo(county);
     }
 }

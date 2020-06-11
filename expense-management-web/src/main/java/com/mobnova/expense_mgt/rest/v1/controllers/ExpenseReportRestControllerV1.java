@@ -33,7 +33,7 @@ public class ExpenseReportRestControllerV1 {
     @GetMapping("/{id}")
     @ResponseStatus(HttpStatus.OK)
     public ExpenseReportDtoV1 findById(@PathVariable Long id){
-        ExpenseReport expenseReport = expenseReportService.findById(id).orElse(null);
+        ExpenseReport expenseReport = expenseReportService.findById(id);
         if(expenseReport != null){
             return globalMapper.map(expenseReport, ExpenseReportDtoV1.class);
         }
@@ -45,7 +45,7 @@ public class ExpenseReportRestControllerV1 {
     @GetMapping("/byRefID/{referenceID}")
     @ResponseStatus(HttpStatus.OK)
     public ExpenseReportDtoV1 findByReferenceId(@PathVariable String referenceID){
-        ExpenseReport expenseReport = expenseReportService.findByReferenceID(referenceID).orElse(null);
+        ExpenseReport expenseReport = expenseReportService.findByReferenceID(referenceID);
         if(expenseReport != null){
             return globalMapper.map(expenseReport, ExpenseReportDtoV1.class);
         }

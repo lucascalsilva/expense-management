@@ -71,10 +71,9 @@ class ExpenseCategoryServiceJPAImplTest {
 
         when(expenseCategoryRepository.findById(expenseCategory.getId())).thenReturn(Optional.of(expenseCategory));
 
-        Optional<ExpenseCategory> expenseCategoryById = expenseCategoryServiceJPA.findById(1L);
+        ExpenseCategory expenseCategoryById = expenseCategoryServiceJPA.findById(1L);
 
-        assertThat(expenseCategoryById.isPresent());
-        assertThat(expenseCategoryById.get()).isEqualTo(expenseCategory);
+        assertThat(expenseCategoryById).isEqualTo(expenseCategory);
     }
 
     @Test
@@ -90,11 +89,10 @@ class ExpenseCategoryServiceJPAImplTest {
 
         when(expenseCategoryRepository.findByCode(expenseCategory.getCode())).thenReturn(Optional.of(expenseCategory));
 
-        Optional<ExpenseCategory> expenseCategoryByCode = expenseCategoryServiceJPA.findByCode("MEAL");
+        ExpenseCategory expenseCategoryByCode = expenseCategoryServiceJPA.findByCode("MEAL");
 
         verify(expenseCategoryRepository, times(1)).findByCode(expenseCategory.getCode());
 
-        assertThat(expenseCategoryByCode.isPresent());
-        assertThat(expenseCategoryByCode.get()).isEqualTo(expenseCategory);
+        assertThat(expenseCategoryByCode).isEqualTo(expenseCategory);
     }
 }

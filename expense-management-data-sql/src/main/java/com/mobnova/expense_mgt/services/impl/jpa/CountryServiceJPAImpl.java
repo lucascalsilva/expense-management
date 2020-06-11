@@ -1,14 +1,15 @@
 package com.mobnova.expense_mgt.services.impl.jpa;
 
+import com.mobnova.expense_mgt.exception.constant.Fields;
 import com.mobnova.expense_mgt.model.Country;
 import com.mobnova.expense_mgt.repositories.CountryRepository;
 import com.mobnova.expense_mgt.services.CountryService;
+import com.mobnova.expense_mgt.exceptions.DataNotFoundException;
 import com.mobnova.expense_mgt.validation.BeanValidator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
-import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -33,8 +34,8 @@ public class CountryServiceJPAImpl implements CountryService {
     }
 
     @Override
-    public Optional<Country> findById(Long id) {
-        return countryRepository.findById(id);
+    public Country findById(Long id) {
+        return countryRepository.findById(id).orElseThrow(() -> new DataNotFoundException(Country.class, Fields.ID, id));
     }
 
     @Override
@@ -43,7 +44,7 @@ public class CountryServiceJPAImpl implements CountryService {
     }
 
     @Override
-    public Optional<Country> findByCode(String code) {
-        return countryRepository.findByCode(code);
+    public Country findByCode(String code) {
+        return countryRepository.findByCode(code).orElseThrow(() -> new DataNotFoundException(Country.class, Fields.CODE, code));
     }
 }

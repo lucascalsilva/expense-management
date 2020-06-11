@@ -1,5 +1,6 @@
 package com.mobnova.expense_mgt.services.impl.jpa.it;
 
+import com.mobnova.expense_mgt.exceptions.DataNotFoundException;
 import com.mobnova.expense_mgt.model.*;
 import com.mobnova.expense_mgt.repositories.*;
 import com.mobnova.expense_mgt.services.impl.jpa.ExpenseReportServiceJPAImpl;
@@ -17,6 +18,7 @@ import java.util.Optional;
 import java.util.Set;
 
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.NONE)
@@ -162,10 +164,9 @@ class ExpenseReportServiceJPAImplIT {
 
         Long expenseReportId = savedExpenseReport.getId();
 
-        Optional<ExpenseReport> expenseReportById = expenseReportServiceJPA.findById(expenseReportId);
+        ExpenseReport expenseReportById = expenseReportServiceJPA.findById(expenseReportId);
 
-        assertThat(expenseReportById).isPresent();
-        assertThat(expenseReportById.get()).isEqualTo(savedExpenseReport);
+        assertThat(expenseReportById).isEqualTo(savedExpenseReport);
     }
 
     @Test
@@ -175,11 +176,11 @@ class ExpenseReportServiceJPAImplIT {
 
         Long expenseReportId = savedExpenseReport.getId();
 
-        assertThat(expenseReportServiceJPA.findById(expenseReportId)).isPresent();
+        assertThat(expenseReportServiceJPA.findById(expenseReportId)).isNotNull();
 
         expenseReportServiceJPA.deleteById(expenseReportId);
 
-        assertThat(expenseReportServiceJPA.findById(expenseReportId)).isNotPresent();
+        assertThrows(DataNotFoundException.class, () -> expenseReportServiceJPA.findById(expenseReportId));
     }
 
     @Test
@@ -188,10 +189,9 @@ class ExpenseReportServiceJPAImplIT {
         ExpenseReport savedExpenseReport = expenseReportServiceJPA.save(expenseReport);
         String expenseReportReferenceID = savedExpenseReport.getReferenceID();
 
-        Optional<ExpenseReport> expenseReportByReferenceID = expenseReportServiceJPA
+        ExpenseReport expenseReportByReferenceID = expenseReportServiceJPA
                 .findByReferenceID(expenseReportReferenceID);
 
-        assertThat(expenseReportByReferenceID).isPresent();
-        assertThat(expenseReportByReferenceID.get()).isEqualTo(savedExpenseReport);
+        assertThat(expenseReportByReferenceID).isEqualTo(savedExpenseReport);
     }
 }

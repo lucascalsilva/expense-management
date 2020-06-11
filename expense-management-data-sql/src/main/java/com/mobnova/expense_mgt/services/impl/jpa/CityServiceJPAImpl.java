@@ -1,5 +1,6 @@
 package com.mobnova.expense_mgt.services.impl.jpa;
 
+import com.mobnova.expense_mgt.exception.constant.Fields;
 import com.mobnova.expense_mgt.exceptions.InvalidDataException;
 import com.mobnova.expense_mgt.model.City;
 import com.mobnova.expense_mgt.model.County;
@@ -8,12 +9,12 @@ import com.mobnova.expense_mgt.repositories.CityRepository;
 import com.mobnova.expense_mgt.repositories.CountyRepository;
 import com.mobnova.expense_mgt.repositories.StateOrProvinceRepository;
 import com.mobnova.expense_mgt.services.CityService;
+import com.mobnova.expense_mgt.exceptions.DataNotFoundException;
 import com.mobnova.expense_mgt.validation.BeanValidator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
-import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -55,8 +56,8 @@ public class CityServiceJPAImpl implements CityService {
     }
 
     @Override
-    public Optional<City> findById(Long id) {
-        return cityRepository.findById(id);
+    public City findById(Long id) {
+        return cityRepository.findById(id).orElseThrow(() -> new DataNotFoundException(City.class, Fields.ID, id));
     }
 
     @Override
@@ -65,7 +66,7 @@ public class CityServiceJPAImpl implements CityService {
     }
 
     @Override
-    public Optional<City> findByCode(String code) {
-        return cityRepository.findByCode(code);
+    public City findByCode(String code) {
+        return cityRepository.findByCode(code).orElseThrow(() -> new DataNotFoundException(City.class, Fields.CODE, code));
     }
 }

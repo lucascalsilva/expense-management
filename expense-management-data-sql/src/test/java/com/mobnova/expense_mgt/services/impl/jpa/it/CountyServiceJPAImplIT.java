@@ -1,5 +1,6 @@
 package com.mobnova.expense_mgt.services.impl.jpa.it;
 
+import com.mobnova.expense_mgt.exceptions.DataNotFoundException;
 import com.mobnova.expense_mgt.model.Country;
 import com.mobnova.expense_mgt.model.County;
 import com.mobnova.expense_mgt.model.StateOrProvince;
@@ -97,10 +98,9 @@ class CountyServiceJPAImplIT {
         County savedCounty = countyServiceJPA.save(county);
         Long countyId = savedCounty.getId();
 
-        Optional<County> countyById = countyServiceJPA.findById(countyId);
+        County countyById = countyServiceJPA.findById(countyId);
 
-        assertThat(countyById).isPresent();
-        assertThat(countyById.get()).isEqualTo(savedCounty);
+        assertThat(countyById).isEqualTo(savedCounty);
     }
 
     @Test
@@ -113,9 +113,7 @@ class CountyServiceJPAImplIT {
 
         countyServiceJPA.deleteById(countyId);
 
-        Optional<County> countyById = countyServiceJPA.findById(countyId);
-
-        assertThat(countyById).isEmpty();
+        assertThrows(DataNotFoundException.class, () -> countyServiceJPA.findById(countyId));
     }
 
     @Test
@@ -126,9 +124,8 @@ class CountyServiceJPAImplIT {
         County savedCounty = countyServiceJPA.save(county);
         String countyCode = savedCounty.getCode();
 
-        Optional<County> countyByCode = countyServiceJPA.findByCode(countyCode);
+        County countyByCode = countyServiceJPA.findByCode(countyCode);
 
-        assertThat(countyByCode).isPresent();
-        assertThat(countyByCode.get()).isEqualTo(savedCounty);
+        assertThat(countyByCode).isEqualTo(savedCounty);
     }
 }

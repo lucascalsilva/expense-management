@@ -1,5 +1,6 @@
 package com.mobnova.expense_mgt.services.impl.jpa.it;
 
+import com.mobnova.expense_mgt.exceptions.DataNotFoundException;
 import com.mobnova.expense_mgt.model.Country;
 import com.mobnova.expense_mgt.model.ExpenseCategory;
 import com.mobnova.expense_mgt.services.impl.jpa.CountryServiceJPAImpl;
@@ -72,10 +73,9 @@ class ExpenseCategoryServiceJPAImplIT {
         ExpenseCategory savedExpenseCategory = expenseCategoryServiceJPA.save(expenseCategory);
         Long expenseCategoryId = savedExpenseCategory.getId();
 
-        Optional<ExpenseCategory> expenseCategoryById = expenseCategoryServiceJPA.findById(expenseCategoryId);
+        ExpenseCategory expenseCategoryById = expenseCategoryServiceJPA.findById(expenseCategoryId);
 
-        assertThat(expenseCategoryById).isPresent();
-        assertThat(expenseCategoryById.get()).isEqualTo(savedExpenseCategory);
+        assertThat(expenseCategoryById).isEqualTo(savedExpenseCategory);
     }
 
     @Test
@@ -87,9 +87,7 @@ class ExpenseCategoryServiceJPAImplIT {
 
         expenseCategoryServiceJPA.deleteById(expenseCategoryId);
 
-        Optional<ExpenseCategory> expenseCategoryById = expenseCategoryServiceJPA.findById(expenseCategoryId);
-
-        assertThat(expenseCategoryById.isEmpty());
+        assertThrows(DataNotFoundException.class, () -> expenseCategoryServiceJPA.findById(expenseCategoryId));
     }
 
     @Test
@@ -99,9 +97,8 @@ class ExpenseCategoryServiceJPAImplIT {
         ExpenseCategory savedExpenseCategory = expenseCategoryServiceJPA.save(expenseCategory);
         String categoryCode = savedExpenseCategory.getCode();
 
-        Optional<ExpenseCategory> categoryByCode = expenseCategoryServiceJPA.findByCode(categoryCode);
+        ExpenseCategory categoryByCode = expenseCategoryServiceJPA.findByCode(categoryCode);
 
-        assertThat(categoryByCode).isPresent();
-        assertThat(categoryByCode.get()).isEqualTo(savedExpenseCategory);
+        assertThat(categoryByCode).isEqualTo(savedExpenseCategory);
     }
 }

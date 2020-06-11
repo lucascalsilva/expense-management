@@ -1,7 +1,10 @@
 package com.mobnova.expense_mgt.services.impl.jpa;
 
+import com.mobnova.expense_mgt.exception.constant.Fields;
+import com.mobnova.expense_mgt.exceptions.DataNotFoundException;
 import com.mobnova.expense_mgt.exceptions.InvalidDataException;
 import com.mobnova.expense_mgt.model.Country;
+import com.mobnova.expense_mgt.model.SegmentValuePair;
 import com.mobnova.expense_mgt.model.StateOrProvince;
 import com.mobnova.expense_mgt.repositories.CountryRepository;
 import com.mobnova.expense_mgt.repositories.StateOrProvinceRepository;
@@ -46,8 +49,8 @@ public class StateOrProvinceServiceJPAImpl implements StateOrProvinceService {
     }
 
     @Override
-    public Optional<StateOrProvince> findById(Long id) {
-        return stateOrProvinceRepository.findById(id);
+    public StateOrProvince findById(Long id) {
+        return stateOrProvinceRepository.findById(id).orElseThrow(() -> new DataNotFoundException(StateOrProvince.class, Fields.ID, id));
     }
 
     @Override
@@ -56,7 +59,7 @@ public class StateOrProvinceServiceJPAImpl implements StateOrProvinceService {
     }
 
     @Override
-    public Optional<StateOrProvince> findByCode(String code) {
-        return stateOrProvinceRepository.findByCode(code);
+    public StateOrProvince findByCode(String code) {
+        return stateOrProvinceRepository.findByCode(code).orElseThrow(() -> new DataNotFoundException(StateOrProvince.class, Fields.CODE, code));
     }
 }

@@ -75,10 +75,9 @@ class CountryServiceJPAImplTest {
 
         when(countryRepository.findById(country.getId())).thenReturn(Optional.of(country));
 
-        Optional<Country> countryById = countryServiceJPA.findById(1L);
+        Country countryById = countryServiceJPA.findById(1L);
 
-        assertThat(countryById.isPresent());
-        assertThat(countryById.get()).isEqualTo(country);
+        assertThat(countryById).isEqualTo(country);
     }
 
     @Test
@@ -95,11 +94,10 @@ class CountryServiceJPAImplTest {
 
         when(countryRepository.findByCode(country.getCode())).thenReturn(Optional.of(country));
 
-        Optional<Country> countryByCode = countryServiceJPA.findByCode("BR");
+        Country countryByCode = countryServiceJPA.findByCode("BR");
 
         verify(countryRepository, times(1)).findByCode(country.getCode());
 
-        assertThat(countryByCode.isPresent());
-        assertThat(countryByCode.get()).isEqualTo(country);
+        assertThat(countryByCode).isEqualTo(country);
     }
 }

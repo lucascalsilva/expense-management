@@ -1,5 +1,6 @@
 package com.mobnova.expense_mgt.services.impl.jpa.it;
 
+import com.mobnova.expense_mgt.exceptions.DataNotFoundException;
 import com.mobnova.expense_mgt.model.User;
 import com.mobnova.expense_mgt.services.impl.jpa.UserServiceJPAImpl;
 import com.mobnova.expense_mgt.util.IntegrationTestHelper;
@@ -75,10 +76,9 @@ class UserServiceJPAImplIT {
         User savedUser = userServiceJPA.save(user);
         Long savedUserId = savedUser.getId();
 
-        Optional<User> userById = userServiceJPA.findById(savedUserId);
+        User userById = userServiceJPA.findById(savedUserId);
 
-        assertThat(userById).isPresent();
-        assertThat(userById.get()).isEqualTo(user);
+        assertThat(userById).isEqualTo(user);
     }
 
     @Test
@@ -91,9 +91,7 @@ class UserServiceJPAImplIT {
 
         userServiceJPA.deleteById(savedUserId);
 
-        Optional<User> userById = userServiceJPA.findById(savedUserId);
-
-        assertThat(userById.isEmpty());
+        assertThrows(DataNotFoundException.class, () -> userServiceJPA.findById(savedUserId));
 
     }
 
@@ -105,8 +103,8 @@ class UserServiceJPAImplIT {
         User savedUser = userServiceJPA.save(user);
         String savedUserUsername = savedUser.getUsername();
 
-        Optional<User> userByUsername = userServiceJPA.findByUsername(savedUserUsername);
+        User userByUsername = userServiceJPA.findByUsername(savedUserUsername);
 
-        assertThat(userByUsername.isEmpty());
+        assertThat(userByUsername).isEqualTo(user);
     }
 }

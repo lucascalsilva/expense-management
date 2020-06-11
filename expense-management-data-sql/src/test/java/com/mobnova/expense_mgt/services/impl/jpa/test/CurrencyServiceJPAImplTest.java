@@ -70,10 +70,9 @@ class CurrencyServiceJPAImplTest {
 
         when(currencyRepository.findById(currency.getId())).thenReturn(Optional.of(currency));
 
-        Optional<Currency> currencyById = currencyServiceJPA.findById(1L);
+        Currency currencyById = currencyServiceJPA.findById(1L);
 
-        assertThat(currencyById.isPresent());
-        assertThat(currencyById.get()).isEqualTo(currency);
+        assertThat(currencyById).isEqualTo(currency);
     }
 
     @Test
@@ -89,11 +88,10 @@ class CurrencyServiceJPAImplTest {
 
         when(currencyRepository.findByCode(currency.getCode())).thenReturn(Optional.of(currency));
 
-        Optional<Currency> currencyByCode = currencyServiceJPA.findByCode("BRL");
+        Currency currencyByCode = currencyServiceJPA.findByCode("BRL");
 
         verify(currencyRepository, times(1)).findByCode(currency.getCode());
 
-        assertThat(currencyByCode.isPresent());
-        assertThat(currencyByCode.get()).isEqualTo(currency);
+        assertThat(currencyByCode).isEqualTo(currency);
     }
 }

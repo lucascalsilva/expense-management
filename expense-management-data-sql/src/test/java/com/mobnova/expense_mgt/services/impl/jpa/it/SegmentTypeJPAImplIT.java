@@ -1,5 +1,6 @@
 package com.mobnova.expense_mgt.services.impl.jpa.it;
 
+import com.mobnova.expense_mgt.exceptions.DataNotFoundException;
 import com.mobnova.expense_mgt.model.Country;
 import com.mobnova.expense_mgt.model.SegmentType;
 import com.mobnova.expense_mgt.services.impl.jpa.SegmentTypeJPAImpl;
@@ -73,10 +74,9 @@ class SegmentTypeJPAImplIT {
         SegmentType savedSegmentType = segmentTypeJPA.save(segmentType);
         Long segmentTypeId = savedSegmentType.getId();
 
-        Optional<SegmentType> segmentTypeById = segmentTypeJPA.findById(segmentTypeId);
+        SegmentType segmentTypeById = segmentTypeJPA.findById(segmentTypeId);
 
-        assertThat(segmentTypeById).isPresent();
-        assertThat(segmentTypeById.get()).isEqualTo(savedSegmentType);
+        assertThat(segmentTypeById).isEqualTo(savedSegmentType);
     }
 
     @Test
@@ -88,9 +88,7 @@ class SegmentTypeJPAImplIT {
 
         segmentTypeJPA.deleteById(savedSegmentTypeId);
 
-        Optional<SegmentType> segmentTypeById = segmentTypeJPA.findById(savedSegmentTypeId);
-
-        assertThat(segmentTypeById.isEmpty());
+        assertThrows(DataNotFoundException.class, () -> segmentTypeJPA.findById(savedSegmentTypeId));
     }
 
     @Test
@@ -100,9 +98,8 @@ class SegmentTypeJPAImplIT {
         SegmentType savedSegmentType  = segmentTypeJPA.save(segmentType);
         String segmentTypeCode = savedSegmentType.getCode();
 
-        Optional<SegmentType> segmentTypeByCode = segmentTypeJPA.findByCode(segmentTypeCode);
+        SegmentType segmentTypeByCode = segmentTypeJPA.findByCode(segmentTypeCode);
 
-        assertThat(segmentTypeByCode).isPresent();
-        assertThat(segmentTypeByCode.get()).isEqualTo(savedSegmentType);
+        assertThat(segmentTypeByCode).isEqualTo(savedSegmentType);
     }
 }

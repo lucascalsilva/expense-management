@@ -1,15 +1,16 @@
 package com.mobnova.expense_mgt.services.impl.jpa;
 
-import com.mobnova.expense_mgt.model.City;
+import com.mobnova.expense_mgt.exception.constant.Fields;
+import com.mobnova.expense_mgt.model.ExpenseReport;
 import com.mobnova.expense_mgt.model.SegmentType;
 import com.mobnova.expense_mgt.repositories.SegmentTypeRepository;
 import com.mobnova.expense_mgt.services.SegmentTypeService;
+import com.mobnova.expense_mgt.exceptions.DataNotFoundException;
 import com.mobnova.expense_mgt.validation.BeanValidator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
-import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -33,8 +34,8 @@ public class SegmentTypeJPAImpl implements SegmentTypeService {
     }
 
     @Override
-    public Optional<SegmentType> findById(Long id) {
-        return segmentTypeRepository.findById(id);
+    public SegmentType findById(Long id) {
+        return segmentTypeRepository.findById(id).orElseThrow(() -> new DataNotFoundException(SegmentType.class, Fields.ID, id));
     }
 
     @Override
@@ -43,7 +44,7 @@ public class SegmentTypeJPAImpl implements SegmentTypeService {
     }
 
     @Override
-    public Optional<SegmentType> findByCode(String code) {
-        return segmentTypeRepository.findByCode(code);
+    public SegmentType findByCode(String code) {
+        return segmentTypeRepository.findByCode(code).orElseThrow(() -> new DataNotFoundException(ExpenseReport.class, Fields.CODE, code));
     }
 }

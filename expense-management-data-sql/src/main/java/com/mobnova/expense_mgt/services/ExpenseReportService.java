@@ -6,5 +6,5 @@ import java.util.Optional;
 
 public interface ExpenseReportService extends BaseService<ExpenseReport, Long>, SearchService<ExpenseReport, Long> {
 
-    Optional<ExpenseReport> findByReferenceID(String referenceID);
+    ExpenseReport findByReferenceID(String referenceID);
 }

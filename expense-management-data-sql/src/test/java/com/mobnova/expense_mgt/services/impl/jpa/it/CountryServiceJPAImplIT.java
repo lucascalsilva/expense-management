@@ -1,5 +1,6 @@
 package com.mobnova.expense_mgt.services.impl.jpa.it;
 
+import com.mobnova.expense_mgt.exceptions.DataNotFoundException;
 import com.mobnova.expense_mgt.model.Country;
 import com.mobnova.expense_mgt.services.impl.jpa.CountryServiceJPAImpl;
 import com.mobnova.expense_mgt.util.IntegrationTestHelper;
@@ -71,10 +72,9 @@ class CountryServiceJPAImplIT {
         Country savedCountry = countryServiceJPA.save(country);
         Long countryId = savedCountry.getId();
 
-        Optional<Country> countryById = countryServiceJPA.findById(countryId);
+        Country countryById = countryServiceJPA.findById(countryId);
 
-        assertThat(countryById).isPresent();
-        assertThat(countryById.get()).isEqualTo(savedCountry);
+        assertThat(countryById).isEqualTo(savedCountry);
     }
 
     @Test
@@ -86,9 +86,7 @@ class CountryServiceJPAImplIT {
 
         countryServiceJPA.deleteById(countryId);
 
-        Optional<Country> countryById = countryServiceJPA.findById(countryId);
-
-        assertThat(countryById).isEmpty();
+        assertThrows(DataNotFoundException.class, () -> countryServiceJPA.findById(countryId));
     }
 
     @Test
@@ -98,9 +96,8 @@ class CountryServiceJPAImplIT {
         Country savedCountry = countryServiceJPA.save(country);
         String countryCode = savedCountry.getCode();
 
-        Optional<Country> countryByCode = countryServiceJPA.findByCode(countryCode);
+        Country countryByCode = countryServiceJPA.findByCode(countryCode);
 
-        assertThat(countryByCode).isPresent();
-        assertThat(countryByCode.get()).isEqualTo(country);
+        assertThat(countryByCode).isEqualTo(country);
     }
 }

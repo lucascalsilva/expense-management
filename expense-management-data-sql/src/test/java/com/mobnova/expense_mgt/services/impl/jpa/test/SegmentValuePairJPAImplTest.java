@@ -88,10 +88,9 @@ class SegmentValuePairJPAImplTest {
 
         when(segmentValuePairRepository.findById(segmentValuePair.getId())).thenReturn(Optional.of(segmentValuePair));
 
-        Optional<SegmentValuePair> segmentValuePairById = segmentValuePairJPA.findById(1L);
+        SegmentValuePair segmentValuePairById = segmentValuePairJPA.findById(1L);
 
-        assertThat(segmentValuePairById.isPresent());
-        assertThat(segmentValuePairById.get()).isEqualTo(segmentValuePair);
+        assertThat(segmentValuePairById).isEqualTo(segmentValuePair);
     }
 
     @Test
@@ -102,11 +101,10 @@ class SegmentValuePairJPAImplTest {
         when(segmentValuePairRepository.findByValueAndSegmentTypeCode(segmentValuePair.getSegmentValue(),
                 segmentType.getCode())).thenReturn(Optional.of(segmentValuePair));
 
-        Optional<SegmentValuePair> segmentValuePairByQuery = segmentValuePairJPA
+        SegmentValuePair segmentValuePairByQuery = segmentValuePairJPA
                 .findByValueAndSegmentTypeCode(segmentValuePair.getSegmentValue(), segmentType.getCode());
 
-        assertThat(segmentValuePairByQuery).isPresent();
-        assertThat(segmentValuePairByQuery.get()).isEqualTo(segmentValuePair);
+        assertThat(segmentValuePairByQuery).isEqualTo(segmentValuePair);
     }
 
     @Test

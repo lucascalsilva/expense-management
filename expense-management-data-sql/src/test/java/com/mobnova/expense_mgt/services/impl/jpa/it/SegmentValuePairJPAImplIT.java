@@ -1,5 +1,6 @@
 package com.mobnova.expense_mgt.services.impl.jpa.it;
 
+import com.mobnova.expense_mgt.exceptions.DataNotFoundException;
 import com.mobnova.expense_mgt.model.SegmentType;
 import com.mobnova.expense_mgt.model.SegmentValuePair;
 import com.mobnova.expense_mgt.repositories.SegmentTypeRepository;
@@ -82,10 +83,9 @@ class SegmentValuePairJPAImplIT {
         SegmentValuePair savedSegmentValuePair = segmentValuePairJPA.save(segmentValuePair);
         Long segmentValuePairId = savedSegmentValuePair.getId();
 
-        Optional<SegmentValuePair> segmentValuePairById = segmentValuePairJPA.findById(segmentValuePairId);
+        SegmentValuePair segmentValuePairById = segmentValuePairJPA.findById(segmentValuePairId);
 
-        assertThat(segmentValuePairById).isPresent();
-        assertThat(segmentValuePairById.get()).isEqualTo(savedSegmentValuePair);
+        assertThat(segmentValuePairById).isEqualTo(savedSegmentValuePair);
     }
 
     @Test
@@ -97,9 +97,7 @@ class SegmentValuePairJPAImplIT {
 
         segmentValuePairJPA.deleteById(segmentValuePairId);
 
-        Optional<SegmentValuePair> segmentValuePairById = segmentValuePairJPA.findById(segmentValuePairId);
-
-        assertThat(segmentValuePairById).isEmpty();
+        assertThrows(DataNotFoundException.class, () -> segmentValuePairJPA.findById(segmentValuePairId));
     }
 
     @Test
@@ -110,9 +108,8 @@ class SegmentValuePairJPAImplIT {
         String segmentTypeCode = savedSegmentValuePair.getSegmentType().getCode();
         String segmentValuePairValue = savedSegmentValuePair.getSegmentValue();
 
-        Optional<SegmentValuePair> segmentValuePairById = segmentValuePairJPA.findByValueAndSegmentTypeCode(segmentValuePairValue, segmentTypeCode);
+        SegmentValuePair segmentValuePairById = segmentValuePairJPA.findByValueAndSegmentTypeCode(segmentValuePairValue, segmentTypeCode);
 
-        assertThat(segmentValuePairById).isPresent();
-        assertThat(segmentValuePairById.get()).isEqualTo(savedSegmentValuePair);
+        assertThat(segmentValuePairById).isEqualTo(savedSegmentValuePair);
     }
 }

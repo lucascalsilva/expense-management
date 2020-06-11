@@ -2,11 +2,13 @@ package com.mobnova.expense_mgt.services.impl.jpa;
 
 import com.mobnova.expense_mgt.config.CriteriaConfigBean;
 import com.mobnova.expense_mgt.criteria.CriteriaUtil;
+import com.mobnova.expense_mgt.exception.constant.Fields;
 import com.mobnova.expense_mgt.exceptions.InvalidDataException;
 import com.mobnova.expense_mgt.model.*;
 import com.mobnova.expense_mgt.model.Currency;
 import com.mobnova.expense_mgt.repositories.*;
 import com.mobnova.expense_mgt.services.ExpenseReportService;
+import com.mobnova.expense_mgt.exceptions.DataNotFoundException;
 import com.mobnova.expense_mgt.validation.BeanValidator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Profile;
@@ -16,7 +18,6 @@ import org.springframework.stereotype.Service;
 import javax.transaction.Transactional;
 import java.util.*;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 @Service
 @Profile("jpa")
@@ -126,8 +127,8 @@ public class ExpenseReportServiceJPAImpl implements ExpenseReportService {
     }
 
     @Override
-    public Optional<ExpenseReport> findById(Long id) {
-        return expenseReportRepository.findById(id);
+    public ExpenseReport findById(Long id) {
+        return expenseReportRepository.findById(id).orElseThrow(() -> new DataNotFoundException(ExpenseReport.class, Fields.ID, id));
     }
 
     @Override
@@ -136,7 +137,7 @@ public class ExpenseReportServiceJPAImpl implements ExpenseReportService {
     }
 
     @Override
-    public Optional<ExpenseReport> findByReferenceID(String referenceID) {
-        return expenseReportRepository.findByReferenceID(referenceID);
+    public ExpenseReport findByReferenceID(String referenceID) {
+        return expenseReportRepository.findByReferenceID(referenceID).orElseThrow(() -> new DataNotFoundException(ExpenseReport.class, Fields.REFERENCE_ID, referenceID));
     }
 }

@@ -91,11 +91,10 @@ class SegmentTypeJPAImplTest {
 
         when(segmentTypeRepository.findByCode(segmentType.getCode())).thenReturn(Optional.of(segmentType));
 
-        Optional<SegmentType> segmentTypeByCode = segmentTypeJPA.findByCode("CC");
+        SegmentType segmentTypeByCode = segmentTypeJPA.findByCode("CC");
 
         verify(segmentTypeRepository, times(1)).findByCode(segmentType.getCode());
 
-        assertThat(segmentTypeByCode.isPresent());
-        assertThat(segmentTypeByCode.get()).isEqualTo(segmentType);
+        assertThat(segmentTypeByCode).isEqualTo(segmentType);
     }
 }

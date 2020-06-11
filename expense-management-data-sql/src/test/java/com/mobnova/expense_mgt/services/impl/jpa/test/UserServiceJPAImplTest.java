@@ -74,12 +74,11 @@ class UserServiceJPAImplTest {
 
         when(userRepository.findById(user.getId())).thenReturn(Optional.of(user));
 
-        Optional<User> userById = userServiceJPA.findById(1L);
+        User userById = userServiceJPA.findById(1L);
 
         verify(userRepository, times(1)).findById(1L);
 
-        assertThat(userById.isPresent());
-        assertThat(userById.get()).isEqualTo(user);
+        assertThat(userById).isEqualTo(user);
     }
 
     @Test
@@ -96,11 +95,10 @@ class UserServiceJPAImplTest {
 
         when(userRepository.findByUsername(user.getUsername())).thenReturn(Optional.of(user));
 
-        Optional<User> userByUsername = userServiceJPA.findByUsername("user_one");
+        User userByUsername = userServiceJPA.findByUsername("user_one");
 
         verify(userRepository, times(1)).findByUsername(user.getUsername());
 
-        assertThat(userByUsername.isPresent());
-        assertThat(userByUsername.get()).isEqualTo(user);
+        assertThat(userByUsername).isEqualTo(user);
     }
 }

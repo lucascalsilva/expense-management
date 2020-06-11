@@ -1,5 +1,6 @@
 package com.mobnova.expense_mgt.services.impl.jpa.it;
 
+import com.mobnova.expense_mgt.exceptions.DataNotFoundException;
 import com.mobnova.expense_mgt.model.City;
 import com.mobnova.expense_mgt.model.Country;
 import com.mobnova.expense_mgt.model.County;
@@ -22,6 +23,7 @@ import java.util.Optional;
 import java.util.Set;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 
 @ExtendWith(SpringExtension.class)
@@ -103,10 +105,9 @@ class CityServiceJPAImplIT {
         City savedCity = cityServiceJPA.save(city);
         Long cityId = savedCity.getId();
 
-        Optional<City> cityById = cityServiceJPA.findById(cityId);
+        City cityById = cityServiceJPA.findById(cityId);
 
-        assertThat(cityById).isPresent();
-        assertThat(cityById.get()).isEqualTo(city);
+        assertThat(cityById).isEqualTo(city);
     }
 
     @Test
@@ -119,9 +120,7 @@ class CityServiceJPAImplIT {
 
         cityServiceJPA.deleteById(cityId);
 
-        Optional<City> cityById = cityServiceJPA.findById(cityId);
-
-        assertThat(cityById.isEmpty());
+        assertThrows(DataNotFoundException.class, () -> cityServiceJPA.findById(cityId));
 
     }
 
@@ -133,9 +132,8 @@ class CityServiceJPAImplIT {
         City savedCity = cityServiceJPA.save(city);
         String cityCode = savedCity.getCode();
 
-        Optional<City> cityByCode = cityServiceJPA.findByCode(cityCode);
+        City cityByCode = cityServiceJPA.findByCode(cityCode);
 
-        assertThat(cityByCode).isPresent();
-        assertThat(cityByCode.get()).isEqualTo(city);
+        assertThat(cityByCode).isEqualTo(city);
     }
 }

@@ -4,5 +4,5 @@ import java.util.Optional;
 
 public interface NameCodeService<T, ID> {
 
-    Optional<T> findByCode(ID code);
+    T findByCode(ID code);
 }
