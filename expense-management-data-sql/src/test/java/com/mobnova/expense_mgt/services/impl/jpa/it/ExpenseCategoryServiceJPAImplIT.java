@@ -1,11 +1,14 @@
 package com.mobnova.expense_mgt.services.impl.jpa.it;
 
+import com.mobnova.expense_mgt.exception.constant.Fields;
 import com.mobnova.expense_mgt.exceptions.DataNotFoundException;
+import com.mobnova.expense_mgt.model.City;
 import com.mobnova.expense_mgt.model.Country;
 import com.mobnova.expense_mgt.model.ExpenseCategory;
 import com.mobnova.expense_mgt.services.impl.jpa.CountryServiceJPAImpl;
 import com.mobnova.expense_mgt.services.impl.jpa.ExpenseCategoryServiceJPAImpl;
 import com.mobnova.expense_mgt.util.IntegrationTestHelper;
+import org.assertj.core.api.AssertionsForClassTypes;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -100,5 +103,23 @@ class ExpenseCategoryServiceJPAImplIT {
         ExpenseCategory categoryByCode = expenseCategoryServiceJPA.findByCode(categoryCode);
 
         assertThat(categoryByCode).isEqualTo(savedExpenseCategory);
+    }
+
+    @Test
+    void findByCodeNotFound() {
+        String code = "1000";
+        DataNotFoundException dataNotFoundException = assertThrows(DataNotFoundException.class, () -> expenseCategoryServiceJPA.findByCode(code));
+        AssertionsForClassTypes.assertThat(dataNotFoundException.getMessage()).containsIgnoringCase(ExpenseCategory.class.getName());
+        AssertionsForClassTypes.assertThat(dataNotFoundException.getMessage().compareToIgnoreCase(Fields.CODE.toString()));
+        AssertionsForClassTypes.assertThat(dataNotFoundException.getMessage().compareToIgnoreCase(code));
+    }
+
+    @Test
+    void findByIdNotFound() {
+        Long id = 1000L;
+        DataNotFoundException dataNotFoundException = assertThrows(DataNotFoundException.class, () -> expenseCategoryServiceJPA.findById(id));
+        AssertionsForClassTypes.assertThat(dataNotFoundException.getMessage()).containsIgnoringCase(ExpenseCategory.class.getName());
+        AssertionsForClassTypes.assertThat(dataNotFoundException.getMessage()).containsIgnoringCase(Fields.ID.toString());
+        AssertionsForClassTypes.assertThat(dataNotFoundException.getMessage()).containsIgnoringCase(id.toString());
     }
 }

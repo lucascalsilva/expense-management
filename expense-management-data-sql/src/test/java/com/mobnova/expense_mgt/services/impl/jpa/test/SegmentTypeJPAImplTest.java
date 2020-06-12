@@ -1,10 +1,12 @@
 package com.mobnova.expense_mgt.services.impl.jpa.test;
 
+import com.mobnova.expense_mgt.exception.constant.Fields;
+import com.mobnova.expense_mgt.exceptions.DataNotFoundException;
 import com.mobnova.expense_mgt.model.SegmentType;
 import com.mobnova.expense_mgt.repositories.SegmentTypeRepository;
-import com.mobnova.expense_mgt.services.impl.jpa.CurrencyServiceJPAImpl;
-import com.mobnova.expense_mgt.services.impl.jpa.SegmentTypeJPAImpl;
+import com.mobnova.expense_mgt.services.impl.jpa.SegmentTypeServiceJPAImpl;
 import com.mobnova.expense_mgt.validation.BeanValidator;
+import org.assertj.core.api.AssertionsForClassTypes;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -17,7 +19,7 @@ import java.util.Optional;
 import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.AdditionalAnswers.returnsFirstArg;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
@@ -27,7 +29,7 @@ class SegmentTypeJPAImplTest {
 
     @InjectMocks
     @Spy
-    private SegmentTypeJPAImpl segmentTypeJPA;
+    private SegmentTypeServiceJPAImpl segmentTypeServiceJPA;
 
     @Mock
     private SegmentTypeRepository segmentTypeRepository;
@@ -41,7 +43,7 @@ class SegmentTypeJPAImplTest {
 
         doAnswer(returnsFirstArg()).when(segmentTypeRepository).save(segmentType);
 
-        segmentTypeJPA.save(segmentType);
+        segmentTypeServiceJPA.save(segmentType);
 
         verify(segmentTypeRepository).save(segmentType);
     }
@@ -58,11 +60,11 @@ class SegmentTypeJPAImplTest {
 
         doAnswer(returnsFirstArg()).when(segmentTypeRepository).save(any(SegmentType.class));
 
-        Set<SegmentType> savedSegmentTypes = segmentTypeJPA.saveBulk(segmentTypes);
+        Set<SegmentType> savedSegmentTypes = segmentTypeServiceJPA.saveBulk(segmentTypes);
 
         for(SegmentType segmentType : savedSegmentTypes){
             verify(segmentTypeRepository, times(1)).save(segmentType);
-            verify(segmentTypeJPA, times(1)).save(segmentType);
+            verify(segmentTypeServiceJPA, times(1)).save(segmentType);
         }
     }
 
@@ -80,7 +82,7 @@ class SegmentTypeJPAImplTest {
 
     @Test
     void deleteById() {
-        segmentTypeJPA.deleteById(1L);
+        segmentTypeServiceJPA.deleteById(1L);
 
         verify(segmentTypeRepository, times(1)).deleteById(1L);
     }
@@ -91,10 +93,28 @@ class SegmentTypeJPAImplTest {
 
         when(segmentTypeRepository.findByCode(segmentType.getCode())).thenReturn(Optional.of(segmentType));
 
-        SegmentType segmentTypeByCode = segmentTypeJPA.findByCode("CC");
+        SegmentType segmentTypeByCode = segmentTypeServiceJPA.findByCode("CC");
 
         verify(segmentTypeRepository, times(1)).findByCode(segmentType.getCode());
 
         assertThat(segmentTypeByCode).isEqualTo(segmentType);
+    }
+
+    @Test
+    void findByCodeNotFound() {
+        String code = "1000";
+        DataNotFoundException dataNotFoundException = assertThrows(DataNotFoundException.class, () -> segmentTypeServiceJPA.findByCode(code));
+        AssertionsForClassTypes.assertThat(dataNotFoundException.getMessage()).containsIgnoringCase(SegmentType.class.getName());
+        AssertionsForClassTypes.assertThat(dataNotFoundException.getMessage()).containsIgnoringCase(Fields.CODE.toString());
+        AssertionsForClassTypes.assertThat(dataNotFoundException.getMessage()).containsIgnoringCase(code);
+    }
+
+    @Test
+    void findByIdNotFound() {
+        Long id = 1000L;
+        DataNotFoundException dataNotFoundException = assertThrows(DataNotFoundException.class, () -> segmentTypeServiceJPA.findById(id));
+        AssertionsForClassTypes.assertThat(dataNotFoundException.getMessage()).containsIgnoringCase(SegmentType.class.getName());
+        AssertionsForClassTypes.assertThat(dataNotFoundException.getMessage()).containsIgnoringCase(Fields.ID.toString());
+        AssertionsForClassTypes.assertThat(dataNotFoundException.getMessage()).containsIgnoringCase(id.toString());
     }
 }

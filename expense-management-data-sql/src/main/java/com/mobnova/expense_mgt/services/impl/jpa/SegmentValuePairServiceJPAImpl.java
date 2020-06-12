@@ -22,7 +22,7 @@ import java.util.stream.Collectors;
 @Service
 @Profile("jpa")
 @RequiredArgsConstructor
-public class SegmentValuePairJPAImpl implements SegmentValuePairService {
+public class SegmentValuePairServiceJPAImpl implements SegmentValuePairService {
 
     private final SegmentValuePairRepository segmentValuePairRepository;
     private final SegmentTypeRepository segmentTypeRepository;
@@ -64,7 +64,7 @@ public class SegmentValuePairJPAImpl implements SegmentValuePairService {
                     ExceptionVariable segmentValueEV = ExceptionVariable.builder().field(Fields.SEGMENT_VALUE).value(segmentValue).build();
                     ExceptionVariable segmentTypeCodeEV = ExceptionVariable.builder().field(Fields.SEGMENT_TYPE_CODE).value(segmentTypeCode).build();
 
-                    throw new DataNotFoundException(ExpenseReport.class, Arrays.asList(segmentValueEV, segmentTypeCodeEV));
+                    throw new DataNotFoundException(SegmentValuePair.class, Arrays.asList(segmentValueEV, segmentTypeCodeEV));
                 });
     }
 }

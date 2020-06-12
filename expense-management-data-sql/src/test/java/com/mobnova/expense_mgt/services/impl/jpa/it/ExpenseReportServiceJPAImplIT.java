@@ -1,11 +1,13 @@
 package com.mobnova.expense_mgt.services.impl.jpa.it;
 
+import com.mobnova.expense_mgt.exception.constant.Fields;
 import com.mobnova.expense_mgt.exceptions.DataNotFoundException;
 import com.mobnova.expense_mgt.model.*;
 import com.mobnova.expense_mgt.repositories.*;
 import com.mobnova.expense_mgt.services.impl.jpa.ExpenseReportServiceJPAImpl;
 import com.mobnova.expense_mgt.util.ExpenseReportTestHelper;
 import com.mobnova.expense_mgt.util.IntegrationTestHelper;
+import org.assertj.core.api.AssertionsForClassTypes;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -193,5 +195,23 @@ class ExpenseReportServiceJPAImplIT {
                 .findByReferenceID(expenseReportReferenceID);
 
         assertThat(expenseReportByReferenceID).isEqualTo(savedExpenseReport);
+    }
+
+    @Test
+    void findByReferenceIDNotFound() {
+        String referenceID = "1000";
+        DataNotFoundException dataNotFoundException = assertThrows(DataNotFoundException.class, () -> expenseReportServiceJPA.findByReferenceID(referenceID));
+        AssertionsForClassTypes.assertThat(dataNotFoundException.getMessage()).containsIgnoringCase(ExpenseReport.class.getName());
+        AssertionsForClassTypes.assertThat(dataNotFoundException.getMessage()).containsIgnoringCase(Fields.REFERENCE_ID.toString());
+        AssertionsForClassTypes.assertThat(dataNotFoundException.getMessage()).containsIgnoringCase(referenceID);
+    }
+
+    @Test
+    void findByIdNotFound() {
+        Long id = 1000L;
+        DataNotFoundException dataNotFoundException = assertThrows(DataNotFoundException.class, () -> expenseReportServiceJPA.findById(id));
+        AssertionsForClassTypes.assertThat(dataNotFoundException.getMessage()).containsIgnoringCase(ExpenseReport.class.getName());
+        AssertionsForClassTypes.assertThat(dataNotFoundException.getMessage()).containsIgnoringCase(Fields.ID.toString());
+        AssertionsForClassTypes.assertThat(dataNotFoundException.getMessage()).containsIgnoringCase(id.toString());
     }
 }

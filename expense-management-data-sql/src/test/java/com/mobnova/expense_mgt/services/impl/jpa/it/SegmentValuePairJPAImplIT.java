@@ -1,13 +1,13 @@
 package com.mobnova.expense_mgt.services.impl.jpa.it;
 
+import com.mobnova.expense_mgt.exception.constant.Fields;
 import com.mobnova.expense_mgt.exceptions.DataNotFoundException;
 import com.mobnova.expense_mgt.model.SegmentType;
 import com.mobnova.expense_mgt.model.SegmentValuePair;
 import com.mobnova.expense_mgt.repositories.SegmentTypeRepository;
-import com.mobnova.expense_mgt.repositories.SegmentValuePairRepository;
-import com.mobnova.expense_mgt.services.impl.jpa.SegmentTypeJPAImpl;
-import com.mobnova.expense_mgt.services.impl.jpa.SegmentValuePairJPAImpl;
+import com.mobnova.expense_mgt.services.impl.jpa.SegmentValuePairServiceJPAImpl;
 import com.mobnova.expense_mgt.util.IntegrationTestHelper;
+import org.assertj.core.api.AssertionsForClassTypes;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -15,9 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
-import javax.swing.text.html.Option;
 import java.util.HashSet;
-import java.util.Optional;
 import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -28,7 +26,7 @@ import static org.junit.jupiter.api.Assertions.*;
 class SegmentValuePairJPAImplIT {
 
     @Autowired
-    private SegmentValuePairJPAImpl segmentValuePairJPA;
+    private SegmentValuePairServiceJPAImpl segmentValuePairServiceJPA;
 
     @Autowired
     private SegmentTypeRepository segmentTypeRepository;
@@ -53,7 +51,7 @@ class SegmentValuePairJPAImplIT {
     void save() {
         SegmentValuePair segmentValuePair = SegmentValuePair.builder().segmentValue("1000").segmentType(segmentType).build();
 
-        SegmentValuePair savedSegmentValuePair = segmentValuePairJPA.save(segmentValuePair);
+        SegmentValuePair savedSegmentValuePair = segmentValuePairServiceJPA.save(segmentValuePair);
 
         assertThat(savedSegmentValuePair.getId()).isNotNull();
         assertThat(savedSegmentValuePair.getCreationDate()).isNotNull();
@@ -68,7 +66,7 @@ class SegmentValuePairJPAImplIT {
         segmentValuePairs.add(segmentValuePair1);
         segmentValuePairs.add(segmentValuePair2);
 
-        Set<SegmentValuePair> savedSegmentValuePairs = segmentValuePairJPA.saveBulk(segmentValuePairs);
+        Set<SegmentValuePair> savedSegmentValuePairs = segmentValuePairServiceJPA.saveBulk(segmentValuePairs);
 
         for(SegmentValuePair segmentValuePair : savedSegmentValuePairs){
             assertThat(segmentValuePair.getId()).isNotNull();
@@ -80,10 +78,10 @@ class SegmentValuePairJPAImplIT {
     void findById() {
         SegmentValuePair segmentValuePair = SegmentValuePair.builder().segmentValue("1003").segmentType(segmentType).build();
 
-        SegmentValuePair savedSegmentValuePair = segmentValuePairJPA.save(segmentValuePair);
+        SegmentValuePair savedSegmentValuePair = segmentValuePairServiceJPA.save(segmentValuePair);
         Long segmentValuePairId = savedSegmentValuePair.getId();
 
-        SegmentValuePair segmentValuePairById = segmentValuePairJPA.findById(segmentValuePairId);
+        SegmentValuePair segmentValuePairById = segmentValuePairServiceJPA.findById(segmentValuePairId);
 
         assertThat(segmentValuePairById).isEqualTo(savedSegmentValuePair);
     }
@@ -92,24 +90,45 @@ class SegmentValuePairJPAImplIT {
     void deleteById() {
         SegmentValuePair segmentValuePair = SegmentValuePair.builder().segmentValue("1004").segmentType(segmentType).build();
 
-        SegmentValuePair savedSegmentValuePair = segmentValuePairJPA.save(segmentValuePair);
+        SegmentValuePair savedSegmentValuePair = segmentValuePairServiceJPA.save(segmentValuePair);
         Long segmentValuePairId = savedSegmentValuePair.getId();
 
-        segmentValuePairJPA.deleteById(segmentValuePairId);
+        segmentValuePairServiceJPA.deleteById(segmentValuePairId);
 
-        assertThrows(DataNotFoundException.class, () -> segmentValuePairJPA.findById(segmentValuePairId));
+        assertThrows(DataNotFoundException.class, () -> segmentValuePairServiceJPA.findById(segmentValuePairId));
     }
 
     @Test
     void findByValueAndSegmentTypeCode() {
         SegmentValuePair segmentValuePair = SegmentValuePair.builder().segmentValue("1005").segmentType(segmentType).build();
 
-        SegmentValuePair savedSegmentValuePair = segmentValuePairJPA.save(segmentValuePair);
+        SegmentValuePair savedSegmentValuePair = segmentValuePairServiceJPA.save(segmentValuePair);
         String segmentTypeCode = savedSegmentValuePair.getSegmentType().getCode();
         String segmentValuePairValue = savedSegmentValuePair.getSegmentValue();
 
-        SegmentValuePair segmentValuePairById = segmentValuePairJPA.findByValueAndSegmentTypeCode(segmentValuePairValue, segmentTypeCode);
+        SegmentValuePair segmentValuePairById = segmentValuePairServiceJPA.findByValueAndSegmentTypeCode(segmentValuePairValue, segmentTypeCode);
 
         assertThat(segmentValuePairById).isEqualTo(savedSegmentValuePair);
+    }
+
+    @Test
+    void findByValueAndSegmentTypeCodeNotFound() {
+        String segmentCode = "1000";
+        String segmentValue = "AA";
+        DataNotFoundException dataNotFoundException = assertThrows(DataNotFoundException.class, () -> segmentValuePairServiceJPA.findByValueAndSegmentTypeCode(segmentValue, segmentCode));
+        AssertionsForClassTypes.assertThat(dataNotFoundException.getMessage()).containsIgnoringCase(SegmentValuePair.class.getName());
+        AssertionsForClassTypes.assertThat(dataNotFoundException.getMessage()).containsIgnoringCase(Fields.SEGMENT_VALUE.toString());
+        AssertionsForClassTypes.assertThat(dataNotFoundException.getMessage()).containsIgnoringCase(Fields.SEGMENT_TYPE_CODE.toString());
+        AssertionsForClassTypes.assertThat(dataNotFoundException.getMessage()).containsIgnoringCase(segmentValue);
+        AssertionsForClassTypes.assertThat(dataNotFoundException.getMessage()).containsIgnoringCase(segmentCode);
+    }
+
+    @Test
+    void findByIdNotFound() {
+        Long id = 1000L;
+        DataNotFoundException dataNotFoundException = assertThrows(DataNotFoundException.class, () -> segmentValuePairServiceJPA.findById(id));
+        AssertionsForClassTypes.assertThat(dataNotFoundException.getMessage()).containsIgnoringCase(SegmentValuePair.class.getName());
+        AssertionsForClassTypes.assertThat(dataNotFoundException.getMessage()).containsIgnoringCase(Fields.ID.toString());
+        AssertionsForClassTypes.assertThat(dataNotFoundException.getMessage()).containsIgnoringCase(id.toString());
     }
 }

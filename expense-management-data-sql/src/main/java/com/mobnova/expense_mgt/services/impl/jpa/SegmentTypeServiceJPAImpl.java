@@ -17,7 +17,7 @@ import java.util.stream.Collectors;
 @Service
 @Profile("jpa")
 @RequiredArgsConstructor
-public class SegmentTypeJPAImpl implements SegmentTypeService {
+public class SegmentTypeServiceJPAImpl implements SegmentTypeService {
 
     private final SegmentTypeRepository segmentTypeRepository;
     private final BeanValidator beanValidator;
@@ -45,6 +45,6 @@ public class SegmentTypeJPAImpl implements SegmentTypeService {
 
     @Override
     public SegmentType findByCode(String code) {
-        return segmentTypeRepository.findByCode(code).orElseThrow(() -> new DataNotFoundException(ExpenseReport.class, Fields.CODE, code));
+        return segmentTypeRepository.findByCode(code).orElseThrow(() -> new DataNotFoundException(SegmentType.class, Fields.CODE, code));
     }
 }

@@ -1,5 +1,6 @@
 package com.mobnova.expense_mgt.services.impl.jpa.it;
 
+import com.mobnova.expense_mgt.exception.constant.Fields;
 import com.mobnova.expense_mgt.exceptions.DataNotFoundException;
 import com.mobnova.expense_mgt.model.City;
 import com.mobnova.expense_mgt.model.Country;
@@ -136,4 +137,23 @@ class CityServiceJPAImplIT {
 
         assertThat(cityByCode).isEqualTo(city);
     }
+
+    @Test
+    void findByCodeNotFound() {
+        String code = "1000";
+        DataNotFoundException dataNotFoundException = assertThrows(DataNotFoundException.class, () -> cityServiceJPA.findByCode(code));
+        assertThat(dataNotFoundException.getMessage()).containsIgnoringCase(City.class.getName());
+        assertThat(dataNotFoundException.getMessage().compareToIgnoreCase(Fields.CODE.toString()));
+        assertThat(dataNotFoundException.getMessage().compareToIgnoreCase(code));
+    }
+
+    @Test
+    void findByIdNotFound() {
+        Long id = 1000L;
+        DataNotFoundException dataNotFoundException = assertThrows(DataNotFoundException.class, () -> cityServiceJPA.findById(id));
+        assertThat(dataNotFoundException.getMessage()).containsIgnoringCase(City.class.getName());
+        assertThat(dataNotFoundException.getMessage()).containsIgnoringCase(Fields.ID.toString());
+        assertThat(dataNotFoundException.getMessage()).containsIgnoringCase(id.toString());
+    }
+
 }

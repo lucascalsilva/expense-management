@@ -35,7 +35,7 @@ public class UserServiceJPAImpl implements UserService {
 
     @Override
     public User findById(Long id) {
-        return repository.findById(id).orElseThrow(() -> new DataNotFoundException(Country.class, Fields.ID, id));
+        return repository.findById(id).orElseThrow(() -> new DataNotFoundException(User.class, Fields.ID, id));
     }
 
     @Override
@@ -45,6 +45,6 @@ public class UserServiceJPAImpl implements UserService {
 
     @Override
     public User findByUsername(String username) {
-        return repository.findByUsername(username).orElseThrow(() -> new DataNotFoundException(Country.class, Fields.USERNAME, username));
+        return repository.findByUsername(username).orElseThrow(() -> new DataNotFoundException(User.class, Fields.USERNAME, username));
     }
 }

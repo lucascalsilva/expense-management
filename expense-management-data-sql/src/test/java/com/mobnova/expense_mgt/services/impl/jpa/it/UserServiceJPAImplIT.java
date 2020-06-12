@@ -1,9 +1,12 @@
 package com.mobnova.expense_mgt.services.impl.jpa.it;
 
+import com.mobnova.expense_mgt.exception.constant.Fields;
 import com.mobnova.expense_mgt.exceptions.DataNotFoundException;
+import com.mobnova.expense_mgt.model.SegmentType;
 import com.mobnova.expense_mgt.model.User;
 import com.mobnova.expense_mgt.services.impl.jpa.UserServiceJPAImpl;
 import com.mobnova.expense_mgt.util.IntegrationTestHelper;
+import org.assertj.core.api.AssertionsForClassTypes;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -106,5 +109,23 @@ class UserServiceJPAImplIT {
         User userByUsername = userServiceJPA.findByUsername(savedUserUsername);
 
         assertThat(userByUsername).isEqualTo(user);
+    }
+
+    @Test
+    void findByUsernameNotFound() {
+        String username = "someUser";
+        DataNotFoundException dataNotFoundException = assertThrows(DataNotFoundException.class, () -> userServiceJPA.findByUsername(username));
+        AssertionsForClassTypes.assertThat(dataNotFoundException.getMessage()).containsIgnoringCase(User.class.getName());
+        AssertionsForClassTypes.assertThat(dataNotFoundException.getMessage()).containsIgnoringCase(Fields.USERNAME.toString());
+        AssertionsForClassTypes.assertThat(dataNotFoundException.getMessage()).containsIgnoringCase(username);
+    }
+
+    @Test
+    void findByIdNotFound() {
+        Long id = 1000L;
+        DataNotFoundException dataNotFoundException = assertThrows(DataNotFoundException.class, () -> userServiceJPA.findById(id));
+        AssertionsForClassTypes.assertThat(dataNotFoundException.getMessage()).containsIgnoringCase(User.class.getName());
+        AssertionsForClassTypes.assertThat(dataNotFoundException.getMessage()).containsIgnoringCase(Fields.ID.toString());
+        AssertionsForClassTypes.assertThat(dataNotFoundException.getMessage()).containsIgnoringCase(id.toString());
     }
 }
