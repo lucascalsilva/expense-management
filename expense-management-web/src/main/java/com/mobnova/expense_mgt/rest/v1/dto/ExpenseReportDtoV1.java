@@ -41,6 +41,9 @@ public class ExpenseReportDtoV1 extends BaseDtoV1 {
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private String countryName;
 
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
+    @JsonDeserialize(using = LocalDateDeserializer.class)
+    @JsonSerialize(using = LocalDateSerializer.class)
     @NotNull
     private LocalDate tripStartDate;
 

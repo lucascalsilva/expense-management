@@ -48,7 +48,7 @@ public class ExpenseItemDtoV1 extends BaseDtoV1 {
 
     @NotNull
     private CityDtoV1 expenseCity;
-    private Map<String, String> codeCombinations;
+    private Map<String, String> segmentValuePairs;
 
     @NotNull
     private String picture;
