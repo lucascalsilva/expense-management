@@ -3,11 +3,12 @@ package com.mobnova.expense_mgt.services.impl.jpa.it;
 import com.mobnova.expense_mgt.exception.constant.Fields;
 import com.mobnova.expense_mgt.exceptions.DataNotFoundException;
 import com.mobnova.expense_mgt.model.Country;
-import com.mobnova.expense_mgt.model.SegmentType;
 import com.mobnova.expense_mgt.model.StateOrProvince;
 import com.mobnova.expense_mgt.repositories.CountryRepository;
 import com.mobnova.expense_mgt.services.impl.jpa.StateOrProvinceServiceJPAImpl;
+import com.mobnova.expense_mgt.util.AssertionsUtil;
 import com.mobnova.expense_mgt.util.IntegrationTestHelper;
+import org.assertj.core.api.Assertions;
 import org.assertj.core.api.AssertionsForClassTypes;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -16,13 +17,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
-import javax.swing.plaf.nimbus.State;
 import java.util.HashSet;
-import java.util.Optional;
 import java.util.Set;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @ExtendWith(SpringExtension.class)
 @SpringBootTest
@@ -61,6 +60,26 @@ class StateOrProvinceServiceJPAImplIT {
 
         assertThat(savedStateOrProvince.getCountry()).isNotNull();
         assertThat(savedStateOrProvince.getCountry().getCode()).isEqualTo("BR");
+    }
+
+    @Test
+    void update() {
+        StateOrProvince stateOrProvince = StateOrProvince.builder().code("CE").name("Ceara")
+                .country(Country.builder().code("BR").build()).build();
+
+        stateOrProvince = stateOrProvinceServiceJPA.save(stateOrProvince);
+
+        Assertions.assertThat(stateOrProvince).isNotNull();
+        Assertions.assertThat(stateOrProvince.getId()).isNotNull();
+
+        StateOrProvince updatedStateOrProvince = stateOrProvinceServiceJPA.findById(stateOrProvince.getId());
+
+        updatedStateOrProvince.setName("Future 3_1");
+
+        updatedStateOrProvince = stateOrProvinceServiceJPA.save(updatedStateOrProvince);
+
+        AssertionsUtil.entityUpdateAssertions(stateOrProvince, updatedStateOrProvince);
+        Assertions.assertThat(stateOrProvince.getName()).isNotEqualTo(updatedStateOrProvince.getName());
     }
 
     @Test

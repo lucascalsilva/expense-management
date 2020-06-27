@@ -2,9 +2,9 @@ package com.mobnova.expense_mgt.services.impl.jpa.it;
 
 import com.mobnova.expense_mgt.exception.constant.Fields;
 import com.mobnova.expense_mgt.exceptions.DataNotFoundException;
-import com.mobnova.expense_mgt.model.City;
 import com.mobnova.expense_mgt.model.Country;
 import com.mobnova.expense_mgt.services.impl.jpa.CountryServiceJPAImpl;
+import com.mobnova.expense_mgt.util.AssertionsUtil;
 import com.mobnova.expense_mgt.util.IntegrationTestHelper;
 import org.assertj.core.api.AssertionsForClassTypes;
 import org.junit.jupiter.api.BeforeEach;
@@ -14,13 +14,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
-import javax.validation.constraints.NotNull;
 import java.util.HashSet;
-import java.util.Optional;
 import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @ExtendWith(SpringExtension.class)
 @SpringBootTest
@@ -49,6 +47,25 @@ class CountryServiceJPAImplIT {
 
         assertThat(savedCountry.getId()).isNotNull();
         assertThat(savedCountry.getCreationDate()).isNotNull();
+    }
+
+    @Test
+    void update() {
+        Country country = Country.builder().code("EG").name("Egypt").build();
+
+        country = countryServiceJPA.save(country);
+
+        assertThat(country).isNotNull();
+        assertThat(country.getId()).isNotNull();
+
+        Country updatedCountry = countryServiceJPA.findById(country.getId());
+
+        updatedCountry.setName("Egypt_1");
+
+        updatedCountry = countryServiceJPA.save(updatedCountry);
+
+        AssertionsUtil.entityUpdateAssertions(country, updatedCountry);
+        assertThat(country.getName()).isNotEqualTo(updatedCountry.getName());
     }
 
     @Test

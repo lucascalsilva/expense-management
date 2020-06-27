@@ -2,13 +2,13 @@ package com.mobnova.expense_mgt.services.impl.jpa.it;
 
 import com.mobnova.expense_mgt.exception.constant.Fields;
 import com.mobnova.expense_mgt.exceptions.DataNotFoundException;
-import com.mobnova.expense_mgt.model.City;
 import com.mobnova.expense_mgt.model.Country;
 import com.mobnova.expense_mgt.model.County;
 import com.mobnova.expense_mgt.model.StateOrProvince;
 import com.mobnova.expense_mgt.repositories.CountryRepository;
 import com.mobnova.expense_mgt.repositories.StateOrProvinceRepository;
 import com.mobnova.expense_mgt.services.impl.jpa.CountyServiceJPAImpl;
+import com.mobnova.expense_mgt.util.AssertionsUtil;
 import com.mobnova.expense_mgt.util.IntegrationTestHelper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -17,13 +17,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
-import javax.validation.constraints.NotNull;
 import java.util.HashSet;
-import java.util.Optional;
 import java.util.Set;
 
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @ExtendWith(SpringExtension.class)
 @SpringBootTest
@@ -70,6 +68,26 @@ class CountyServiceJPAImplIT {
 
         assertThat(savedCounty.getStateOrProvince().getId()).isNotNull();
         assertThat(savedCounty.getStateOrProvince().getCreationDate()).isNotNull();
+    }
+
+    @Test
+    void update() {
+        County county = County.builder().code("TOR").name("Condado de Torres")
+                .stateOrProvince(StateOrProvince.builder().code("RS").build()).build();
+
+        county = countyServiceJPA.save(county);
+
+        assertThat(county).isNotNull();
+        assertThat(county.getId()).isNotNull();
+
+        County updateCounty = countyServiceJPA.findById(county.getId());
+
+        updateCounty.setName("Condado de Torres_1");
+
+        updateCounty = countyServiceJPA.save(updateCounty);
+
+        AssertionsUtil.entityUpdateAssertions(county, updateCounty);
+        assertThat(county.getName()).isNotEqualTo(updateCounty.getName());
     }
 
     @Test

@@ -2,9 +2,9 @@ package com.mobnova.expense_mgt.services.impl.jpa.it;
 
 import com.mobnova.expense_mgt.exception.constant.Fields;
 import com.mobnova.expense_mgt.exceptions.DataNotFoundException;
-import com.mobnova.expense_mgt.model.City;
 import com.mobnova.expense_mgt.model.Currency;
 import com.mobnova.expense_mgt.services.impl.jpa.CurrencyServiceJPAImpl;
+import com.mobnova.expense_mgt.util.AssertionsUtil;
 import com.mobnova.expense_mgt.util.IntegrationTestHelper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -14,11 +14,10 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.util.HashSet;
-import java.util.Optional;
 import java.util.Set;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @ExtendWith(SpringExtension.class)
 @SpringBootTest
@@ -47,6 +46,25 @@ class CurrencyServiceJPAImplIT {
 
         assertThat(savedCurrency.getId()).isNotNull();
         assertThat(savedCurrency.getCreationDate()).isNotNull();
+    }
+
+    @Test
+    void update() {
+        Currency currency = Currency.builder().code("CHF").name("Swiss Frank").build();
+
+        currency = currencyServiceJPA.save(currency);
+
+        assertThat(currency).isNotNull();
+        assertThat(currency.getId()).isNotNull();
+
+        Currency updatedCurrency = currencyServiceJPA.findById(currency.getId());
+
+        updatedCurrency.setName("Condado de Torres_1");
+
+        updatedCurrency = currencyServiceJPA.save(updatedCurrency);
+
+        AssertionsUtil.entityUpdateAssertions(currency, updatedCurrency);
+        assertThat(currency.getName()).isNotEqualTo(updatedCurrency.getName());
     }
 
     @Test

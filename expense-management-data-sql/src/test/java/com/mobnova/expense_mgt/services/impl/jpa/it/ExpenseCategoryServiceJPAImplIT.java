@@ -2,11 +2,9 @@ package com.mobnova.expense_mgt.services.impl.jpa.it;
 
 import com.mobnova.expense_mgt.exception.constant.Fields;
 import com.mobnova.expense_mgt.exceptions.DataNotFoundException;
-import com.mobnova.expense_mgt.model.City;
-import com.mobnova.expense_mgt.model.Country;
 import com.mobnova.expense_mgt.model.ExpenseCategory;
-import com.mobnova.expense_mgt.services.impl.jpa.CountryServiceJPAImpl;
 import com.mobnova.expense_mgt.services.impl.jpa.ExpenseCategoryServiceJPAImpl;
+import com.mobnova.expense_mgt.util.AssertionsUtil;
 import com.mobnova.expense_mgt.util.IntegrationTestHelper;
 import org.assertj.core.api.AssertionsForClassTypes;
 import org.junit.jupiter.api.BeforeEach;
@@ -17,11 +15,10 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.util.HashSet;
-import java.util.Optional;
 import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @ExtendWith(SpringExtension.class)
 @SpringBootTest
@@ -50,6 +47,25 @@ class ExpenseCategoryServiceJPAImplIT {
 
         assertThat(savedExpenseCategory.getId()).isNotNull();
         assertThat(savedExpenseCategory.getCreationDate()).isNotNull();
+    }
+
+    @Test
+    void update() {
+        ExpenseCategory expenseCategory = ExpenseCategory.builder().code("OTHER").name("Other").build();
+
+        expenseCategory = expenseCategoryServiceJPA.save(expenseCategory);
+
+        assertThat(expenseCategory).isNotNull();
+        assertThat(expenseCategory.getId()).isNotNull();
+
+        ExpenseCategory updatedExpenseCategory = expenseCategoryServiceJPA.findById(expenseCategory.getId());
+
+        updatedExpenseCategory.setName("Other_1");
+
+        updatedExpenseCategory = expenseCategoryServiceJPA.save(updatedExpenseCategory);
+
+        AssertionsUtil.entityUpdateAssertions(expenseCategory, updatedExpenseCategory);
+        assertThat(expenseCategory.getName()).isNotEqualTo(updatedExpenseCategory.getName());
     }
 
     @Test

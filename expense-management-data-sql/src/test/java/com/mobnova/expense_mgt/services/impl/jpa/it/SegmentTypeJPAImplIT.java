@@ -2,9 +2,9 @@ package com.mobnova.expense_mgt.services.impl.jpa.it;
 
 import com.mobnova.expense_mgt.exception.constant.Fields;
 import com.mobnova.expense_mgt.exceptions.DataNotFoundException;
-import com.mobnova.expense_mgt.model.ExpenseReport;
 import com.mobnova.expense_mgt.model.SegmentType;
 import com.mobnova.expense_mgt.services.impl.jpa.SegmentTypeServiceJPAImpl;
+import com.mobnova.expense_mgt.util.AssertionsUtil;
 import com.mobnova.expense_mgt.util.IntegrationTestHelper;
 import org.assertj.core.api.AssertionsForClassTypes;
 import org.junit.jupiter.api.BeforeEach;
@@ -18,7 +18,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @ExtendWith(SpringExtension.class)
 @SpringBootTest
@@ -47,6 +47,25 @@ class SegmentTypeJPAImplIT {
 
         assertThat(savedSegmentType.getId()).isNotNull();
         assertThat(savedSegmentType.getCreationDate()).isNotNull();
+    }
+
+    @Test
+    void update() {
+        SegmentType segmentType = SegmentType.builder().code("FUTURE3").name("Future 3").build();
+
+        segmentType = segmentTypeServiceJPA.save(segmentType);
+
+        assertThat(segmentType).isNotNull();
+        assertThat(segmentType.getId()).isNotNull();
+
+        SegmentType updatedSegmentType = segmentTypeServiceJPA.findById(segmentType.getId());
+
+        updatedSegmentType.setName("Future 3_1");
+
+        updatedSegmentType = segmentTypeServiceJPA.save(updatedSegmentType);
+
+        AssertionsUtil.entityUpdateAssertions(segmentType, updatedSegmentType);
+        assertThat(segmentType.getName()).isNotEqualTo(updatedSegmentType.getName());
     }
 
     @Test

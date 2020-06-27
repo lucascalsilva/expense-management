@@ -2,9 +2,9 @@ package com.mobnova.expense_mgt.services.impl.jpa.it;
 
 import com.mobnova.expense_mgt.exception.constant.Fields;
 import com.mobnova.expense_mgt.exceptions.DataNotFoundException;
-import com.mobnova.expense_mgt.model.SegmentType;
 import com.mobnova.expense_mgt.model.User;
 import com.mobnova.expense_mgt.services.impl.jpa.UserServiceJPAImpl;
+import com.mobnova.expense_mgt.util.AssertionsUtil;
 import com.mobnova.expense_mgt.util.IntegrationTestHelper;
 import org.assertj.core.api.AssertionsForClassTypes;
 import org.junit.jupiter.api.BeforeEach;
@@ -15,11 +15,10 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.util.HashSet;
-import java.util.Optional;
 import java.util.Set;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @ExtendWith(SpringExtension.class)
 @SpringBootTest
@@ -50,6 +49,26 @@ class UserServiceJPAImplIT {
 
         assertThat(savedUser.getId()).isNotNull();
         assertThat(savedUser.getCreationDate()).isNotNull();
+    }
+
+    @Test
+    void update() {
+        User user = User.builder().username("user_seven").password("123456").email("user_seven@domain.com")
+                .firstName("Lucas").lastName("Silva").build();
+
+        user = userServiceJPA.save(user);
+
+        assertThat(user).isNotNull();
+        assertThat(user.getId()).isNotNull();
+
+        User updatedUser = userServiceJPA.findById(user.getId());
+
+        updatedUser.setEmail("user_seven1@domain.com");
+
+        updatedUser = userServiceJPA.save(updatedUser);
+
+        AssertionsUtil.entityUpdateAssertions(user, updatedUser);
+        assertThat(user.getEmail()).isNotEqualTo(updatedUser.getEmail());
     }
 
     @Test

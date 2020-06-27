@@ -5,6 +5,7 @@ import com.mobnova.expense_mgt.exceptions.DataNotFoundException;
 import com.mobnova.expense_mgt.model.*;
 import com.mobnova.expense_mgt.repositories.*;
 import com.mobnova.expense_mgt.services.impl.jpa.ExpenseReportServiceJPAImpl;
+import com.mobnova.expense_mgt.util.AssertionsUtil;
 import com.mobnova.expense_mgt.util.ExpenseReportTestHelper;
 import com.mobnova.expense_mgt.util.IntegrationTestHelper;
 import org.assertj.core.api.AssertionsForClassTypes;
@@ -16,7 +17,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.util.HashSet;
-import java.util.Optional;
 import java.util.Set;
 
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
@@ -129,6 +129,25 @@ class ExpenseReportServiceJPAImplIT {
                 assertThat(segmentValuePair.getCreationDate()).isNotNull();
             }
         }
+    }
+
+    @Test
+    void update() {
+        ExpenseReport expenseReport = expenseReportTestHelper.createDummyExpenseReport(expenseItemQuantity);
+        expenseReport = expenseReportServiceJPA.save(expenseReport);
+
+        assertThat(expenseReport).isNotNull();
+        assertThat(expenseReport.getId()).isNotNull();
+
+        ExpenseReport updatedExpenseReport = expenseReportServiceJPA.findById(expenseReport.getId());
+
+        String newJustification = "Some other justification";
+        updatedExpenseReport.setJustification(newJustification);
+
+        updatedExpenseReport = expenseReportServiceJPA.save(updatedExpenseReport);
+
+        AssertionsUtil.entityUpdateAssertions(expenseReport, updatedExpenseReport);
+        assertThat(expenseReport.getJustification()).isNotEqualTo(updatedExpenseReport.getJustification());
     }
 
     @Test

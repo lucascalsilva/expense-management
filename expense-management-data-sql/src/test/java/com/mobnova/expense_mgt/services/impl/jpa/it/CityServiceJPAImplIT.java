@@ -10,8 +10,8 @@ import com.mobnova.expense_mgt.repositories.CountryRepository;
 import com.mobnova.expense_mgt.repositories.CountyRepository;
 import com.mobnova.expense_mgt.repositories.StateOrProvinceRepository;
 import com.mobnova.expense_mgt.services.impl.jpa.CityServiceJPAImpl;
+import com.mobnova.expense_mgt.util.AssertionsUtil;
 import com.mobnova.expense_mgt.util.IntegrationTestHelper;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -20,7 +20,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.util.HashSet;
-import java.util.Optional;
 import java.util.Set;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
@@ -77,6 +76,26 @@ class CityServiceJPAImplIT {
 
         assertThat(citySaved.getStateOrProvince()).isNotNull();
         assertThat(citySaved.getStateOrProvince().getCode()).isEqualTo("RS");
+    }
+
+    @Test
+    void update() {
+        City city = City.builder().code("VM").name("Viamao")
+                .stateOrProvince(StateOrProvince.builder().code("RS").build()).build();
+
+        city = cityServiceJPA.save(city);
+
+        assertThat(city).isNotNull();
+        assertThat(city.getId()).isNotNull();
+
+        City updatedCity = cityServiceJPA.findById(city.getId());
+
+        updatedCity.setName("Vimao_1");
+
+        updatedCity = cityServiceJPA.save(updatedCity);
+
+        AssertionsUtil.entityUpdateAssertions(city, updatedCity);
+        assertThat(city.getName()).isNotEqualTo(updatedCity.getName());
     }
 
     @Test
