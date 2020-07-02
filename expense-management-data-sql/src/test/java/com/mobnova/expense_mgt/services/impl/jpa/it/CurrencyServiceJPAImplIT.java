@@ -6,6 +6,7 @@ import com.mobnova.expense_mgt.model.Currency;
 import com.mobnova.expense_mgt.services.impl.jpa.CurrencyServiceJPAImpl;
 import com.mobnova.expense_mgt.util.AssertionsUtil;
 import com.mobnova.expense_mgt.util.IntegrationTestHelper;
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -13,6 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
+import javax.validation.ConstraintViolationException;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -29,7 +31,7 @@ class CurrencyServiceJPAImplIT {
     @Autowired
     private IntegrationTestHelper integrationTestHelper;
 
-    private static Boolean dbInitialized = false;
+    private static final Boolean dbInitialized = false;
 
     @BeforeEach
     public void init(){
@@ -46,6 +48,14 @@ class CurrencyServiceJPAImplIT {
 
         assertThat(savedCurrency.getId()).isNotNull();
         assertThat(savedCurrency.getCreationDate()).isNotNull();
+    }
+
+    @Test
+    void saveValidationError() {
+        Currency currency = Currency.builder().code(null).name("Brazilian Real").build();
+
+        ConstraintViolationException constraintViolationException = assertThrows(ConstraintViolationException.class, () -> currencyServiceJPA.save(currency));
+        Assertions.assertThat(constraintViolationException.getMessage()).contains("save.arg0.code: must not be null");
     }
 
     @Test

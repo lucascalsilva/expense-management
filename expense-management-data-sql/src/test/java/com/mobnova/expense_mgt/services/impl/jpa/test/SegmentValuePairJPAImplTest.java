@@ -5,7 +5,6 @@ import com.mobnova.expense_mgt.model.SegmentValuePair;
 import com.mobnova.expense_mgt.repositories.SegmentTypeRepository;
 import com.mobnova.expense_mgt.repositories.SegmentValuePairRepository;
 import com.mobnova.expense_mgt.services.impl.jpa.SegmentValuePairServiceJPAImpl;
-import com.mobnova.expense_mgt.validation.BeanValidator;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -14,7 +13,9 @@ import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.util.*;
+import java.util.HashSet;
+import java.util.Optional;
+import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.AdditionalAnswers.returnsFirstArg;
@@ -33,9 +34,6 @@ class SegmentValuePairJPAImplTest {
 
     @Mock
     private SegmentTypeRepository segmentTypeRepository;
-
-    @Mock
-    private BeanValidator beanValidator;
 
     private SegmentType segmentType;
 

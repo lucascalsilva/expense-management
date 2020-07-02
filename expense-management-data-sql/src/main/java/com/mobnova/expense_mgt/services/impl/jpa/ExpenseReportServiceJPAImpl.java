@@ -3,13 +3,12 @@ package com.mobnova.expense_mgt.services.impl.jpa;
 import com.mobnova.expense_mgt.config.CriteriaConfigBean;
 import com.mobnova.expense_mgt.criteria.CriteriaUtil;
 import com.mobnova.expense_mgt.exception.constant.Fields;
+import com.mobnova.expense_mgt.exceptions.DataNotFoundException;
 import com.mobnova.expense_mgt.exceptions.InvalidDataException;
-import com.mobnova.expense_mgt.model.*;
 import com.mobnova.expense_mgt.model.Currency;
+import com.mobnova.expense_mgt.model.*;
 import com.mobnova.expense_mgt.repositories.*;
 import com.mobnova.expense_mgt.services.ExpenseReportService;
-import com.mobnova.expense_mgt.exceptions.DataNotFoundException;
-import com.mobnova.expense_mgt.validation.BeanValidator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Profile;
 import org.springframework.data.jpa.domain.Specification;
@@ -30,15 +29,11 @@ public class ExpenseReportServiceJPAImpl implements ExpenseReportService {
     private final CurrencyRepository currencyRepository;
     private final CityRepository cityRepository;
     private final ExpenseCategoryRepository categoryRepository;
-    private final BeanValidator beanValidator;
     private final CriteriaConfigBean criteriaConfigBean;
     private final SegmentValuePairRepository segmentValuePairRepository;
 
     @Override
     public ExpenseReport save(ExpenseReport expenseReport) {
-        beanValidator.validateObject(expenseReport);
-        beanValidator.validateObjects(expenseReport.getExpenses());
-
         if (expenseReport.getId() != null) {
             expenseReportRepository.findById(expenseReport.getId())
                     .ifPresent(currentObject -> {

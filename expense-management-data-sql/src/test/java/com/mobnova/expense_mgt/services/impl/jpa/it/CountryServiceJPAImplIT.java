@@ -6,6 +6,7 @@ import com.mobnova.expense_mgt.model.Country;
 import com.mobnova.expense_mgt.services.impl.jpa.CountryServiceJPAImpl;
 import com.mobnova.expense_mgt.util.AssertionsUtil;
 import com.mobnova.expense_mgt.util.IntegrationTestHelper;
+import lombok.extern.slf4j.Slf4j;
 import org.assertj.core.api.AssertionsForClassTypes;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -14,6 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
+import javax.validation.ConstraintViolationException;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -22,6 +24,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @ExtendWith(SpringExtension.class)
 @SpringBootTest
+@Slf4j
 class CountryServiceJPAImplIT {
 
     @Autowired
@@ -30,7 +33,7 @@ class CountryServiceJPAImplIT {
     @Autowired
     private IntegrationTestHelper integrationTestHelper;
 
-    private static Boolean dbInitialized = false;
+    private static final Boolean dbInitialized = false;
 
     @BeforeEach
     public void init(){
@@ -47,6 +50,14 @@ class CountryServiceJPAImplIT {
 
         assertThat(savedCountry.getId()).isNotNull();
         assertThat(savedCountry.getCreationDate()).isNotNull();
+    }
+
+    @Test
+    void saveValidationError() {
+        Country country = Country.builder().code(null).build();
+
+        ConstraintViolationException constraintViolationException = assertThrows(ConstraintViolationException.class, () -> countryServiceJPA.save(country));
+        assertThat(constraintViolationException.getMessage()).contains("save.arg0.code: must not be null");
     }
 
     @Test

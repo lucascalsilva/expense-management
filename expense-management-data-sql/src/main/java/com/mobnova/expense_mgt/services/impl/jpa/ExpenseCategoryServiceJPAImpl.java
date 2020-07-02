@@ -1,11 +1,10 @@
 package com.mobnova.expense_mgt.services.impl.jpa;
 
 import com.mobnova.expense_mgt.exception.constant.Fields;
+import com.mobnova.expense_mgt.exceptions.DataNotFoundException;
 import com.mobnova.expense_mgt.model.ExpenseCategory;
 import com.mobnova.expense_mgt.repositories.ExpenseCategoryRepository;
 import com.mobnova.expense_mgt.services.ExpenseCategoryService;
-import com.mobnova.expense_mgt.exceptions.DataNotFoundException;
-import com.mobnova.expense_mgt.validation.BeanValidator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
@@ -19,11 +18,9 @@ import java.util.stream.Collectors;
 public class ExpenseCategoryServiceJPAImpl implements ExpenseCategoryService {
 
     private final ExpenseCategoryRepository expenseCategoryRepository;
-    private final BeanValidator beanValidator;
 
     @Override
     public ExpenseCategory save(ExpenseCategory category) {
-        beanValidator.validateObject(category);
         return expenseCategoryRepository.save(category);
     }
 

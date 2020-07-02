@@ -6,6 +6,7 @@ import com.mobnova.expense_mgt.model.SegmentType;
 import com.mobnova.expense_mgt.services.impl.jpa.SegmentTypeServiceJPAImpl;
 import com.mobnova.expense_mgt.util.AssertionsUtil;
 import com.mobnova.expense_mgt.util.IntegrationTestHelper;
+import org.assertj.core.api.Assertions;
 import org.assertj.core.api.AssertionsForClassTypes;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -14,6 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
+import javax.validation.ConstraintViolationException;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -30,7 +32,7 @@ class SegmentTypeJPAImplIT {
     @Autowired
     private IntegrationTestHelper integrationTestHelper;
 
-    private static Boolean dbInitialized = false;
+    private static final Boolean dbInitialized = false;
 
     @BeforeEach
     public void init(){
@@ -47,6 +49,14 @@ class SegmentTypeJPAImplIT {
 
         assertThat(savedSegmentType.getId()).isNotNull();
         assertThat(savedSegmentType.getCreationDate()).isNotNull();
+    }
+
+    @Test
+    void saveValidationError() {
+        SegmentType segmentType = SegmentType.builder().code(null).name("Cost Center").build();
+
+        ConstraintViolationException constraintViolationException = assertThrows(ConstraintViolationException.class, () -> segmentTypeServiceJPA.save(segmentType));
+        Assertions.assertThat(constraintViolationException.getMessage()).contains("save.arg0.code: must not be null");
     }
 
     @Test

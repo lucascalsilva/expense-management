@@ -2,15 +2,13 @@ package com.mobnova.expense_mgt.services.impl.jpa;
 
 import com.mobnova.expense_mgt.exception.ExceptionVariable;
 import com.mobnova.expense_mgt.exception.constant.Fields;
+import com.mobnova.expense_mgt.exceptions.DataNotFoundException;
 import com.mobnova.expense_mgt.exceptions.InvalidDataException;
-import com.mobnova.expense_mgt.model.ExpenseReport;
 import com.mobnova.expense_mgt.model.SegmentType;
 import com.mobnova.expense_mgt.model.SegmentValuePair;
 import com.mobnova.expense_mgt.repositories.SegmentTypeRepository;
 import com.mobnova.expense_mgt.repositories.SegmentValuePairRepository;
 import com.mobnova.expense_mgt.services.SegmentValuePairService;
-import com.mobnova.expense_mgt.exceptions.DataNotFoundException;
-import com.mobnova.expense_mgt.validation.BeanValidator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
@@ -26,12 +24,9 @@ public class SegmentValuePairServiceJPAImpl implements SegmentValuePairService {
 
     private final SegmentValuePairRepository segmentValuePairRepository;
     private final SegmentTypeRepository segmentTypeRepository;
-    private final BeanValidator beanValidator;
 
     @Override
     public SegmentValuePair save(SegmentValuePair segmentValuePair) {
-        beanValidator.validateObject(segmentValuePair);
-
         String segmentTypeCode = segmentValuePair.getSegmentType().getCode();
         segmentTypeRepository.findByCode(segmentTypeCode).ifPresentOrElse(segmentType -> {
             segmentValuePair.setSegmentType(segmentType);

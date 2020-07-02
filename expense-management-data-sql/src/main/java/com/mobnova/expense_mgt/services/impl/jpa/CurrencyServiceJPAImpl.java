@@ -1,11 +1,10 @@
 package com.mobnova.expense_mgt.services.impl.jpa;
 
 import com.mobnova.expense_mgt.exception.constant.Fields;
+import com.mobnova.expense_mgt.exceptions.DataNotFoundException;
 import com.mobnova.expense_mgt.model.Currency;
 import com.mobnova.expense_mgt.repositories.CurrencyRepository;
 import com.mobnova.expense_mgt.services.CurrencyService;
-import com.mobnova.expense_mgt.exceptions.DataNotFoundException;
-import com.mobnova.expense_mgt.validation.BeanValidator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
@@ -19,11 +18,9 @@ import java.util.stream.Collectors;
 public class CurrencyServiceJPAImpl implements CurrencyService {
 
     private final CurrencyRepository currencyRepository;
-    private final BeanValidator beanValidator;
 
     @Override
     public Currency save(Currency currency) {
-        beanValidator.validateObject(currency);
         return currencyRepository.save(currency);
     }
 

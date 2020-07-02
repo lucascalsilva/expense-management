@@ -8,6 +8,7 @@ import com.mobnova.expense_mgt.services.impl.jpa.ExpenseReportServiceJPAImpl;
 import com.mobnova.expense_mgt.util.AssertionsUtil;
 import com.mobnova.expense_mgt.util.ExpenseReportTestHelper;
 import com.mobnova.expense_mgt.util.IntegrationTestHelper;
+import org.assertj.core.api.Assertions;
 import org.assertj.core.api.AssertionsForClassTypes;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -16,6 +17,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
+import javax.validation.ConstraintViolationException;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -61,8 +63,8 @@ class ExpenseReportServiceJPAImplIT {
 
     private static ExpenseReportTestHelper expenseReportTestHelper;
 
-    private Integer expenseReportQuantity = 3;
-    private Integer expenseItemQuantity = 3;
+    private final Integer expenseReportQuantity = 3;
+    private final Integer expenseItemQuantity = 3;
 
     private static Boolean dbInitialized = false;
 
@@ -129,6 +131,20 @@ class ExpenseReportServiceJPAImplIT {
                 assertThat(segmentValuePair.getCreationDate()).isNotNull();
             }
         }
+    }
+
+    @Test
+    void saveValidationError() {
+        ExpenseReport expenseReport = ExpenseReport.builder().referenceID("12345").build();
+
+        ConstraintViolationException constraintViolationException = assertThrows(ConstraintViolationException.class, () -> expenseReportServiceJPA.save(expenseReport));
+        Assertions.assertThat(constraintViolationException.getMessage()).contains("save.arg0.user: must not be null");
+        Assertions.assertThat(constraintViolationException.getMessage()).contains("save.arg0.country: must not be null");
+        Assertions.assertThat(constraintViolationException.getMessage()).contains("save.arg0.tripEndDate: must not be null");
+        Assertions.assertThat(constraintViolationException.getMessage()).contains("save.arg0.tripDescription: must not be null");
+        Assertions.assertThat(constraintViolationException.getMessage()).contains("save.arg0.expenses: must not be empty");
+        Assertions.assertThat(constraintViolationException.getMessage()).contains("save.arg0.tripStartDate: must not be null");
+        Assertions.assertThat(constraintViolationException.getMessage()).contains("save.arg0.justification: must not be null");
     }
 
     @Test

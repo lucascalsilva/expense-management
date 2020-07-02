@@ -1,12 +1,10 @@
 package com.mobnova.expense_mgt.services.impl.jpa;
 
 import com.mobnova.expense_mgt.exception.constant.Fields;
-import com.mobnova.expense_mgt.model.ExpenseReport;
+import com.mobnova.expense_mgt.exceptions.DataNotFoundException;
 import com.mobnova.expense_mgt.model.SegmentType;
 import com.mobnova.expense_mgt.repositories.SegmentTypeRepository;
 import com.mobnova.expense_mgt.services.SegmentTypeService;
-import com.mobnova.expense_mgt.exceptions.DataNotFoundException;
-import com.mobnova.expense_mgt.validation.BeanValidator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
@@ -20,11 +18,9 @@ import java.util.stream.Collectors;
 public class SegmentTypeServiceJPAImpl implements SegmentTypeService {
 
     private final SegmentTypeRepository segmentTypeRepository;
-    private final BeanValidator beanValidator;
 
     @Override
     public SegmentType save(SegmentType segmentType) {
-        beanValidator.validateObject(segmentType);
         return segmentTypeRepository.save(segmentType);
     }
 

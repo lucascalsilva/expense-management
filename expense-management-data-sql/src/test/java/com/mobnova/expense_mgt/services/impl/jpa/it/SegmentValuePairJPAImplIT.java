@@ -7,6 +7,7 @@ import com.mobnova.expense_mgt.model.SegmentValuePair;
 import com.mobnova.expense_mgt.repositories.SegmentTypeRepository;
 import com.mobnova.expense_mgt.services.impl.jpa.SegmentValuePairServiceJPAImpl;
 import com.mobnova.expense_mgt.util.IntegrationTestHelper;
+import org.assertj.core.api.Assertions;
 import org.assertj.core.api.AssertionsForClassTypes;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -15,11 +16,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
+import javax.validation.ConstraintViolationException;
 import java.util.HashSet;
 import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @ExtendWith(SpringExtension.class)
 @SpringBootTest
@@ -36,7 +38,7 @@ class SegmentValuePairJPAImplIT {
 
     private SegmentType segmentType;
 
-    private static Boolean dbInitialized = false;
+    private static final Boolean dbInitialized = false;
 
     @BeforeEach
     public void init(){
@@ -55,6 +57,14 @@ class SegmentValuePairJPAImplIT {
 
         assertThat(savedSegmentValuePair.getId()).isNotNull();
         assertThat(savedSegmentValuePair.getCreationDate()).isNotNull();
+    }
+
+    @Test
+    void saveValidationError() {
+        SegmentValuePair segmentValuePair = SegmentValuePair.builder().segmentValue(null).segmentType(segmentType).build();
+
+        ConstraintViolationException constraintViolationException = assertThrows(ConstraintViolationException.class, () -> segmentValuePairServiceJPA.save(segmentValuePair));
+        Assertions.assertThat(constraintViolationException.getMessage()).contains("save.arg0.segmentValue: must not be null");
     }
 
     @Test

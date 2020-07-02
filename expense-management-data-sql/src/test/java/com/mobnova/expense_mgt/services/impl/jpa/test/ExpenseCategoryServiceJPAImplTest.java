@@ -5,7 +5,6 @@ import com.mobnova.expense_mgt.exceptions.DataNotFoundException;
 import com.mobnova.expense_mgt.model.ExpenseCategory;
 import com.mobnova.expense_mgt.repositories.ExpenseCategoryRepository;
 import com.mobnova.expense_mgt.services.impl.jpa.ExpenseCategoryServiceJPAImpl;
-import com.mobnova.expense_mgt.validation.BeanValidator;
 import org.assertj.core.api.AssertionsForClassTypes;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -19,7 +18,7 @@ import java.util.Optional;
 import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.AdditionalAnswers.returnsFirstArg;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
@@ -33,9 +32,6 @@ class ExpenseCategoryServiceJPAImplTest {
 
     @Mock
     private ExpenseCategoryRepository expenseCategoryRepository;
-
-    @Mock
-    private BeanValidator beanValidator;
 
     @Test
     void save() {

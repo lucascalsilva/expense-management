@@ -9,7 +9,6 @@ import com.mobnova.expense_mgt.repositories.CityRepository;
 import com.mobnova.expense_mgt.repositories.CountyRepository;
 import com.mobnova.expense_mgt.repositories.StateOrProvinceRepository;
 import com.mobnova.expense_mgt.services.impl.jpa.CityServiceJPAImpl;
-import com.mobnova.expense_mgt.validation.BeanValidator;
 import org.assertj.core.api.AssertionsForClassTypes;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -26,7 +25,6 @@ import java.util.Set;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.AdditionalAnswers.returnsFirstArg;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -44,10 +42,6 @@ class CityServiceJPAImplTest {
 
     @Mock
     private StateOrProvinceRepository stateOrProvinceRepository;
-
-    @Mock
-    private BeanValidator beanValidator;
-
     private StateOrProvince stateOrProvince;
     private County county;
 

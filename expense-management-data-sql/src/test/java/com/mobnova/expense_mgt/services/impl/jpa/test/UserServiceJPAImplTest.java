@@ -5,7 +5,6 @@ import com.mobnova.expense_mgt.exceptions.DataNotFoundException;
 import com.mobnova.expense_mgt.model.User;
 import com.mobnova.expense_mgt.repositories.UserRepository;
 import com.mobnova.expense_mgt.services.impl.jpa.UserServiceJPAImpl;
-import com.mobnova.expense_mgt.validation.BeanValidator;
 import org.assertj.core.api.AssertionsForClassTypes;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -33,9 +32,6 @@ class UserServiceJPAImplTest {
 
     @Mock
     private UserRepository userRepository;
-
-    @Mock
-    private BeanValidator beanValidator;
 
     @Test
     void save() {

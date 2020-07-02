@@ -5,11 +5,11 @@ import com.mobnova.expense_mgt.rest.v1.dto.ExpenseReportDtoV1;
 import com.mobnova.expense_mgt.services.ExpenseReportService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.mockito.internal.util.collections.Sets;
 import org.modelmapper.ModelMapper;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
+import javax.validation.Valid;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -41,7 +41,7 @@ public class ExpenseReportRestControllerV1 {
 
     @GetMapping("/byRefID/{referenceID}")
     @ResponseStatus(HttpStatus.OK)
-    public ExpenseReportDtoV1 findByReferenceId(@PathVariable String referenceID){
+    public ExpenseReportDtoV1 findByReferenceId(  @PathVariable String referenceID){
         ExpenseReport expenseReport = expenseReportService.findByReferenceID(referenceID);
         ExpenseReportDtoV1 expenseReportDtoV1 = globalMapper.map(expenseReport, ExpenseReportDtoV1.class);
         return expenseReportDtoV1;
@@ -49,7 +49,7 @@ public class ExpenseReportRestControllerV1 {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public ExpenseReportDtoV1 create(@RequestBody ExpenseReportDtoV1 expenseReportDtoV1){
+    public ExpenseReportDtoV1 create(@RequestBody @Valid ExpenseReportDtoV1 expenseReportDtoV1){
         ExpenseReport newExpenseReport = globalMapper.map(expenseReportDtoV1, ExpenseReport.class);
         newExpenseReport = expenseReportService.save(newExpenseReport);
         return globalMapper.map(newExpenseReport, ExpenseReportDtoV1.class);
@@ -57,11 +57,15 @@ public class ExpenseReportRestControllerV1 {
 
     @PutMapping("/{id}")
     @ResponseStatus(HttpStatus.ACCEPTED)
-    public ExpenseReportDtoV1 update(@RequestBody ExpenseReportDtoV1 expenseReportDtoV1, @PathVariable Long id){
-        ExpenseReport newExpenseReport = globalMapper.map(expenseReportDtoV1, ExpenseReport.class);
-        newExpenseReport.setId(id);
-        newExpenseReport = expenseReportService.save(newExpenseReport);
-        return globalMapper.map(newExpenseReport, ExpenseReportDtoV1.class);
+    public ExpenseReportDtoV1 update(@RequestBody @Valid ExpenseReportDtoV1 expenseReportDtoV1, @PathVariable Long id){
+        ExpenseReport expenseReportById = expenseReportService.findById(id);
+
+        ExpenseReport updateExpenseReport = globalMapper.map(expenseReportDtoV1, ExpenseReport.class);
+        updateExpenseReport.setId(expenseReportById.getId());
+        updateExpenseReport.setVersion(expenseReportById.getVersion());
+
+        updateExpenseReport = expenseReportService.save(updateExpenseReport);
+        return globalMapper.map(updateExpenseReport, ExpenseReportDtoV1.class);
     }
 
     @PostMapping("/bulk")

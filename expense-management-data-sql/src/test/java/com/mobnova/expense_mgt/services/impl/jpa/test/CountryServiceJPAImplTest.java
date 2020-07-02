@@ -5,7 +5,6 @@ import com.mobnova.expense_mgt.exceptions.DataNotFoundException;
 import com.mobnova.expense_mgt.model.Country;
 import com.mobnova.expense_mgt.repositories.CountryRepository;
 import com.mobnova.expense_mgt.services.impl.jpa.CountryServiceJPAImpl;
-import com.mobnova.expense_mgt.validation.BeanValidator;
 import org.assertj.core.api.AssertionsForClassTypes;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -14,13 +13,12 @@ import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.AdditionalAnswers.returnsFirstArg;
 import static org.mockito.Mockito.*;
 
@@ -33,9 +31,6 @@ class CountryServiceJPAImplTest {
 
     @Mock
     private CountryRepository countryRepository;
-
-    @Mock
-    private BeanValidator beanValidator;
 
     @Test
     void save() {

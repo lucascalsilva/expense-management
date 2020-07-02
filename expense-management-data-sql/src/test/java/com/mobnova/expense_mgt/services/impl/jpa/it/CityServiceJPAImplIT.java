@@ -12,6 +12,7 @@ import com.mobnova.expense_mgt.repositories.StateOrProvinceRepository;
 import com.mobnova.expense_mgt.services.impl.jpa.CityServiceJPAImpl;
 import com.mobnova.expense_mgt.util.AssertionsUtil;
 import com.mobnova.expense_mgt.util.IntegrationTestHelper;
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -19,6 +20,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
+import javax.validation.ConstraintViolationException;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -76,6 +78,14 @@ class CityServiceJPAImplIT {
 
         assertThat(citySaved.getStateOrProvince()).isNotNull();
         assertThat(citySaved.getStateOrProvince().getCode()).isEqualTo("RS");
+    }
+
+    @Test
+    void saveValidationError() {
+        City city = City.builder().code(null).name("Porto Alegre").build();
+
+        ConstraintViolationException constraintViolationException = assertThrows(ConstraintViolationException.class, () -> cityServiceJPA.save(city));
+        Assertions.assertThat(constraintViolationException.getMessage()).contains("save.arg0.code: must not be null");
     }
 
     @Test

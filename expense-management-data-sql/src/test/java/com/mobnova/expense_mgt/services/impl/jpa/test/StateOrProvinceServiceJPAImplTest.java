@@ -2,14 +2,11 @@ package com.mobnova.expense_mgt.services.impl.jpa.test;
 
 import com.mobnova.expense_mgt.exception.constant.Fields;
 import com.mobnova.expense_mgt.exceptions.DataNotFoundException;
-import com.mobnova.expense_mgt.model.City;
 import com.mobnova.expense_mgt.model.Country;
-import com.mobnova.expense_mgt.model.County;
 import com.mobnova.expense_mgt.model.StateOrProvince;
 import com.mobnova.expense_mgt.repositories.CountryRepository;
 import com.mobnova.expense_mgt.repositories.StateOrProvinceRepository;
 import com.mobnova.expense_mgt.services.impl.jpa.StateOrProvinceServiceJPAImpl;
-import com.mobnova.expense_mgt.validation.BeanValidator;
 import org.assertj.core.api.AssertionsForClassTypes;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -24,7 +21,7 @@ import java.util.Optional;
 import java.util.Set;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.AdditionalAnswers.returnsFirstArg;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
@@ -41,9 +38,6 @@ class StateOrProvinceServiceJPAImplTest {
 
     @Mock
     private CountryRepository countryRepository;
-
-    @Mock
-    private BeanValidator beanValidator;
 
     private Country country;
 

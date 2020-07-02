@@ -5,7 +5,6 @@ import com.mobnova.expense_mgt.exceptions.DataNotFoundException;
 import com.mobnova.expense_mgt.model.SegmentType;
 import com.mobnova.expense_mgt.repositories.SegmentTypeRepository;
 import com.mobnova.expense_mgt.services.impl.jpa.SegmentTypeServiceJPAImpl;
-import com.mobnova.expense_mgt.validation.BeanValidator;
 import org.assertj.core.api.AssertionsForClassTypes;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -33,9 +32,6 @@ class SegmentTypeJPAImplTest {
 
     @Mock
     private SegmentTypeRepository segmentTypeRepository;
-
-    @Mock
-    private BeanValidator beanValidator;
 
     @Test
     void save() {

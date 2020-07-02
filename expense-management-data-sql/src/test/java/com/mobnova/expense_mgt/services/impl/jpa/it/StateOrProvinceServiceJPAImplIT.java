@@ -17,6 +17,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
+import javax.validation.ConstraintViolationException;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -60,6 +61,14 @@ class StateOrProvinceServiceJPAImplIT {
 
         assertThat(savedStateOrProvince.getCountry()).isNotNull();
         assertThat(savedStateOrProvince.getCountry().getCode()).isEqualTo("BR");
+    }
+
+    @Test
+    void saveValidationError() {
+        StateOrProvince stateOrProvince = StateOrProvince.builder().code(null).name("Rio Grande do Sul").build();
+
+        ConstraintViolationException constraintViolationException = assertThrows(ConstraintViolationException.class, () -> stateOrProvinceServiceJPA.save(stateOrProvince));
+        Assertions.assertThat(constraintViolationException.getMessage()).contains("save.arg0.code: must not be null");
     }
 
     @Test

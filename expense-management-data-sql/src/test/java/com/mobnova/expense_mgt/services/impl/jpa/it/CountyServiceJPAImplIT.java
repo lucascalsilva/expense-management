@@ -10,6 +10,7 @@ import com.mobnova.expense_mgt.repositories.StateOrProvinceRepository;
 import com.mobnova.expense_mgt.services.impl.jpa.CountyServiceJPAImpl;
 import com.mobnova.expense_mgt.util.AssertionsUtil;
 import com.mobnova.expense_mgt.util.IntegrationTestHelper;
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -17,6 +18,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
+import javax.validation.ConstraintViolationException;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -55,6 +57,13 @@ class CountyServiceJPAImplIT {
         }
     }
 
+    @Test
+    void saveValidationError() {
+        County county = County.builder().code(null).name("Condado de Porto Alegre").build();
+
+        ConstraintViolationException constraintViolationException = assertThrows(ConstraintViolationException.class, () -> countyServiceJPA.save(county));
+        Assertions.assertThat(constraintViolationException.getMessage()).contains("save.arg0.code: must not be null");
+    }
 
     @Test
     void save() {
