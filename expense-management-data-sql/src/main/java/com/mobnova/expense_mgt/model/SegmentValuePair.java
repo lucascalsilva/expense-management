@@ -8,6 +8,7 @@ import lombok.experimental.SuperBuilder;
 import org.hibernate.annotations.NaturalId;
 
 import javax.persistence.*;
+import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 
 @ToString(callSuper = true)
@@ -25,7 +26,7 @@ public class SegmentValuePair extends BaseEntity {
     @NaturalId
     private SegmentType segmentType;
 
-    @NotNull
     @NaturalId
+    @NotBlank
     private String segmentValue;
 }

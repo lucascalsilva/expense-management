@@ -1,7 +1,7 @@
 package com.mobnova.expense_mgt.util;
 
-import com.mobnova.expense_mgt.model.*;
 import com.mobnova.expense_mgt.model.Currency;
+import com.mobnova.expense_mgt.model.*;
 import lombok.Getter;
 
 import java.math.BigDecimal;
@@ -68,7 +68,7 @@ public class ExpenseReportTestHelper {
             segmentValuePairs.add(segmentValuePairCC);
             segmentValuePairs.add(segmentValuePairAC);
 
-            ExpenseItem expenseItem = ExpenseItem.builder().expenseItemNumber((long) value)
+            ExpenseItem expenseItem = ExpenseItem.builder().expenseItemNumber((long) value + 1)
                     .amount(new BigDecimal(1000))
                     .currency(currency)
                     .expenseCity(city)

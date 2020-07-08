@@ -1,15 +1,15 @@
 package com.mobnova.expense_mgt.rest.v1.controllers;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import com.mobnova.expense_mgt.config.ModelMapperConfiguration;
 import com.mobnova.expense_mgt.model.ExpenseItem;
 import com.mobnova.expense_mgt.model.ExpenseReport;
 import com.mobnova.expense_mgt.model.SegmentValuePair;
-import com.mobnova.expense_mgt.rest.v1.dto.ExpenseItemDtoV1;
 import com.mobnova.expense_mgt.rest.v1.dto.ExpenseReportDtoV1;
 import com.mobnova.expense_mgt.services.ExpenseReportService;
 import com.mobnova.expense_mgt.util.ExpenseReportTestHelper;
+import lombok.extern.slf4j.Slf4j;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -23,18 +23,19 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
-import java.util.*;
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import static com.mobnova.expense_mgt.ApplicationConstants.REST_API_V1_BASEPATH;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
-import static org.hamcrest.collection.IsCollectionWithSize.hasSize;
-import static org.mockito.AdditionalAnswers.returnsFirstArg;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @ExtendWith(MockitoExtension.class)
+@Slf4j
 class ExpenseReportRestControllerV1Test {
 
     private ExpenseReportRestControllerV1 expenseReportRestControllerV1;
@@ -56,15 +57,19 @@ class ExpenseReportRestControllerV1Test {
 
     private ModelMapper modelMapper;
 
+    private ObjectMapper objectMapper;
+
 
     @BeforeEach
     void setup() {
         ModelMapperConfiguration modelMapperConfiguration = new ModelMapperConfiguration();
         modelMapper = modelMapperConfiguration.globalMapper();
+        objectMapper = new ObjectMapper();
+        objectMapper.disable(SerializationFeature.FAIL_ON_EMPTY_BEANS);
 
         expenseReportRestControllerV1 = new ExpenseReportRestControllerV1(expenseReportService, modelMapper);
 
-        mockMvc = MockMvcBuilders.standaloneSetup(expenseReportRestControllerV1).build();
+        mockMvc = MockMvcBuilders.standaloneSetup(expenseReportRestControllerV1).setControllerAdvice(new GlobalControllerErrorHandler()).build();
 
         expenseReportTestHelper = new ExpenseReportTestHelper();
         expenseReport = expenseReportTestHelper.createDummyExpenseReport(2);
@@ -130,7 +135,7 @@ class ExpenseReportRestControllerV1Test {
 
         ResultActions resultActions = mockMvc.perform(post(REST_API_V1_BASEPATH + "/expense-reports")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(new ObjectMapper().writeValueAsBytes(expenseReportDtoV1)))
+                .content(objectMapper.writeValueAsBytes(expenseReportDtoV1)))
                 .andExpect(status().isCreated())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON));
 
@@ -140,25 +145,60 @@ class ExpenseReportRestControllerV1Test {
     }
 
     @Test
+    void createWithValidationErrors() throws Exception {
+        ExpenseReport expenseReportInvalid = ExpenseReport.builder().referenceID("12345").tripStartDate(LocalDate.now()).build();
+        ExpenseReportDtoV1 expenseReportDtoV1Invalid = modelMapper.map(expenseReportInvalid, ExpenseReportDtoV1.class);
+
+        ResultActions resultActions = mockMvc.perform(post(REST_API_V1_BASEPATH + "/expense-reports")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsBytes(expenseReportDtoV1Invalid)))
+                .andExpect(status().isBadRequest())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.[0].object", Matchers.equalTo("expenseReportDtoV1")))
+                .andExpect(jsonPath("$.[0].message", Matchers.equalTo("must not be blank")))
+                .andExpect(jsonPath("$.[0].field", Matchers.equalTo("countryCode")))
+                .andExpect(jsonPath("$.[1].object", Matchers.equalTo("expenseReportDtoV1")))
+                .andExpect(jsonPath("$.[1].message", Matchers.equalTo("must not be blank")))
+                .andExpect(jsonPath("$.[1].field", Matchers.equalTo("creator")))
+                .andExpect(jsonPath("$.[2].object", Matchers.equalTo("expenseReportDtoV1")))
+                .andExpect(jsonPath("$.[2].message", Matchers.equalTo("must not be empty")))
+                .andExpect(jsonPath("$.[2].field", Matchers.equalTo("expenses")))
+                .andExpect(jsonPath("$.[3].object", Matchers.equalTo("expenseReportDtoV1")))
+                .andExpect(jsonPath("$.[3].message", Matchers.equalTo("must not be blank")))
+                .andExpect(jsonPath("$.[3].field", Matchers.equalTo("justification")))
+                .andExpect(jsonPath("$.[4].object", Matchers.equalTo("expenseReportDtoV1")))
+                .andExpect(jsonPath("$.[4].message", Matchers.equalTo("must not be blank")))
+                .andExpect(jsonPath("$.[4].field", Matchers.equalTo("tripDescription")))
+                .andExpect(jsonPath("$.[5].object", Matchers.equalTo("expenseReportDtoV1")))
+                .andExpect(jsonPath("$.[5].message", Matchers.equalTo("must not be null")))
+                .andExpect(jsonPath("$.[5].field", Matchers.equalTo("tripEndDate")));
+
+        verifyNoInteractions(expenseReportService);
+    }
+
+    @Test
     void update() throws Exception {
+        ExpenseReport expenseReportWithId = ExpenseReport.builder().id(123L).version(0).build();
         ArgumentCaptor<ExpenseReport> argumentCaptor = ArgumentCaptor.forClass(ExpenseReport.class);
         when(expenseReportService.save(any())).thenReturn(expenseReport);
+        when(expenseReportService.findById(123L)).thenReturn(expenseReportWithId);
 
         ExpenseReportDtoV1 expenseReportDtoV1 = modelMapper.map(expenseReport, ExpenseReportDtoV1.class);
 
         ResultActions resultActions = mockMvc.perform(put(REST_API_V1_BASEPATH + "/expense-reports/123")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(new ObjectMapper().writeValueAsBytes(expenseReportDtoV1)))
-                .andExpect(status().isAccepted())
+                .content(objectMapper.writeValueAsBytes(expenseReportDtoV1)))
+                .andExpect(status().isCreated())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON));
 
         mockMvcExpects(resultActions);
 
+        verify(expenseReportService, times(1)).findById(eq(123L));
         verify(expenseReportService, times(1)).save(argumentCaptor.capture());
 
         ExpenseReport savedExpenseReport = argumentCaptor.getValue();
-
         assertThat(savedExpenseReport.getId()).isEqualTo(123L);
+        assertThat(savedExpenseReport.getVersion()).isEqualTo(0);
     }
 
     @Test
@@ -172,7 +212,7 @@ class ExpenseReportRestControllerV1Test {
 
         ResultActions resultActions = mockMvc.perform(post(REST_API_V1_BASEPATH + "/expense-reports/bulk")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(new ObjectMapper().writeValueAsBytes(expenseReportDtoV1Set)))
+                .content(objectMapper.writeValueAsBytes(expenseReportDtoV1Set)))
                 .andExpect(status().isCreated())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON));
 

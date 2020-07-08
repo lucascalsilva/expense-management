@@ -57,7 +57,7 @@ class CountryServiceJPAImplIT {
         Country country = Country.builder().code(null).build();
 
         ConstraintViolationException constraintViolationException = assertThrows(ConstraintViolationException.class, () -> countryServiceJPA.save(country));
-        assertThat(constraintViolationException.getMessage()).contains("save.arg0.code: must not be null");
+        assertThat(constraintViolationException.getMessage()).contains("save.arg0.code: must not be blank");
     }
 
     @Test

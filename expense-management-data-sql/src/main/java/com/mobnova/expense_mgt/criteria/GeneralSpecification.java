@@ -2,7 +2,10 @@ package com.mobnova.expense_mgt.criteria;
 
 import com.mobnova.expense_mgt.config.CriteriaConfigBean;
 import com.mobnova.expense_mgt.exceptions.InvalidCriteriaException;
-import lombok.*;
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+import lombok.Setter;
+import lombok.ToString;
 import org.springframework.data.jpa.domain.Specification;
 
 import javax.persistence.criteria.CriteriaBuilder;
@@ -40,7 +43,7 @@ public class GeneralSpecification implements Specification {
                     return builder.like(builder.upper(root.<String>get(criteria.getKey())), "%"
                             + criteria.getValue().toString().toUpperCase() + "%");
                 } else {
-                    throw new InvalidCriteriaException("Criteria " + "\'" + criteria.getKey() + "\'"
+                    throw new InvalidCriteriaException("Criteria " + "'" + criteria.getKey() + "'"
                             + " invalid. You must provide at least " + criteriaConfigBean.getMinCharactersForLikeSearch()
                             + " characters in the value.");
                 }

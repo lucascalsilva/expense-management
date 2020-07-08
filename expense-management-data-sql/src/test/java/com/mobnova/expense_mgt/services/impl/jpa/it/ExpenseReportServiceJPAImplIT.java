@@ -141,10 +141,10 @@ class ExpenseReportServiceJPAImplIT {
         Assertions.assertThat(constraintViolationException.getMessage()).contains("save.arg0.user: must not be null");
         Assertions.assertThat(constraintViolationException.getMessage()).contains("save.arg0.country: must not be null");
         Assertions.assertThat(constraintViolationException.getMessage()).contains("save.arg0.tripEndDate: must not be null");
-        Assertions.assertThat(constraintViolationException.getMessage()).contains("save.arg0.tripDescription: must not be null");
+        Assertions.assertThat(constraintViolationException.getMessage()).contains("save.arg0.tripDescription: must not be blank");
         Assertions.assertThat(constraintViolationException.getMessage()).contains("save.arg0.expenses: must not be empty");
         Assertions.assertThat(constraintViolationException.getMessage()).contains("save.arg0.tripStartDate: must not be null");
-        Assertions.assertThat(constraintViolationException.getMessage()).contains("save.arg0.justification: must not be null");
+        Assertions.assertThat(constraintViolationException.getMessage()).contains("save.arg0.justification: must not be blank");
     }
 
     @Test

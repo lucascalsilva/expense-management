@@ -8,6 +8,7 @@ import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateDeserializer;
 import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateSerializer;
 import lombok.*;
 
+import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Positive;
 import java.math.BigDecimal;
@@ -22,13 +23,13 @@ import java.util.Map;
 @AllArgsConstructor
 public class ExpenseItemDtoV1 extends BaseDtoV1 {
 
-    @NotNull
+    @Positive
     private Long expenseItemNumber;
 
     @Positive
     private BigDecimal amount;
 
-    @NotNull
+    @NotBlank
     private String currencyCode;
 
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
@@ -40,7 +41,7 @@ public class ExpenseItemDtoV1 extends BaseDtoV1 {
     @JsonSerialize(using = LocalDateSerializer.class)
     private LocalDate expenseDate;
 
-    @NotNull
+    @NotBlank
     private String expenseCategoryCode;
 
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)

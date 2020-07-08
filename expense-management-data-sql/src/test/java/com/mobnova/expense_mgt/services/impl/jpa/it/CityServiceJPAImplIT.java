@@ -85,7 +85,7 @@ class CityServiceJPAImplIT {
         City city = City.builder().code(null).name("Porto Alegre").build();
 
         ConstraintViolationException constraintViolationException = assertThrows(ConstraintViolationException.class, () -> cityServiceJPA.save(city));
-        Assertions.assertThat(constraintViolationException.getMessage()).contains("save.arg0.code: must not be null");
+        Assertions.assertThat(constraintViolationException.getMessage()).contains("save.arg0.code: must not be blank");
     }
 
     @Test

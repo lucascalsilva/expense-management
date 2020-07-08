@@ -56,7 +56,7 @@ class ExpenseCategoryServiceJPAImplIT {
         ExpenseCategory expenseCategory = ExpenseCategory.builder().code(null).name("Meal").build();
 
         ConstraintViolationException constraintViolationException = assertThrows(ConstraintViolationException.class, () -> expenseCategoryServiceJPA.save(expenseCategory));
-        Assertions.assertThat(constraintViolationException.getMessage()).contains("save.arg0.code: must not be null");
+        Assertions.assertThat(constraintViolationException.getMessage()).contains("save.arg0.code: must not be blank");
     }
 
     @Test

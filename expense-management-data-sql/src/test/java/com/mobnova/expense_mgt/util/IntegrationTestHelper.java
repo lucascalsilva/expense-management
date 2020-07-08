@@ -1,6 +1,5 @@
 package com.mobnova.expense_mgt.util;
 
-import com.mobnova.expense_mgt.model.SegmentType;
 import com.mobnova.expense_mgt.repositories.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;

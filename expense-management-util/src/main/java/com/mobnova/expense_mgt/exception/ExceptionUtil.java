@@ -1,12 +1,8 @@
 package com.mobnova.expense_mgt.exception;
 
 import lombok.experimental.UtilityClass;
-import org.mockito.internal.util.reflection.Fields;
 
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 
 @UtilityClass
 public class ExceptionUtil {

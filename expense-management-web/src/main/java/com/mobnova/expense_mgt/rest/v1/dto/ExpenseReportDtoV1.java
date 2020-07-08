@@ -9,6 +9,8 @@ import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateDeserializer;
 import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateSerializer;
 import lombok.*;
 
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 import java.math.BigDecimal;
@@ -24,18 +26,18 @@ import java.util.Set;
 @AllArgsConstructor
 public class ExpenseReportDtoV1 extends BaseDtoV1 {
 
-    @NotNull
+    @NotBlank
     private String referenceID;
 
-    @NotNull
-    @Size(min = 10, max = 2000)
+    @NotBlank
+    @Size(min = 3, max = 2000)
     private String tripDescription;
 
-    @NotNull
-    @Size(min = 10, max = 2000)
+    @NotBlank
+    @Size(min = 3, max = 2000)
     private String justification;
 
-    @NotNull
+    @NotBlank
     private String countryCode;
 
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
@@ -55,7 +57,11 @@ public class ExpenseReportDtoV1 extends BaseDtoV1 {
 
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private BigDecimal totalAmount;
+
+    @NotBlank
     private String creator;
+
+    @NotEmpty
     private Set<ExpenseItemDtoV1> expenses = new HashSet<ExpenseItemDtoV1>();
 
 }

@@ -9,6 +9,15 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <version>0.0.1-SNAPSHOT</version>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-web</artifactId>
+            <scope>provided</scope>
+        </dependency>
+    </dependencies>
+
     <artifactId>expense-management-util</artifactId>
 
 </project>

@@ -2,8 +2,6 @@ package com.mobnova.expense_mgt.services.impl.jpa;
 
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.*;
-
 class ExpenseCategoryServiceJPAImplTest {
 
     @Test

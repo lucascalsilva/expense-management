@@ -64,7 +64,7 @@ class SegmentValuePairJPAImplIT {
         SegmentValuePair segmentValuePair = SegmentValuePair.builder().segmentValue(null).segmentType(segmentType).build();
 
         ConstraintViolationException constraintViolationException = assertThrows(ConstraintViolationException.class, () -> segmentValuePairServiceJPA.save(segmentValuePair));
-        Assertions.assertThat(constraintViolationException.getMessage()).contains("save.arg0.segmentValue: must not be null");
+        Assertions.assertThat(constraintViolationException.getMessage()).contains("save.arg0.segmentValue: must not be blank");
     }
 
     @Test

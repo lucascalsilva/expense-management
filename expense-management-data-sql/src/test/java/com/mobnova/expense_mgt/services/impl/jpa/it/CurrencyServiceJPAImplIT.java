@@ -55,7 +55,7 @@ class CurrencyServiceJPAImplIT {
         Currency currency = Currency.builder().code(null).name("Brazilian Real").build();
 
         ConstraintViolationException constraintViolationException = assertThrows(ConstraintViolationException.class, () -> currencyServiceJPA.save(currency));
-        Assertions.assertThat(constraintViolationException.getMessage()).contains("save.arg0.code: must not be null");
+        Assertions.assertThat(constraintViolationException.getMessage()).contains("save.arg0.code: must not be blank");
     }
 
     @Test

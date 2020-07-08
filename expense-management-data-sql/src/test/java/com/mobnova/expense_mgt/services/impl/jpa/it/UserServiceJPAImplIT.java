@@ -59,10 +59,10 @@ class UserServiceJPAImplIT {
         User user = User.builder().username("user_one").build();
 
         ConstraintViolationException constraintViolationException = assertThrows(ConstraintViolationException.class, () -> userServiceJPA.save(user));
-        Assertions.assertThat(constraintViolationException.getMessage()).contains("save.arg0.email: must not be null");
-        Assertions.assertThat(constraintViolationException.getMessage()).contains("save.arg0.password: must not be null");
-        Assertions.assertThat(constraintViolationException.getMessage()).contains("save.arg0.firstName: must not be null");
-        Assertions.assertThat(constraintViolationException.getMessage()).contains("save.arg0.lastName: must not be null");
+        Assertions.assertThat(constraintViolationException.getMessage()).contains("save.arg0.email: must not be blank");
+        Assertions.assertThat(constraintViolationException.getMessage()).contains("save.arg0.password: must not be blank");
+        Assertions.assertThat(constraintViolationException.getMessage()).contains("save.arg0.firstName: must not be blank");
+        Assertions.assertThat(constraintViolationException.getMessage()).contains("save.arg0.lastName: must not be blank");
     }
 
 

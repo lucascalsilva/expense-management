@@ -62,7 +62,7 @@ class CountyServiceJPAImplIT {
         County county = County.builder().code(null).name("Condado de Porto Alegre").build();
 
         ConstraintViolationException constraintViolationException = assertThrows(ConstraintViolationException.class, () -> countyServiceJPA.save(county));
-        Assertions.assertThat(constraintViolationException.getMessage()).contains("save.arg0.code: must not be null");
+        Assertions.assertThat(constraintViolationException.getMessage()).contains("save.arg0.code: must not be blank");
     }
 
     @Test
