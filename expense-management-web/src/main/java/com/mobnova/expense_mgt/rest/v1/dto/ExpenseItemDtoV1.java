@@ -13,7 +13,6 @@ import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Positive;
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.Map;
 
 @Getter
 @Setter
@@ -49,7 +48,7 @@ public class ExpenseItemDtoV1 extends BaseDtoV1 {
 
     @NotNull
     private CityDtoV1 expenseCity;
-    private Map<String, String> segmentValuePairs;
+    private String segmentValuePairs;
 
     @NotNull
     private String picture;

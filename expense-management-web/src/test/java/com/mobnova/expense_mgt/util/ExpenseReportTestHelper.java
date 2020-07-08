@@ -38,8 +38,8 @@ public class ExpenseReportTestHelper {
         user = User.builder().username("user_one").build();
         expenseCategory = ExpenseCategory.builder().code("MEAL").build();
         currency = Currency.builder().code("BRL").build();
-        segmentTypeCC = SegmentType.builder().code("CC").build();
-        segmentTypeAC = SegmentType.builder().code("AC").build();
+        segmentTypeCC = SegmentType.builder().code("CC").order(4L).build();
+        segmentTypeAC = SegmentType.builder().code("NA").order(5L).build();
         segmentValuePairCC = SegmentValuePair.builder().segmentValue("1000").segmentType(segmentTypeCC).build();
         segmentValuePairAC = SegmentValuePair.builder().segmentValue("5000").segmentType(segmentTypeAC).build();
     }

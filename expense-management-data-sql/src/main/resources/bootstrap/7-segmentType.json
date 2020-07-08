@@ -1,6 +1,27 @@
 [
   {
+    "order": 1,
+    "code": "RE",
+    "name": "Region"
+  },
+  {
+    "order": 2,
+    "code": "LE",
+    "name": "Legal Entity"
+  },
+  {
+    "order": 3,
+    "code": "BU",
+    "name": "Business Unit"
+  },
+  {
+    "order": 4,
     "code": "CC",
     "name": "Cost Center"
+  },
+  {
+    "order": 5,
+    "code": "NA",
+    "name": "Natural Account"
   }
 ]

@@ -47,7 +47,7 @@ class ExpenseReportRestControllerV1Test {
 
     private ExpenseItem expenseItem;
 
-    private SegmentValuePair segmentValuePairAC;
+    private SegmentValuePair segmentValuePairNA;
 
     private SegmentValuePair segmentValuePairCC;
 
@@ -75,8 +75,8 @@ class ExpenseReportRestControllerV1Test {
         expenseReport = expenseReportTestHelper.createDummyExpenseReport(2);
         expenseItem = new ArrayList<>(expenseReport.getExpenses()).get(0);
 
-        segmentValuePairAC = expenseItem.getSegmentValuePairs().stream()
-                .filter(segmentValuePair -> segmentValuePair.getSegmentType().getCode().equals("AC")).findFirst().get();
+        segmentValuePairNA = expenseItem.getSegmentValuePairs().stream()
+                .filter(segmentValuePair -> segmentValuePair.getSegmentType().getCode().equals("NA")).findFirst().get();
 
         segmentValuePairCC = expenseItem.getSegmentValuePairs().stream()
                 .filter(segmentValuePair -> segmentValuePair.getSegmentType().getCode().equals("CC")).findFirst().get();
@@ -253,9 +253,7 @@ class ExpenseReportRestControllerV1Test {
                         Matchers.equalTo(expenseItem.getExpenseCity().getStateOrProvince().getCode())))
                 .andExpect(jsonPath("$.expenses[0].expenseCity.countryCode",
                         Matchers.equalTo(expenseItem.getExpenseCity().getStateOrProvince().getCountry().getCode())))
-                .andExpect(jsonPath("$.expenses[0].segmentValuePairs.AC",
-                        Matchers.equalTo(segmentValuePairAC.getSegmentValue())))
-                .andExpect(jsonPath("$.expenses[0].segmentValuePairs.CC",
-                        Matchers.equalTo(segmentValuePairCC.getSegmentValue())));
+                .andExpect(jsonPath("$.expenses[0].segmentValuePairs",
+                        Matchers.equalTo(segmentValuePairCC.getSegmentValue() + "-" + segmentValuePairNA.getSegmentValue())));
     }
 }

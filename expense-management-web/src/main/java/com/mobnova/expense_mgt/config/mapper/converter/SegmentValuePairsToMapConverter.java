@@ -4,15 +4,17 @@ import com.mobnova.expense_mgt.model.SegmentValuePair;
 import org.modelmapper.Converter;
 import org.modelmapper.spi.MappingContext;
 
+import java.util.Comparator;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
-public class SegmentValuePairsToMapConverter implements Converter<List<SegmentValuePair>, Map<String, String>> {
+public class SegmentValuePairsToMapConverter implements Converter<List<SegmentValuePair>, String> {
 
     @Override
-    public Map<String, String> convert(MappingContext<List<SegmentValuePair>, Map<String, String>> mappingContext) {
-        return mappingContext.getSource().stream().collect(Collectors
-                .toMap(k -> k.getSegmentType().getCode(), v -> v.getSegmentValue()));
+    public String convert(MappingContext<List<SegmentValuePair>, String> mappingContext) {
+        return mappingContext.getSource().stream()
+                .sorted(Comparator.comparing(o -> o.getSegmentType().getOrder()))
+                .map(SegmentValuePair::getSegmentValue)
+                .collect(Collectors.joining("-"));
     }
 }

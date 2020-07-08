@@ -40,7 +40,7 @@ public class ExpenseReportRestControllerV1 {
     }
 
     @GetMapping("/byRefID/{referenceID}")
-    public ResponseEntity<ExpenseReportDtoV1> findByReferenceId(  @PathVariable String referenceID){
+    public ResponseEntity<ExpenseReportDtoV1> findByReferenceId(@PathVariable String referenceID){
         ExpenseReport expenseReport = expenseReportService.findByReferenceID(referenceID);
         ExpenseReportDtoV1 expenseReportDtoV1 = globalMapper.map(expenseReport, ExpenseReportDtoV1.class);
         return ResponseEntity.ok(expenseReportDtoV1);

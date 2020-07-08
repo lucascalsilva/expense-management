@@ -1,8 +1,32 @@
 [
   {
     "segmentType": {
+      "code": "RE"
+    },
+    "segmentValue": "BR"
+  },
+  {
+    "segmentType": {
+      "code": "LE"
+    },
+    "segmentValue": "BR01"
+  },
+  {
+    "segmentType": {
+      "code": "BU"
+    },
+    "segmentValue": "RS01"
+  },
+  {
+    "segmentType": {
       "code": "CC"
     },
     "segmentValue": "10001"
+  },
+  {
+    "segmentType": {
+      "code": "NA"
+    },
+    "segmentValue": "20001"
   }
 ]

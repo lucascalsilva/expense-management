@@ -77,9 +77,9 @@ class ExpenseReportServiceJPAImplTest {
     private ExpenseCategory expenseCategory;
     private User user;
     private SegmentType segmentTypeCC;
-    private SegmentType segmentTypeAC;
+    private SegmentType segmentTypeNA;
     private SegmentValuePair segmentValuePairCC;
-    private SegmentValuePair segmentValuePairAC;
+    private SegmentValuePair segmentValuePairNA;
 
     @BeforeEach
     public void init(){
@@ -91,9 +91,9 @@ class ExpenseReportServiceJPAImplTest {
         expenseCategory = ExpenseCategory.builder().id(1L).code("MEAL").name("Meal").build();
         currency = Currency.builder().id(1L).code("BRL").name("Brazilian Real").build();
         segmentTypeCC = SegmentType.builder().id(1L).code("CC").name("Cost Center").build();
-        segmentTypeAC = SegmentType.builder().id(2L).code("AC").name("Natural Account").build();
+        segmentTypeNA = SegmentType.builder().id(2L).code("NA").name("Natural Account").build();
         segmentValuePairCC = SegmentValuePair.builder().id(1L).segmentValue("1000").segmentType(segmentTypeCC).build();
-        segmentValuePairAC = SegmentValuePair.builder().id(2L).segmentValue("5000").segmentType(segmentTypeAC).build();
+        segmentValuePairNA = SegmentValuePair.builder().id(2L).segmentValue("5000").segmentType(segmentTypeNA).build();
 
         expenseReportTestHelper = new ExpenseReportTestHelper();
     }
@@ -194,8 +194,8 @@ class ExpenseReportServiceJPAImplTest {
         when(currencyRepository.findByCode(currency.getCode())).thenReturn(Optional.of(currency));
         when(expenseCategoryRepository.findByCode(expenseCategory.getCode())).thenReturn(Optional.of(expenseCategory));
         when(userRepository.findByUsername(user.getUsername())).thenReturn(Optional.of(user));
-        when(segmentValuePairRepository.findByValueAndSegmentTypeCode(segmentValuePairAC.getSegmentValue(),
-                segmentTypeAC.getCode())).thenReturn(Optional.of(segmentValuePairAC));
+        when(segmentValuePairRepository.findByValueAndSegmentTypeCode(segmentValuePairNA.getSegmentValue(),
+                segmentTypeNA.getCode())).thenReturn(Optional.of(segmentValuePairNA));
         when(segmentValuePairRepository.findByValueAndSegmentTypeCode(segmentValuePairCC.getSegmentValue(),
                 segmentTypeCC.getCode())).thenReturn(Optional.of(segmentValuePairCC));
     }

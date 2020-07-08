@@ -43,7 +43,7 @@ class SegmentTypeJPAImplIT {
 
     @Test
     void save() {
-        SegmentType segmentType = SegmentType.builder().code("CC").name("Cost Center").build();
+        SegmentType segmentType = SegmentType.builder().code("CC").name("Cost Center").order(4L).build();
 
         SegmentType savedSegmentType = segmentTypeServiceJPA.save(segmentType);
 
@@ -53,7 +53,7 @@ class SegmentTypeJPAImplIT {
 
     @Test
     void saveValidationError() {
-        SegmentType segmentType = SegmentType.builder().code(null).name("Cost Center").build();
+        SegmentType segmentType = SegmentType.builder().code(null).name("Cost Center").order(4L).build();
 
         ConstraintViolationException constraintViolationException = assertThrows(ConstraintViolationException.class, () -> segmentTypeServiceJPA.save(segmentType));
         Assertions.assertThat(constraintViolationException.getMessage()).contains("save.arg0.code: must not be blank");
@@ -61,7 +61,7 @@ class SegmentTypeJPAImplIT {
 
     @Test
     void update() {
-        SegmentType segmentType = SegmentType.builder().code("FUTURE3").name("Future 3").build();
+        SegmentType segmentType = SegmentType.builder().code("FUTURE3").name("Future 3").order(8L).build();
 
         segmentType = segmentTypeServiceJPA.save(segmentType);
 
@@ -80,8 +80,8 @@ class SegmentTypeJPAImplIT {
 
     @Test
     void saveBulk() {
-        SegmentType segmentType1 = SegmentType.builder().code("LE").name("Legal Entity").build();
-        SegmentType segmentType2 = SegmentType.builder().code("BU").name("Business Unit").build();
+        SegmentType segmentType1 = SegmentType.builder().code("LE").name("Legal Entity").order(2L).build();
+        SegmentType segmentType2 = SegmentType.builder().code("BU").name("Business Unit").order(3L).build();
 
         Set<SegmentType> segmentTypes = new HashSet<>();
         segmentTypes.add(segmentType1);
@@ -97,7 +97,7 @@ class SegmentTypeJPAImplIT {
 
     @Test
     void findById() {
-        SegmentType segmentType = SegmentType.builder().code("AC").name("Natural Account").build();
+        SegmentType segmentType = SegmentType.builder().code("NA").name("Natural Account").order(5L).build();
 
         SegmentType savedSegmentType = segmentTypeServiceJPA.save(segmentType);
         Long segmentTypeId = savedSegmentType.getId();
@@ -109,7 +109,7 @@ class SegmentTypeJPAImplIT {
 
     @Test
     void deleteById() {
-        SegmentType segmentType = SegmentType.builder().code("FUTURE1").name("Future 1").build();
+        SegmentType segmentType = SegmentType.builder().code("FUTURE1").name("Future 1").order(6L).build();
 
         SegmentType savedSegmentType  = segmentTypeServiceJPA.save(segmentType);
         Long savedSegmentTypeId = savedSegmentType.getId();
@@ -121,7 +121,7 @@ class SegmentTypeJPAImplIT {
 
     @Test
     void findByCode() {
-        SegmentType segmentType = SegmentType.builder().code("FUTURE2").name("Future 2").build();
+        SegmentType segmentType = SegmentType.builder().code("FUTURE2").name("Future 2").order(7L).build();
 
         SegmentType savedSegmentType  = segmentTypeServiceJPA.save(segmentType);
         String segmentTypeCode = savedSegmentType.getCode();

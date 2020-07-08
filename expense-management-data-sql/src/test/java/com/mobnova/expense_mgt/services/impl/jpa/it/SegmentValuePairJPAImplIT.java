@@ -44,7 +44,7 @@ class SegmentValuePairJPAImplIT {
     public void init(){
         if(!dbInitialized) {
             integrationTestHelper.cleanAllData();
-            segmentType = SegmentType.builder().code("CC").name("Cost Center").build();
+            segmentType = SegmentType.builder().code("CC").name("Cost Center").order(4L).build();
             segmentTypeRepository.save(segmentType);
         }
     }

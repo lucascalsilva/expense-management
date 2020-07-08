@@ -85,8 +85,8 @@ class ExpenseReportServiceJPAImplIT {
                     .firstName("Lucas").lastName("Silva").build();
             ExpenseCategory expenseCategory = ExpenseCategory.builder().code("MEAL").name("Meal").build();
             Currency currency = Currency.builder().code("BRL").name("Real").build();
-            SegmentType segmentTypeCC = SegmentType.builder().code("CC").name("Cost Center").build();
-            SegmentType segmentTypeAC = SegmentType.builder().code("AC").name("Natural Account").build();
+            SegmentType segmentTypeCC = SegmentType.builder().code("CC").name("Cost Center").order(4L).build();
+            SegmentType segmentTypeAC = SegmentType.builder().code("NA").name("Natural Account").order(5L).build();
             SegmentValuePair segmentValuePairCC = SegmentValuePair.builder().segmentValue("1000").segmentType(segmentTypeCC).build();
             SegmentValuePair segmentValuePairAC = SegmentValuePair.builder().segmentValue("5000").segmentType(segmentTypeAC).build();
 
