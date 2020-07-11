@@ -1,38 +1,33 @@
 package com.mobnova.expense_mgt.services.impl.jpa.test;
 
 import com.mobnova.expense_mgt.config.CriteriaConfigBean;
-import com.mobnova.expense_mgt.criteria.CriteriaUtil;
+import com.mobnova.expense_mgt.exception.constant.Fields;
+import com.mobnova.expense_mgt.exceptions.DataNotFoundException;
 import com.mobnova.expense_mgt.model.*;
-import com.mobnova.expense_mgt.model.Currency;
 import com.mobnova.expense_mgt.repositories.*;
 import com.mobnova.expense_mgt.services.impl.jpa.ExpenseReportServiceJPAImpl;
 import com.mobnova.expense_mgt.util.ExpenseReportTestHelper;
-import com.mobnova.expense_mgt.validation.BeanValidator;
 import org.assertj.core.api.AssertionsForClassTypes;
-import org.assertj.core.util.Sets;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.jpa.domain.Specification;
 
-import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
-import static com.mobnova.expense_mgt.number.NumberUtil.getRandomNumberInRange;
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.AdditionalAnswers.returnsFirstArg;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 import static org.mockito.internal.verification.VerificationModeFactory.times;
 
@@ -68,14 +63,11 @@ class ExpenseReportServiceJPAImplTest {
     private SegmentValuePairRepository segmentValuePairRepository;
 
     @Mock
-    private BeanValidator beanValidator;
-
-    @Mock
     private CriteriaConfigBean criteriaConfigBean;
 
     private ExpenseReportTestHelper expenseReportTestHelper;
-    private Integer expenseReportQuantity = 3;
-    private Integer expenseItemQuantity = 2;
+    private final Integer expenseReportQuantity = 3;
+    private final Integer expenseItemQuantity = 2;
 
     private Country country;
     private County county;
@@ -85,9 +77,9 @@ class ExpenseReportServiceJPAImplTest {
     private ExpenseCategory expenseCategory;
     private User user;
     private SegmentType segmentTypeCC;
-    private SegmentType segmentTypeAC;
+    private SegmentType segmentTypeNA;
     private SegmentValuePair segmentValuePairCC;
-    private SegmentValuePair segmentValuePairAC;
+    private SegmentValuePair segmentValuePairNA;
 
     @BeforeEach
     public void init(){
@@ -99,9 +91,9 @@ class ExpenseReportServiceJPAImplTest {
         expenseCategory = ExpenseCategory.builder().id(1L).code("MEAL").name("Meal").build();
         currency = Currency.builder().id(1L).code("BRL").name("Brazilian Real").build();
         segmentTypeCC = SegmentType.builder().id(1L).code("CC").name("Cost Center").build();
-        segmentTypeAC = SegmentType.builder().id(2L).code("AC").name("Natural Account").build();
+        segmentTypeNA = SegmentType.builder().id(2L).code("NA").name("Natural Account").build();
         segmentValuePairCC = SegmentValuePair.builder().id(1L).segmentValue("1000").segmentType(segmentTypeCC).build();
-        segmentValuePairAC = SegmentValuePair.builder().id(2L).segmentValue("5000").segmentType(segmentTypeAC).build();
+        segmentValuePairNA = SegmentValuePair.builder().id(2L).segmentValue("5000").segmentType(segmentTypeNA).build();
 
         expenseReportTestHelper = new ExpenseReportTestHelper();
     }
@@ -202,8 +194,8 @@ class ExpenseReportServiceJPAImplTest {
         when(currencyRepository.findByCode(currency.getCode())).thenReturn(Optional.of(currency));
         when(expenseCategoryRepository.findByCode(expenseCategory.getCode())).thenReturn(Optional.of(expenseCategory));
         when(userRepository.findByUsername(user.getUsername())).thenReturn(Optional.of(user));
-        when(segmentValuePairRepository.findByValueAndSegmentTypeCode(segmentValuePairAC.getSegmentValue(),
-                segmentTypeAC.getCode())).thenReturn(Optional.of(segmentValuePairAC));
+        when(segmentValuePairRepository.findByValueAndSegmentTypeCode(segmentValuePairNA.getSegmentValue(),
+                segmentTypeNA.getCode())).thenReturn(Optional.of(segmentValuePairNA));
         when(segmentValuePairRepository.findByValueAndSegmentTypeCode(segmentValuePairCC.getSegmentValue(),
                 segmentTypeCC.getCode())).thenReturn(Optional.of(segmentValuePairCC));
     }
@@ -237,5 +229,23 @@ class ExpenseReportServiceJPAImplTest {
                 }
             }
         }
+    }
+
+    @Test
+    void findByReferenceIDNotFound() {
+        String referenceID = "1000";
+        DataNotFoundException dataNotFoundException = assertThrows(DataNotFoundException.class, () -> expenseReportServiceJPA.findByReferenceID(referenceID));
+        AssertionsForClassTypes.assertThat(dataNotFoundException.getMessage()).containsIgnoringCase(ExpenseReport.class.getName());
+        AssertionsForClassTypes.assertThat(dataNotFoundException.getMessage()).containsIgnoringCase(Fields.REFERENCE_ID.toString());
+        AssertionsForClassTypes.assertThat(dataNotFoundException.getMessage()).containsIgnoringCase(referenceID);
+    }
+
+    @Test
+    void findByIdNotFound() {
+        Long id = 1000L;
+        DataNotFoundException dataNotFoundException = assertThrows(DataNotFoundException.class, () -> expenseReportServiceJPA.findById(id));
+        AssertionsForClassTypes.assertThat(dataNotFoundException.getMessage()).containsIgnoringCase(ExpenseReport.class.getName());
+        AssertionsForClassTypes.assertThat(dataNotFoundException.getMessage()).containsIgnoringCase(Fields.ID.toString());
+        AssertionsForClassTypes.assertThat(dataNotFoundException.getMessage()).containsIgnoringCase(id.toString());
     }
 }

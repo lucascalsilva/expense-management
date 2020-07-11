@@ -4,8 +4,7 @@ import com.mobnova.expense_mgt.model.SegmentType;
 import com.mobnova.expense_mgt.model.SegmentValuePair;
 import com.mobnova.expense_mgt.repositories.SegmentTypeRepository;
 import com.mobnova.expense_mgt.repositories.SegmentValuePairRepository;
-import com.mobnova.expense_mgt.services.impl.jpa.SegmentValuePairJPAImpl;
-import com.mobnova.expense_mgt.validation.BeanValidator;
+import com.mobnova.expense_mgt.services.impl.jpa.SegmentValuePairServiceJPAImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -14,7 +13,9 @@ import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.util.*;
+import java.util.HashSet;
+import java.util.Optional;
+import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.AdditionalAnswers.returnsFirstArg;
@@ -26,16 +27,13 @@ class SegmentValuePairJPAImplTest {
 
     @InjectMocks
     @Spy
-    private SegmentValuePairJPAImpl segmentValuePairJPA;
+    private SegmentValuePairServiceJPAImpl segmentValuePairServiceJPA;
 
     @Mock
     private SegmentValuePairRepository segmentValuePairRepository;
 
     @Mock
     private SegmentTypeRepository segmentTypeRepository;
-
-    @Mock
-    private BeanValidator beanValidator;
 
     private SegmentType segmentType;
 
@@ -52,7 +50,7 @@ class SegmentValuePairJPAImplTest {
         doAnswer(returnsFirstArg()).when(segmentValuePairRepository).save(segmentValuePair);
         when(segmentTypeRepository.findByCode(segmentType.getCode())).thenReturn(Optional.of(segmentType));
 
-        SegmentValuePair savedSegmentValuePair = segmentValuePairJPA.save(segmentValuePair);
+        SegmentValuePair savedSegmentValuePair = segmentValuePairServiceJPA.save(segmentValuePair);
 
         verify(segmentValuePairRepository).save(segmentValuePair);
         assertThat(savedSegmentValuePair.getSegmentType().getId()).isEqualTo(1L);
@@ -73,11 +71,11 @@ class SegmentValuePairJPAImplTest {
         doAnswer(returnsFirstArg()).when(segmentValuePairRepository).save(any(SegmentValuePair.class));
         when(segmentTypeRepository.findByCode(segmentType.getCode())).thenReturn(Optional.of(segmentType));
 
-        Set<SegmentValuePair> savedSegmentValuePairs = segmentValuePairJPA.saveBulk(segmentValuePairs);
+        Set<SegmentValuePair> savedSegmentValuePairs = segmentValuePairServiceJPA.saveBulk(segmentValuePairs);
 
         for(SegmentValuePair segmentValuePair : savedSegmentValuePairs){
             verify(segmentValuePairRepository, times(1)).save(segmentValuePair);
-            verify(segmentValuePairJPA, times(1)).save(segmentValuePair);
+            verify(segmentValuePairServiceJPA, times(1)).save(segmentValuePair);
         }
     }
 
@@ -88,10 +86,9 @@ class SegmentValuePairJPAImplTest {
 
         when(segmentValuePairRepository.findById(segmentValuePair.getId())).thenReturn(Optional.of(segmentValuePair));
 
-        Optional<SegmentValuePair> segmentValuePairById = segmentValuePairJPA.findById(1L);
+        SegmentValuePair segmentValuePairById = segmentValuePairServiceJPA.findById(1L);
 
-        assertThat(segmentValuePairById.isPresent());
-        assertThat(segmentValuePairById.get()).isEqualTo(segmentValuePair);
+        assertThat(segmentValuePairById).isEqualTo(segmentValuePair);
     }
 
     @Test
@@ -102,17 +99,18 @@ class SegmentValuePairJPAImplTest {
         when(segmentValuePairRepository.findByValueAndSegmentTypeCode(segmentValuePair.getSegmentValue(),
                 segmentType.getCode())).thenReturn(Optional.of(segmentValuePair));
 
-        Optional<SegmentValuePair> segmentValuePairByQuery = segmentValuePairJPA
+        SegmentValuePair segmentValuePairByQuery = segmentValuePairServiceJPA
                 .findByValueAndSegmentTypeCode(segmentValuePair.getSegmentValue(), segmentType.getCode());
 
-        assertThat(segmentValuePairByQuery).isPresent();
-        assertThat(segmentValuePairByQuery.get()).isEqualTo(segmentValuePair);
+        assertThat(segmentValuePairByQuery).isEqualTo(segmentValuePair);
     }
 
     @Test
     void deleteById() {
-        segmentValuePairJPA.deleteById(1L);
+        segmentValuePairServiceJPA.deleteById(1L);
 
         verify(segmentValuePairRepository, times(1)).deleteById(1L);
     }
+
+
 }

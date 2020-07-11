@@ -1,7 +1,7 @@
 package com.mobnova.expense_mgt.util;
 
-import com.mobnova.expense_mgt.model.*;
 import com.mobnova.expense_mgt.model.Currency;
+import com.mobnova.expense_mgt.model.*;
 import lombok.Getter;
 
 import java.math.BigDecimal;
@@ -32,14 +32,14 @@ public class ExpenseReportTestHelper {
 
     public void init() {
         country = Country.builder().code("BR").build();
-        stateOrProvince = StateOrProvince.builder().code("RS").build();
+        stateOrProvince = StateOrProvince.builder().code("RS").country(country).build();
         county = County.builder().code("POA").build();
         city = City.builder().code("POA").stateOrProvince(stateOrProvince).county(county).build();
         user = User.builder().username("user_one").build();
         expenseCategory = ExpenseCategory.builder().code("MEAL").build();
         currency = Currency.builder().code("BRL").build();
         segmentTypeCC = SegmentType.builder().code("CC").build();
-        segmentTypeAC = SegmentType.builder().code("AC").build();
+        segmentTypeAC = SegmentType.builder().code("NA").build();
         segmentValuePairCC = SegmentValuePair.builder().segmentValue("1000").segmentType(segmentTypeCC).build();
         segmentValuePairAC = SegmentValuePair.builder().segmentValue("5000").segmentType(segmentTypeAC).build();
     }
@@ -68,7 +68,7 @@ public class ExpenseReportTestHelper {
             segmentValuePairs.add(segmentValuePairCC);
             segmentValuePairs.add(segmentValuePairAC);
 
-            ExpenseItem expenseItem = ExpenseItem.builder().expenseItemNumber((long) value)
+            ExpenseItem expenseItem = ExpenseItem.builder().expenseItemNumber((long) value + 1)
                     .amount(new BigDecimal(1000))
                     .currency(currency)
                     .expenseCity(city)

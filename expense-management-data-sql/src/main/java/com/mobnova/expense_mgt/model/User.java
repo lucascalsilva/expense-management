@@ -11,7 +11,7 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Table;
 import javax.validation.constraints.Email;
-import javax.validation.constraints.NotNull;
+import javax.validation.constraints.NotBlank;
 
 
 @ToString(callSuper = true)
@@ -24,25 +24,24 @@ import javax.validation.constraints.NotNull;
 public class User extends BaseEntity{
 
     @Column(name = "FIRST_NAME")
-    @NotNull
+    @NotBlank
     private String firstName;
 
     @Column(name = "LAST_NAME")
-    @NotNull
+    @NotBlank
     private String lastName;
 
     @Column(name = "USERNAME")
     @NaturalId
-    @NotNull
+    @NotBlank
     private String username;
 
     @Column(name = "PASSWORD")
-    @NotNull
+    @NotBlank
     private String password;
 
     @Column(name = "EMAIL")
-    @NaturalId
-    @NotNull
+    @NotBlank
     @Email
     private String email;
 

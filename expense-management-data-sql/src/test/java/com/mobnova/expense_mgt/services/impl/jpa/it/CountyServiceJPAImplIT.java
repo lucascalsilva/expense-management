@@ -1,12 +1,16 @@
 package com.mobnova.expense_mgt.services.impl.jpa.it;
 
+import com.mobnova.expense_mgt.exception.constant.Fields;
+import com.mobnova.expense_mgt.exceptions.DataNotFoundException;
 import com.mobnova.expense_mgt.model.Country;
 import com.mobnova.expense_mgt.model.County;
 import com.mobnova.expense_mgt.model.StateOrProvince;
 import com.mobnova.expense_mgt.repositories.CountryRepository;
 import com.mobnova.expense_mgt.repositories.StateOrProvinceRepository;
 import com.mobnova.expense_mgt.services.impl.jpa.CountyServiceJPAImpl;
+import com.mobnova.expense_mgt.util.AssertionsUtil;
 import com.mobnova.expense_mgt.util.IntegrationTestHelper;
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -14,13 +18,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
-import javax.validation.constraints.NotNull;
+import javax.validation.ConstraintViolationException;
 import java.util.HashSet;
-import java.util.Optional;
 import java.util.Set;
 
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @ExtendWith(SpringExtension.class)
 @SpringBootTest
@@ -54,6 +57,13 @@ class CountyServiceJPAImplIT {
         }
     }
 
+    @Test
+    void saveValidationError() {
+        County county = County.builder().code(null).name("Condado de Porto Alegre").build();
+
+        ConstraintViolationException constraintViolationException = assertThrows(ConstraintViolationException.class, () -> countyServiceJPA.save(county));
+        Assertions.assertThat(constraintViolationException.getMessage()).contains("save.arg0.code: must not be blank");
+    }
 
     @Test
     void save() {
@@ -67,6 +77,26 @@ class CountyServiceJPAImplIT {
 
         assertThat(savedCounty.getStateOrProvince().getId()).isNotNull();
         assertThat(savedCounty.getStateOrProvince().getCreationDate()).isNotNull();
+    }
+
+    @Test
+    void update() {
+        County county = County.builder().code("TOR").name("Condado de Torres")
+                .stateOrProvince(StateOrProvince.builder().code("RS").build()).build();
+
+        county = countyServiceJPA.save(county);
+
+        assertThat(county).isNotNull();
+        assertThat(county.getId()).isNotNull();
+
+        County updateCounty = countyServiceJPA.findById(county.getId());
+
+        updateCounty.setName("Condado de Torres_1");
+
+        updateCounty = countyServiceJPA.save(updateCounty);
+
+        AssertionsUtil.entityUpdateAssertions(county, updateCounty);
+        assertThat(county.getName()).isNotEqualTo(updateCounty.getName());
     }
 
     @Test
@@ -97,10 +127,9 @@ class CountyServiceJPAImplIT {
         County savedCounty = countyServiceJPA.save(county);
         Long countyId = savedCounty.getId();
 
-        Optional<County> countyById = countyServiceJPA.findById(countyId);
+        County countyById = countyServiceJPA.findById(countyId);
 
-        assertThat(countyById).isPresent();
-        assertThat(countyById.get()).isEqualTo(savedCounty);
+        assertThat(countyById).isEqualTo(savedCounty);
     }
 
     @Test
@@ -113,9 +142,7 @@ class CountyServiceJPAImplIT {
 
         countyServiceJPA.deleteById(countyId);
 
-        Optional<County> countyById = countyServiceJPA.findById(countyId);
-
-        assertThat(countyById).isEmpty();
+        assertThrows(DataNotFoundException.class, () -> countyServiceJPA.findById(countyId));
     }
 
     @Test
@@ -126,9 +153,26 @@ class CountyServiceJPAImplIT {
         County savedCounty = countyServiceJPA.save(county);
         String countyCode = savedCounty.getCode();
 
-        Optional<County> countyByCode = countyServiceJPA.findByCode(countyCode);
+        County countyByCode = countyServiceJPA.findByCode(countyCode);
 
-        assertThat(countyByCode).isPresent();
-        assertThat(countyByCode.get()).isEqualTo(savedCounty);
+        assertThat(countyByCode).isEqualTo(savedCounty);
+    }
+
+    @Test
+    void findByCodeNotFound() {
+        String code = "1000";
+        DataNotFoundException dataNotFoundException = assertThrows(DataNotFoundException.class, () -> countyServiceJPA.findByCode(code));
+        assertThat(dataNotFoundException.getMessage()).containsIgnoringCase(County.class.getName());
+        assertThat(dataNotFoundException.getMessage().compareToIgnoreCase(Fields.CODE.toString()));
+        assertThat(dataNotFoundException.getMessage().compareToIgnoreCase(code));
+    }
+
+    @Test
+    void findByIdNotFound() {
+        Long id = 1000L;
+        DataNotFoundException dataNotFoundException = assertThrows(DataNotFoundException.class, () -> countyServiceJPA.findById(id));
+        assertThat(dataNotFoundException.getMessage()).containsIgnoringCase(County.class.getName());
+        assertThat(dataNotFoundException.getMessage()).containsIgnoringCase(Fields.ID.toString());
+        assertThat(dataNotFoundException.getMessage()).containsIgnoringCase(id.toString());
     }
 }

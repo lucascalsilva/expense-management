@@ -1,8 +1,13 @@
 package com.mobnova.expense_mgt.services.impl.jpa.it;
 
+import com.mobnova.expense_mgt.exception.constant.Fields;
+import com.mobnova.expense_mgt.exceptions.DataNotFoundException;
 import com.mobnova.expense_mgt.model.User;
 import com.mobnova.expense_mgt.services.impl.jpa.UserServiceJPAImpl;
+import com.mobnova.expense_mgt.util.AssertionsUtil;
 import com.mobnova.expense_mgt.util.IntegrationTestHelper;
+import org.assertj.core.api.Assertions;
+import org.assertj.core.api.AssertionsForClassTypes;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -10,12 +15,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
+import javax.validation.ConstraintViolationException;
 import java.util.HashSet;
-import java.util.Optional;
 import java.util.Set;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @ExtendWith(SpringExtension.class)
 @SpringBootTest
@@ -48,6 +53,39 @@ class UserServiceJPAImplIT {
         assertThat(savedUser.getCreationDate()).isNotNull();
     }
 
+
+    @Test
+    void saveValidationError() {
+        User user = User.builder().username("user_one").build();
+
+        ConstraintViolationException constraintViolationException = assertThrows(ConstraintViolationException.class, () -> userServiceJPA.save(user));
+        Assertions.assertThat(constraintViolationException.getMessage()).contains("save.arg0.email: must not be blank");
+        Assertions.assertThat(constraintViolationException.getMessage()).contains("save.arg0.password: must not be blank");
+        Assertions.assertThat(constraintViolationException.getMessage()).contains("save.arg0.firstName: must not be blank");
+        Assertions.assertThat(constraintViolationException.getMessage()).contains("save.arg0.lastName: must not be blank");
+    }
+
+
+    @Test
+    void update() {
+        User user = User.builder().username("user_seven").password("123456").email("user_seven@domain.com")
+                .firstName("Lucas").lastName("Silva").build();
+
+        user = userServiceJPA.save(user);
+
+        assertThat(user).isNotNull();
+        assertThat(user.getId()).isNotNull();
+
+        User updatedUser = userServiceJPA.findById(user.getId());
+
+        updatedUser.setEmail("user_seven1@domain.com");
+
+        updatedUser = userServiceJPA.save(updatedUser);
+
+        AssertionsUtil.entityUpdateAssertions(user, updatedUser);
+        assertThat(user.getEmail()).isNotEqualTo(updatedUser.getEmail());
+    }
+
     @Test
     void saveBulk() {
         User user1 = User.builder().username("user_two").password("123456").email("user_two@domain.com")
@@ -75,10 +113,9 @@ class UserServiceJPAImplIT {
         User savedUser = userServiceJPA.save(user);
         Long savedUserId = savedUser.getId();
 
-        Optional<User> userById = userServiceJPA.findById(savedUserId);
+        User userById = userServiceJPA.findById(savedUserId);
 
-        assertThat(userById).isPresent();
-        assertThat(userById.get()).isEqualTo(user);
+        assertThat(userById).isEqualTo(user);
     }
 
     @Test
@@ -91,9 +128,7 @@ class UserServiceJPAImplIT {
 
         userServiceJPA.deleteById(savedUserId);
 
-        Optional<User> userById = userServiceJPA.findById(savedUserId);
-
-        assertThat(userById.isEmpty());
+        assertThrows(DataNotFoundException.class, () -> userServiceJPA.findById(savedUserId));
 
     }
 
@@ -105,8 +140,26 @@ class UserServiceJPAImplIT {
         User savedUser = userServiceJPA.save(user);
         String savedUserUsername = savedUser.getUsername();
 
-        Optional<User> userByUsername = userServiceJPA.findByUsername(savedUserUsername);
+        User userByUsername = userServiceJPA.findByUsername(savedUserUsername);
 
-        assertThat(userByUsername.isEmpty());
+        assertThat(userByUsername).isEqualTo(user);
+    }
+
+    @Test
+    void findByUsernameNotFound() {
+        String username = "someUser";
+        DataNotFoundException dataNotFoundException = assertThrows(DataNotFoundException.class, () -> userServiceJPA.findByUsername(username));
+        AssertionsForClassTypes.assertThat(dataNotFoundException.getMessage()).containsIgnoringCase(User.class.getName());
+        AssertionsForClassTypes.assertThat(dataNotFoundException.getMessage()).containsIgnoringCase(Fields.USERNAME.toString());
+        AssertionsForClassTypes.assertThat(dataNotFoundException.getMessage()).containsIgnoringCase(username);
+    }
+
+    @Test
+    void findByIdNotFound() {
+        Long id = 1000L;
+        DataNotFoundException dataNotFoundException = assertThrows(DataNotFoundException.class, () -> userServiceJPA.findById(id));
+        AssertionsForClassTypes.assertThat(dataNotFoundException.getMessage()).containsIgnoringCase(User.class.getName());
+        AssertionsForClassTypes.assertThat(dataNotFoundException.getMessage()).containsIgnoringCase(Fields.ID.toString());
+        AssertionsForClassTypes.assertThat(dataNotFoundException.getMessage()).containsIgnoringCase(id.toString());
     }
 }

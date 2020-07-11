@@ -1,35 +1,32 @@
 package com.mobnova.expense_mgt.services.impl.jpa;
 
+import com.mobnova.expense_mgt.exception.ExceptionVariable;
+import com.mobnova.expense_mgt.exception.constant.Fields;
+import com.mobnova.expense_mgt.exceptions.DataNotFoundException;
 import com.mobnova.expense_mgt.exceptions.InvalidDataException;
 import com.mobnova.expense_mgt.model.SegmentType;
 import com.mobnova.expense_mgt.model.SegmentValuePair;
 import com.mobnova.expense_mgt.repositories.SegmentTypeRepository;
 import com.mobnova.expense_mgt.repositories.SegmentValuePairRepository;
 import com.mobnova.expense_mgt.services.SegmentValuePairService;
-import com.mobnova.expense_mgt.validation.BeanValidator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Optional;
+import java.util.Arrays;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
 @Profile("jpa")
 @RequiredArgsConstructor
-public class SegmentValuePairJPAImpl implements SegmentValuePairService {
+public class SegmentValuePairServiceJPAImpl implements SegmentValuePairService {
 
     private final SegmentValuePairRepository segmentValuePairRepository;
     private final SegmentTypeRepository segmentTypeRepository;
-    private final BeanValidator beanValidator;
 
     @Override
     public SegmentValuePair save(SegmentValuePair segmentValuePair) {
-        beanValidator.validateObject(segmentValuePair);
-
         String segmentTypeCode = segmentValuePair.getSegmentType().getCode();
         segmentTypeRepository.findByCode(segmentTypeCode).ifPresentOrElse(segmentType -> {
             segmentValuePair.setSegmentType(segmentType);
@@ -46,8 +43,8 @@ public class SegmentValuePairJPAImpl implements SegmentValuePairService {
     }
 
     @Override
-    public Optional<SegmentValuePair> findById(Long id) {
-        return segmentValuePairRepository.findById(id);
+    public SegmentValuePair findById(Long id) {
+        return segmentValuePairRepository.findById(id).orElseThrow(() -> new DataNotFoundException(SegmentValuePair.class, Fields.ID, id));
     }
 
     @Override
@@ -56,7 +53,13 @@ public class SegmentValuePairJPAImpl implements SegmentValuePairService {
     }
 
     @Override
-    public Optional<SegmentValuePair> findByValueAndSegmentTypeCode(String segmentValue, String segmentTypeCode) {
-        return segmentValuePairRepository.findByValueAndSegmentTypeCode(segmentValue, segmentTypeCode);
+    public SegmentValuePair findByValueAndSegmentTypeCode(String segmentValue, String segmentTypeCode) {
+        return segmentValuePairRepository.findByValueAndSegmentTypeCode(segmentValue, segmentTypeCode)
+                .orElseThrow(() -> {
+                    ExceptionVariable segmentValueEV = ExceptionVariable.builder().field(Fields.SEGMENT_VALUE).value(segmentValue).build();
+                    ExceptionVariable segmentTypeCodeEV = ExceptionVariable.builder().field(Fields.SEGMENT_TYPE_CODE).value(segmentTypeCode).build();
+
+                    throw new DataNotFoundException(SegmentValuePair.class, Arrays.asList(segmentValueEV, segmentTypeCodeEV));
+                });
     }
 }

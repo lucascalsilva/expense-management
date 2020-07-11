@@ -1,5 +1,7 @@
 package com.mobnova.expense_mgt.services.impl.jpa.it;
 
+import com.mobnova.expense_mgt.exception.constant.Fields;
+import com.mobnova.expense_mgt.exceptions.DataNotFoundException;
 import com.mobnova.expense_mgt.model.City;
 import com.mobnova.expense_mgt.model.Country;
 import com.mobnova.expense_mgt.model.County;
@@ -8,8 +10,9 @@ import com.mobnova.expense_mgt.repositories.CountryRepository;
 import com.mobnova.expense_mgt.repositories.CountyRepository;
 import com.mobnova.expense_mgt.repositories.StateOrProvinceRepository;
 import com.mobnova.expense_mgt.services.impl.jpa.CityServiceJPAImpl;
+import com.mobnova.expense_mgt.util.AssertionsUtil;
 import com.mobnova.expense_mgt.util.IntegrationTestHelper;
-import org.junit.jupiter.api.BeforeAll;
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -17,11 +20,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
+import javax.validation.ConstraintViolationException;
 import java.util.HashSet;
-import java.util.Optional;
 import java.util.Set;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 
 @ExtendWith(SpringExtension.class)
@@ -77,6 +81,34 @@ class CityServiceJPAImplIT {
     }
 
     @Test
+    void saveValidationError() {
+        City city = City.builder().code(null).name("Porto Alegre").build();
+
+        ConstraintViolationException constraintViolationException = assertThrows(ConstraintViolationException.class, () -> cityServiceJPA.save(city));
+        Assertions.assertThat(constraintViolationException.getMessage()).contains("save.arg0.code: must not be blank");
+    }
+
+    @Test
+    void update() {
+        City city = City.builder().code("VM").name("Viamao")
+                .stateOrProvince(StateOrProvince.builder().code("RS").build()).build();
+
+        city = cityServiceJPA.save(city);
+
+        assertThat(city).isNotNull();
+        assertThat(city.getId()).isNotNull();
+
+        City updatedCity = cityServiceJPA.findById(city.getId());
+
+        updatedCity.setName("Vimao_1");
+
+        updatedCity = cityServiceJPA.save(updatedCity);
+
+        AssertionsUtil.entityUpdateAssertions(city, updatedCity);
+        assertThat(city.getName()).isNotEqualTo(updatedCity.getName());
+    }
+
+    @Test
     void saveBulk() {
         City city1 = City.builder().code("EST").name("Esteio")
                 .stateOrProvince(StateOrProvince.builder().code("RS").build()).build();
@@ -103,10 +135,9 @@ class CityServiceJPAImplIT {
         City savedCity = cityServiceJPA.save(city);
         Long cityId = savedCity.getId();
 
-        Optional<City> cityById = cityServiceJPA.findById(cityId);
+        City cityById = cityServiceJPA.findById(cityId);
 
-        assertThat(cityById).isPresent();
-        assertThat(cityById.get()).isEqualTo(city);
+        assertThat(cityById).isEqualTo(city);
     }
 
     @Test
@@ -119,9 +150,7 @@ class CityServiceJPAImplIT {
 
         cityServiceJPA.deleteById(cityId);
 
-        Optional<City> cityById = cityServiceJPA.findById(cityId);
-
-        assertThat(cityById.isEmpty());
+        assertThrows(DataNotFoundException.class, () -> cityServiceJPA.findById(cityId));
 
     }
 
@@ -133,9 +162,27 @@ class CityServiceJPAImplIT {
         City savedCity = cityServiceJPA.save(city);
         String cityCode = savedCity.getCode();
 
-        Optional<City> cityByCode = cityServiceJPA.findByCode(cityCode);
+        City cityByCode = cityServiceJPA.findByCode(cityCode);
 
-        assertThat(cityByCode).isPresent();
-        assertThat(cityByCode.get()).isEqualTo(city);
+        assertThat(cityByCode).isEqualTo(city);
     }
+
+    @Test
+    void findByCodeNotFound() {
+        String code = "1000";
+        DataNotFoundException dataNotFoundException = assertThrows(DataNotFoundException.class, () -> cityServiceJPA.findByCode(code));
+        assertThat(dataNotFoundException.getMessage()).containsIgnoringCase(City.class.getName());
+        assertThat(dataNotFoundException.getMessage().compareToIgnoreCase(Fields.CODE.toString()));
+        assertThat(dataNotFoundException.getMessage().compareToIgnoreCase(code));
+    }
+
+    @Test
+    void findByIdNotFound() {
+        Long id = 1000L;
+        DataNotFoundException dataNotFoundException = assertThrows(DataNotFoundException.class, () -> cityServiceJPA.findById(id));
+        assertThat(dataNotFoundException.getMessage()).containsIgnoringCase(City.class.getName());
+        assertThat(dataNotFoundException.getMessage()).containsIgnoringCase(Fields.ID.toString());
+        assertThat(dataNotFoundException.getMessage()).containsIgnoringCase(id.toString());
+    }
+
 }

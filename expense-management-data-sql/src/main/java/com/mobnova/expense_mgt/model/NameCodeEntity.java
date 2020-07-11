@@ -10,7 +10,7 @@ import org.hibernate.annotations.NaturalId;
 
 import javax.persistence.Column;
 import javax.persistence.MappedSuperclass;
-import javax.validation.constraints.NotNull;
+import javax.validation.constraints.NotBlank;
 
 @ToString(callSuper = true)
 @Getter
@@ -22,7 +22,7 @@ public class NameCodeEntity extends BaseEntity {
 
     @Column(name = "CODE", length = 100, nullable = false)
     @NaturalId
-    @NotNull
+    @NotBlank
     private String code;
 
     @Column(name = "NAME", length = 100, nullable = false)

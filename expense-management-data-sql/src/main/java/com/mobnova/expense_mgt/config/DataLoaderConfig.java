@@ -11,7 +11,7 @@ import org.springframework.stereotype.Component;
 @Setter
 @PropertySource("classpath:custom.yaml")
 @ConfigurationProperties(prefix = "dataloader")
-public class DataLoaderConfigBean {
+public class DataLoaderConfig {
 
     private String baseModelPackage = "com.mobnova.expense_mgt.model";
     private String baseServicePackage = "com.mobnova.expense_mgt.com.mobnova.expense_mgt.services";

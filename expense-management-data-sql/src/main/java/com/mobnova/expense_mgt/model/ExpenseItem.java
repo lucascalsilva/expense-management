@@ -5,13 +5,16 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 import lombok.experimental.SuperBuilder;
+import org.hibernate.validator.constraints.Range;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Positive;
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 
 @ToString(callSuper = true)
 @Getter
@@ -23,11 +26,12 @@ import java.util.*;
 public class ExpenseItem extends BaseEntity {
 
     @Column(name = "EXPENSE_ITEM_NUM", nullable = false)
-    @NotNull
+    @Range(min = 1)
     private Long expenseItemNumber;
 
     @Column(name = "AMOUNT", nullable = false)
     @NotNull
+    @Positive
     private BigDecimal amount;
 
     @ManyToOne(fetch = FetchType.EAGER)
@@ -57,9 +61,8 @@ public class ExpenseItem extends BaseEntity {
     @Lob
     private String picture;
 
-    /*@ManyToOne
-    @JoinColumn(name="EXPENSE_ITEM_ID")
-    @NotNull
+    @ManyToOne
+    @JoinColumn(name="EXPENSE_REPORT_ID")
     @ToString.Exclude
-    private ExpenseReport expenseReport;*/
+    private ExpenseReport expenseReport;
 }

@@ -1,13 +1,13 @@
 package com.mobnova.expense_mgt.services.impl.jpa.test;
 
-import com.mobnova.expense_mgt.model.City;
+import com.mobnova.expense_mgt.exception.constant.Fields;
+import com.mobnova.expense_mgt.exceptions.DataNotFoundException;
 import com.mobnova.expense_mgt.model.Country;
-import com.mobnova.expense_mgt.model.County;
 import com.mobnova.expense_mgt.model.StateOrProvince;
 import com.mobnova.expense_mgt.repositories.CountryRepository;
 import com.mobnova.expense_mgt.repositories.StateOrProvinceRepository;
 import com.mobnova.expense_mgt.services.impl.jpa.StateOrProvinceServiceJPAImpl;
-import com.mobnova.expense_mgt.validation.BeanValidator;
+import org.assertj.core.api.AssertionsForClassTypes;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -21,7 +21,7 @@ import java.util.Optional;
 import java.util.Set;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.AdditionalAnswers.returnsFirstArg;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
@@ -38,9 +38,6 @@ class StateOrProvinceServiceJPAImplTest {
 
     @Mock
     private CountryRepository countryRepository;
-
-    @Mock
-    private BeanValidator beanValidator;
 
     private Country country;
 
@@ -106,12 +103,11 @@ class StateOrProvinceServiceJPAImplTest {
 
         when(stateOrProvinceRepository.findById(stateOrProvince.getId())).thenReturn(Optional.of(stateOrProvince));
 
-        Optional<StateOrProvince> stateOrProvinceById = stateOrProvinceServiceJPA.findById(1L);
+        StateOrProvince stateOrProvinceById = stateOrProvinceServiceJPA.findById(1L);
 
         verify(stateOrProvinceRepository, times(1)).findById(1L);
 
-        assertThat(stateOrProvinceById.isPresent());
-        assertThat(stateOrProvinceById.get()).isEqualTo(stateOrProvince);
+        assertThat(stateOrProvinceById).isEqualTo(stateOrProvince);
     }
 
     @Test
@@ -129,11 +125,28 @@ class StateOrProvinceServiceJPAImplTest {
 
         when(stateOrProvinceRepository.findByCode(stateOrProvince.getCode())).thenReturn(Optional.of(stateOrProvince));
 
-        Optional<StateOrProvince> stateOrProvinceByCode = stateOrProvinceServiceJPA.findByCode("RS");
+        StateOrProvince stateOrProvinceByCode = stateOrProvinceServiceJPA.findByCode("RS");
 
         verify(stateOrProvinceRepository, times(1)).findByCode(stateOrProvince.getCode());
 
-        assertThat(stateOrProvinceByCode.isPresent());
-        assertThat(stateOrProvinceByCode.get()).isEqualTo(stateOrProvince);
+        assertThat(stateOrProvinceByCode).isEqualTo(stateOrProvince);
+    }
+
+    @Test
+    void findByCodeNotFound() {
+        String code = "1000";
+        DataNotFoundException dataNotFoundException = assertThrows(DataNotFoundException.class, () -> stateOrProvinceServiceJPA.findByCode(code));
+        AssertionsForClassTypes.assertThat(dataNotFoundException.getMessage()).containsIgnoringCase(StateOrProvince.class.getName());
+        AssertionsForClassTypes.assertThat(dataNotFoundException.getMessage()).containsIgnoringCase(Fields.CODE.toString());
+        AssertionsForClassTypes.assertThat(dataNotFoundException.getMessage()).containsIgnoringCase(code);
+    }
+
+    @Test
+    void findByIdNotFound() {
+        Long id = 1000L;
+        DataNotFoundException dataNotFoundException = assertThrows(DataNotFoundException.class, () -> stateOrProvinceServiceJPA.findById(id));
+        AssertionsForClassTypes.assertThat(dataNotFoundException.getMessage()).containsIgnoringCase(StateOrProvince.class.getName());
+        AssertionsForClassTypes.assertThat(dataNotFoundException.getMessage()).containsIgnoringCase(Fields.ID.toString());
+        AssertionsForClassTypes.assertThat(dataNotFoundException.getMessage()).containsIgnoringCase(id.toString());
     }
 }

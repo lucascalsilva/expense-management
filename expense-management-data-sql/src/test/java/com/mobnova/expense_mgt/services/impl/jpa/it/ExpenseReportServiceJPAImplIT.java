@@ -1,10 +1,15 @@
 package com.mobnova.expense_mgt.services.impl.jpa.it;
 
+import com.mobnova.expense_mgt.exception.constant.Fields;
+import com.mobnova.expense_mgt.exceptions.DataNotFoundException;
 import com.mobnova.expense_mgt.model.*;
 import com.mobnova.expense_mgt.repositories.*;
 import com.mobnova.expense_mgt.services.impl.jpa.ExpenseReportServiceJPAImpl;
+import com.mobnova.expense_mgt.util.AssertionsUtil;
 import com.mobnova.expense_mgt.util.ExpenseReportTestHelper;
 import com.mobnova.expense_mgt.util.IntegrationTestHelper;
+import org.assertj.core.api.Assertions;
+import org.assertj.core.api.AssertionsForClassTypes;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -12,11 +17,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
+import javax.validation.ConstraintViolationException;
 import java.util.HashSet;
-import java.util.Optional;
 import java.util.Set;
 
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.NONE)
@@ -57,8 +63,8 @@ class ExpenseReportServiceJPAImplIT {
 
     private static ExpenseReportTestHelper expenseReportTestHelper;
 
-    private Integer expenseReportQuantity = 3;
-    private Integer expenseItemQuantity = 3;
+    private final Integer expenseReportQuantity = 3;
+    private final Integer expenseItemQuantity = 3;
 
     private static Boolean dbInitialized = false;
 
@@ -79,8 +85,8 @@ class ExpenseReportServiceJPAImplIT {
                     .firstName("Lucas").lastName("Silva").build();
             ExpenseCategory expenseCategory = ExpenseCategory.builder().code("MEAL").name("Meal").build();
             Currency currency = Currency.builder().code("BRL").name("Real").build();
-            SegmentType segmentTypeCC = SegmentType.builder().code("CC").name("Cost Center").build();
-            SegmentType segmentTypeAC = SegmentType.builder().code("AC").name("Natural Account").build();
+            SegmentType segmentTypeCC = SegmentType.builder().code("CC").name("Cost Center").order(4L).build();
+            SegmentType segmentTypeAC = SegmentType.builder().code("NA").name("Natural Account").order(5L).build();
             SegmentValuePair segmentValuePairCC = SegmentValuePair.builder().segmentValue("1000").segmentType(segmentTypeCC).build();
             SegmentValuePair segmentValuePairAC = SegmentValuePair.builder().segmentValue("5000").segmentType(segmentTypeAC).build();
 
@@ -110,6 +116,7 @@ class ExpenseReportServiceJPAImplIT {
         assertThat(savedExpenseReport.getUser().getId()).isNotNull();
 
         for(ExpenseItem expenseItem : savedExpenseReport.getExpenses()){
+            assertThat(expenseItem.getExpenseReport()).isNotNull();
             assertThat(expenseItem.getExpenseCity().getId()).isNotNull();
             assertThat(expenseItem.getExpenseCity().getCreationDate()).isNotNull();
 
@@ -124,6 +131,39 @@ class ExpenseReportServiceJPAImplIT {
                 assertThat(segmentValuePair.getCreationDate()).isNotNull();
             }
         }
+    }
+
+    @Test
+    void saveValidationError() {
+        ExpenseReport expenseReport = ExpenseReport.builder().referenceID("12345").build();
+
+        ConstraintViolationException constraintViolationException = assertThrows(ConstraintViolationException.class, () -> expenseReportServiceJPA.save(expenseReport));
+        Assertions.assertThat(constraintViolationException.getMessage()).contains("save.arg0.user: must not be null");
+        Assertions.assertThat(constraintViolationException.getMessage()).contains("save.arg0.country: must not be null");
+        Assertions.assertThat(constraintViolationException.getMessage()).contains("save.arg0.tripEndDate: must not be null");
+        Assertions.assertThat(constraintViolationException.getMessage()).contains("save.arg0.tripDescription: must not be blank");
+        Assertions.assertThat(constraintViolationException.getMessage()).contains("save.arg0.expenses: must not be empty");
+        Assertions.assertThat(constraintViolationException.getMessage()).contains("save.arg0.tripStartDate: must not be null");
+        Assertions.assertThat(constraintViolationException.getMessage()).contains("save.arg0.justification: must not be blank");
+    }
+
+    @Test
+    void update() {
+        ExpenseReport expenseReport = expenseReportTestHelper.createDummyExpenseReport(expenseItemQuantity);
+        expenseReport = expenseReportServiceJPA.save(expenseReport);
+
+        assertThat(expenseReport).isNotNull();
+        assertThat(expenseReport.getId()).isNotNull();
+
+        ExpenseReport updatedExpenseReport = expenseReportServiceJPA.findById(expenseReport.getId());
+
+        String newJustification = "Some other justification";
+        updatedExpenseReport.setJustification(newJustification);
+
+        updatedExpenseReport = expenseReportServiceJPA.save(updatedExpenseReport);
+
+        AssertionsUtil.entityUpdateAssertions(expenseReport, updatedExpenseReport);
+        assertThat(expenseReport.getJustification()).isNotEqualTo(updatedExpenseReport.getJustification());
     }
 
     @Test
@@ -161,10 +201,9 @@ class ExpenseReportServiceJPAImplIT {
 
         Long expenseReportId = savedExpenseReport.getId();
 
-        Optional<ExpenseReport> expenseReportById = expenseReportServiceJPA.findById(expenseReportId);
+        ExpenseReport expenseReportById = expenseReportServiceJPA.findById(expenseReportId);
 
-        assertThat(expenseReportById).isPresent();
-        assertThat(expenseReportById.get()).isEqualTo(savedExpenseReport);
+        assertThat(expenseReportById).isEqualTo(savedExpenseReport);
     }
 
     @Test
@@ -174,11 +213,11 @@ class ExpenseReportServiceJPAImplIT {
 
         Long expenseReportId = savedExpenseReport.getId();
 
-        assertThat(expenseReportServiceJPA.findById(expenseReportId)).isPresent();
+        assertThat(expenseReportServiceJPA.findById(expenseReportId)).isNotNull();
 
         expenseReportServiceJPA.deleteById(expenseReportId);
 
-        assertThat(expenseReportServiceJPA.findById(expenseReportId)).isNotPresent();
+        assertThrows(DataNotFoundException.class, () -> expenseReportServiceJPA.findById(expenseReportId));
     }
 
     @Test
@@ -187,10 +226,27 @@ class ExpenseReportServiceJPAImplIT {
         ExpenseReport savedExpenseReport = expenseReportServiceJPA.save(expenseReport);
         String expenseReportReferenceID = savedExpenseReport.getReferenceID();
 
-        Optional<ExpenseReport> expenseReportByReferenceID = expenseReportServiceJPA
+        ExpenseReport expenseReportByReferenceID = expenseReportServiceJPA
                 .findByReferenceID(expenseReportReferenceID);
 
-        assertThat(expenseReportByReferenceID).isPresent();
-        assertThat(expenseReportByReferenceID.get()).isEqualTo(savedExpenseReport);
+        assertThat(expenseReportByReferenceID).isEqualTo(savedExpenseReport);
+    }
+
+    @Test
+    void findByReferenceIDNotFound() {
+        String referenceID = "1000";
+        DataNotFoundException dataNotFoundException = assertThrows(DataNotFoundException.class, () -> expenseReportServiceJPA.findByReferenceID(referenceID));
+        AssertionsForClassTypes.assertThat(dataNotFoundException.getMessage()).containsIgnoringCase(ExpenseReport.class.getName());
+        AssertionsForClassTypes.assertThat(dataNotFoundException.getMessage()).containsIgnoringCase(Fields.REFERENCE_ID.toString());
+        AssertionsForClassTypes.assertThat(dataNotFoundException.getMessage()).containsIgnoringCase(referenceID);
+    }
+
+    @Test
+    void findByIdNotFound() {
+        Long id = 1000L;
+        DataNotFoundException dataNotFoundException = assertThrows(DataNotFoundException.class, () -> expenseReportServiceJPA.findById(id));
+        AssertionsForClassTypes.assertThat(dataNotFoundException.getMessage()).containsIgnoringCase(ExpenseReport.class.getName());
+        AssertionsForClassTypes.assertThat(dataNotFoundException.getMessage()).containsIgnoringCase(Fields.ID.toString());
+        AssertionsForClassTypes.assertThat(dataNotFoundException.getMessage()).containsIgnoringCase(id.toString());
     }
 }

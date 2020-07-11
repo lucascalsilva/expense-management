@@ -1,9 +1,11 @@
 package com.mobnova.expense_mgt.services.impl.jpa.test;
 
+import com.mobnova.expense_mgt.exception.constant.Fields;
+import com.mobnova.expense_mgt.exceptions.DataNotFoundException;
 import com.mobnova.expense_mgt.model.Currency;
 import com.mobnova.expense_mgt.repositories.CurrencyRepository;
 import com.mobnova.expense_mgt.services.impl.jpa.CurrencyServiceJPAImpl;
-import com.mobnova.expense_mgt.validation.BeanValidator;
+import org.assertj.core.api.AssertionsForClassTypes;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -16,6 +18,7 @@ import java.util.Optional;
 import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.AdditionalAnswers.returnsFirstArg;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
@@ -29,9 +32,6 @@ class CurrencyServiceJPAImplTest {
 
     @Mock
     private CurrencyRepository currencyRepository;
-
-    @Mock
-    private BeanValidator beanValidator;
 
     @Test
     void save() {
@@ -70,10 +70,9 @@ class CurrencyServiceJPAImplTest {
 
         when(currencyRepository.findById(currency.getId())).thenReturn(Optional.of(currency));
 
-        Optional<Currency> currencyById = currencyServiceJPA.findById(1L);
+        Currency currencyById = currencyServiceJPA.findById(1L);
 
-        assertThat(currencyById.isPresent());
-        assertThat(currencyById.get()).isEqualTo(currency);
+        assertThat(currencyById).isEqualTo(currency);
     }
 
     @Test
@@ -89,11 +88,28 @@ class CurrencyServiceJPAImplTest {
 
         when(currencyRepository.findByCode(currency.getCode())).thenReturn(Optional.of(currency));
 
-        Optional<Currency> currencyByCode = currencyServiceJPA.findByCode("BRL");
+        Currency currencyByCode = currencyServiceJPA.findByCode("BRL");
 
         verify(currencyRepository, times(1)).findByCode(currency.getCode());
 
-        assertThat(currencyByCode.isPresent());
-        assertThat(currencyByCode.get()).isEqualTo(currency);
+        assertThat(currencyByCode).isEqualTo(currency);
+    }
+
+    @Test
+    void findByCodeNotFound() {
+        String code = "1000";
+        DataNotFoundException dataNotFoundException = assertThrows(DataNotFoundException.class, () -> currencyServiceJPA.findByCode(code));
+        AssertionsForClassTypes.assertThat(dataNotFoundException.getMessage()).containsIgnoringCase(Currency.class.getName());
+        AssertionsForClassTypes.assertThat(dataNotFoundException.getMessage().compareToIgnoreCase(Fields.CODE.toString()));
+        AssertionsForClassTypes.assertThat(dataNotFoundException.getMessage().compareToIgnoreCase(code));
+    }
+
+    @Test
+    void findByIdNotFound() {
+        Long id = 1000L;
+        DataNotFoundException dataNotFoundException = assertThrows(DataNotFoundException.class, () -> currencyServiceJPA.findById(id));
+        AssertionsForClassTypes.assertThat(dataNotFoundException.getMessage()).containsIgnoringCase(Currency.class.getName());
+        AssertionsForClassTypes.assertThat(dataNotFoundException.getMessage()).containsIgnoringCase(Fields.ID.toString());
+        AssertionsForClassTypes.assertThat(dataNotFoundException.getMessage()).containsIgnoringCase(id.toString());
     }
 }

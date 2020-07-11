@@ -1,15 +1,14 @@
 package com.mobnova.expense_mgt.services.impl.jpa;
 
+import com.mobnova.expense_mgt.exception.constant.Fields;
+import com.mobnova.expense_mgt.exceptions.DataNotFoundException;
 import com.mobnova.expense_mgt.model.User;
 import com.mobnova.expense_mgt.repositories.UserRepository;
 import com.mobnova.expense_mgt.services.UserService;
-import com.mobnova.expense_mgt.validation.BeanValidator;
-import com.mobnova.expense_mgt.validation.BeanValidatorDefaultImpl;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
-import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -19,11 +18,9 @@ import java.util.stream.Collectors;
 public class UserServiceJPAImpl implements UserService {
 
     private final UserRepository repository;
-    private final BeanValidator beanValidator;
 
     @Override
     public User save(User user) {
-        beanValidator.validateObject(user);
         return repository.save(user);
     }
 
@@ -33,8 +30,8 @@ public class UserServiceJPAImpl implements UserService {
     }
 
     @Override
-    public Optional<User> findById(Long id) {
-        return repository.findById(id);
+    public User findById(Long id) {
+        return repository.findById(id).orElseThrow(() -> new DataNotFoundException(User.class, Fields.ID, id));
     }
 
     @Override
@@ -43,7 +40,7 @@ public class UserServiceJPAImpl implements UserService {
     }
 
     @Override
-    public Optional<User> findByUsername(String username) {
-        return repository.findByUsername(username);
+    public User findByUsername(String username) {
+        return repository.findByUsername(username).orElseThrow(() -> new DataNotFoundException(User.class, Fields.USERNAME, username));
     }
 }

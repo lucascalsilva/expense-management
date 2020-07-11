@@ -8,6 +8,7 @@ import lombok.experimental.SuperBuilder;
 import org.hibernate.annotations.NaturalId;
 
 import javax.persistence.*;
+import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import java.time.LocalDate;
@@ -25,15 +26,15 @@ public class ExpenseReport extends BaseEntity {
 
     @Column(name = "REFERENCE_ID")
     @NaturalId
-    @NotNull
+    @NotBlank
     private String referenceID;
 
     @Column(name = "TRIP_DESCRIPTION", nullable = false)
-    @NotNull
+    @NotBlank
     private String tripDescription;
 
     @Column(name = "JUSTIFICATION")
-    @NotNull
+    @NotBlank
     private String justification;
 
     @ManyToOne(fetch = FetchType.EAGER)
@@ -58,10 +59,5 @@ public class ExpenseReport extends BaseEntity {
     @JoinColumn(name="EXPENSE_ITEM_ID")
     @NotEmpty
     private Set<ExpenseItem> expenses = new HashSet<ExpenseItem>();
-
-    /*public void addExpense(ExpenseItem expenseItem){
-        this.expenses.add(expenseItem);
-        expenseItem.setExpenseReport(this);
-    }*/
 
 }

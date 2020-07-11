@@ -1,15 +1,13 @@
 package com.mobnova.expense_mgt.services.impl.jpa.test;
 
-import com.mobnova.expense_mgt.model.City;
-import com.mobnova.expense_mgt.model.Country;
+import com.mobnova.expense_mgt.exception.constant.Fields;
+import com.mobnova.expense_mgt.exceptions.DataNotFoundException;
 import com.mobnova.expense_mgt.model.County;
 import com.mobnova.expense_mgt.model.StateOrProvince;
 import com.mobnova.expense_mgt.repositories.CountyRepository;
 import com.mobnova.expense_mgt.repositories.StateOrProvinceRepository;
 import com.mobnova.expense_mgt.services.impl.jpa.CountyServiceJPAImpl;
-import com.mobnova.expense_mgt.validation.BeanValidator;
 import org.assertj.core.api.Assertions;
-import org.hibernate.annotations.SortComparator;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -23,7 +21,7 @@ import java.util.Optional;
 import java.util.Set;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.AdditionalAnswers.returnsFirstArg;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
@@ -40,9 +38,6 @@ class CountyServiceJPAImplTest {
 
     @Mock
     private StateOrProvinceRepository stateOrProvinceRepository;
-
-    @Mock
-    private BeanValidator beanValidator;
 
     private StateOrProvince stateOrProvince;
 
@@ -105,12 +100,11 @@ class CountyServiceJPAImplTest {
 
         when(countyRepository.findById(county.getId())).thenReturn(Optional.of(county));
 
-        Optional<County> countyById = countyServiceJPA.findById(1L);
+        County countyById = countyServiceJPA.findById(1L);
 
         verify(countyRepository, times(1)).findById(1L);
 
-        assertThat(countyById.isPresent());
-        assertThat(countyById.get()).isEqualTo(county);
+        assertThat(countyById).isEqualTo(county);
     }
 
     @Test
@@ -128,11 +122,28 @@ class CountyServiceJPAImplTest {
 
         when(countyRepository.findByCode(county.getCode())).thenReturn(Optional.of(county));
 
-        Optional<County> countyByCode = countyServiceJPA.findByCode("POA");
+        County countyByCode = countyServiceJPA.findByCode("POA");
 
         verify(countyRepository, times(1)).findByCode(county.getCode());
 
-        assertThat(countyByCode.isPresent());
-        assertThat(countyByCode.get()).isEqualTo(county);
+        assertThat(countyByCode).isEqualTo(county);
+    }
+
+    @Test
+    void findByCodeNotFound() {
+        String code = "1000";
+        DataNotFoundException dataNotFoundException = assertThrows(DataNotFoundException.class, () -> countyServiceJPA.findByCode(code));
+        assertThat(dataNotFoundException.getMessage()).containsIgnoringCase(County.class.getName());
+        assertThat(dataNotFoundException.getMessage().compareToIgnoreCase(Fields.CODE.toString()));
+        assertThat(dataNotFoundException.getMessage().compareToIgnoreCase(code));
+    }
+
+    @Test
+    void findByIdNotFound() {
+        Long id = 1000L;
+        DataNotFoundException dataNotFoundException = assertThrows(DataNotFoundException.class, () -> countyServiceJPA.findById(id));
+        assertThat(dataNotFoundException.getMessage()).containsIgnoringCase(County.class.getName());
+        assertThat(dataNotFoundException.getMessage()).containsIgnoringCase(Fields.ID.toString());
+        assertThat(dataNotFoundException.getMessage()).containsIgnoringCase(id.toString());
     }
 }

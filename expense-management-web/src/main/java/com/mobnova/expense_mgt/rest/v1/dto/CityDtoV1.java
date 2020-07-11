@@ -3,7 +3,7 @@ package com.mobnova.expense_mgt.rest.v1.dto;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
 
-import javax.validation.constraints.NotNull;
+import javax.validation.constraints.NotBlank;
 
 @Getter
 @Setter
@@ -13,7 +13,7 @@ import javax.validation.constraints.NotNull;
 @AllArgsConstructor
 public class CityDtoV1 {
 
-    @NotNull
+    @NotBlank
     private String cityCode;
 
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)

@@ -1,9 +1,11 @@
 package com.mobnova.expense_mgt.services.impl.jpa.test;
 
+import com.mobnova.expense_mgt.exception.constant.Fields;
+import com.mobnova.expense_mgt.exceptions.DataNotFoundException;
 import com.mobnova.expense_mgt.model.ExpenseCategory;
 import com.mobnova.expense_mgt.repositories.ExpenseCategoryRepository;
 import com.mobnova.expense_mgt.services.impl.jpa.ExpenseCategoryServiceJPAImpl;
-import com.mobnova.expense_mgt.validation.BeanValidator;
+import org.assertj.core.api.AssertionsForClassTypes;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -16,7 +18,7 @@ import java.util.Optional;
 import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.AdditionalAnswers.returnsFirstArg;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
@@ -30,9 +32,6 @@ class ExpenseCategoryServiceJPAImplTest {
 
     @Mock
     private ExpenseCategoryRepository expenseCategoryRepository;
-
-    @Mock
-    private BeanValidator beanValidator;
 
     @Test
     void save() {
@@ -71,10 +70,9 @@ class ExpenseCategoryServiceJPAImplTest {
 
         when(expenseCategoryRepository.findById(expenseCategory.getId())).thenReturn(Optional.of(expenseCategory));
 
-        Optional<ExpenseCategory> expenseCategoryById = expenseCategoryServiceJPA.findById(1L);
+        ExpenseCategory expenseCategoryById = expenseCategoryServiceJPA.findById(1L);
 
-        assertThat(expenseCategoryById.isPresent());
-        assertThat(expenseCategoryById.get()).isEqualTo(expenseCategory);
+        assertThat(expenseCategoryById).isEqualTo(expenseCategory);
     }
 
     @Test
@@ -90,11 +88,28 @@ class ExpenseCategoryServiceJPAImplTest {
 
         when(expenseCategoryRepository.findByCode(expenseCategory.getCode())).thenReturn(Optional.of(expenseCategory));
 
-        Optional<ExpenseCategory> expenseCategoryByCode = expenseCategoryServiceJPA.findByCode("MEAL");
+        ExpenseCategory expenseCategoryByCode = expenseCategoryServiceJPA.findByCode("MEAL");
 
         verify(expenseCategoryRepository, times(1)).findByCode(expenseCategory.getCode());
 
-        assertThat(expenseCategoryByCode.isPresent());
-        assertThat(expenseCategoryByCode.get()).isEqualTo(expenseCategory);
+        assertThat(expenseCategoryByCode).isEqualTo(expenseCategory);
+    }
+
+    @Test
+    void findByCodeNotFound() {
+        String code = "1000";
+        DataNotFoundException dataNotFoundException = assertThrows(DataNotFoundException.class, () -> expenseCategoryServiceJPA.findByCode(code));
+        AssertionsForClassTypes.assertThat(dataNotFoundException.getMessage()).containsIgnoringCase(ExpenseCategory.class.getName());
+        AssertionsForClassTypes.assertThat(dataNotFoundException.getMessage().compareToIgnoreCase(Fields.CODE.toString()));
+        AssertionsForClassTypes.assertThat(dataNotFoundException.getMessage().compareToIgnoreCase(code));
+    }
+
+    @Test
+    void findByIdNotFound() {
+        Long id = 1000L;
+        DataNotFoundException dataNotFoundException = assertThrows(DataNotFoundException.class, () -> expenseCategoryServiceJPA.findById(id));
+        AssertionsForClassTypes.assertThat(dataNotFoundException.getMessage()).containsIgnoringCase(ExpenseCategory.class.getName());
+        AssertionsForClassTypes.assertThat(dataNotFoundException.getMessage()).containsIgnoringCase(Fields.ID.toString());
+        AssertionsForClassTypes.assertThat(dataNotFoundException.getMessage()).containsIgnoringCase(id.toString());
     }
 }

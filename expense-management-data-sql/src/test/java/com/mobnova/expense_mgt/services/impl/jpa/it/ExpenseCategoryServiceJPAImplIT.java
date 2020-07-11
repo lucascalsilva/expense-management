@@ -1,10 +1,13 @@
 package com.mobnova.expense_mgt.services.impl.jpa.it;
 
-import com.mobnova.expense_mgt.model.Country;
+import com.mobnova.expense_mgt.exception.constant.Fields;
+import com.mobnova.expense_mgt.exceptions.DataNotFoundException;
 import com.mobnova.expense_mgt.model.ExpenseCategory;
-import com.mobnova.expense_mgt.services.impl.jpa.CountryServiceJPAImpl;
 import com.mobnova.expense_mgt.services.impl.jpa.ExpenseCategoryServiceJPAImpl;
+import com.mobnova.expense_mgt.util.AssertionsUtil;
 import com.mobnova.expense_mgt.util.IntegrationTestHelper;
+import org.assertj.core.api.Assertions;
+import org.assertj.core.api.AssertionsForClassTypes;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -12,12 +15,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
+import javax.validation.ConstraintViolationException;
 import java.util.HashSet;
-import java.util.Optional;
 import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @ExtendWith(SpringExtension.class)
 @SpringBootTest
@@ -29,7 +32,7 @@ class ExpenseCategoryServiceJPAImplIT {
     @Autowired
     private IntegrationTestHelper integrationTestHelper;
 
-    private static Boolean dbInitialized = false;
+    private static final Boolean dbInitialized = false;
 
     @BeforeEach
     public void init(){
@@ -46,6 +49,33 @@ class ExpenseCategoryServiceJPAImplIT {
 
         assertThat(savedExpenseCategory.getId()).isNotNull();
         assertThat(savedExpenseCategory.getCreationDate()).isNotNull();
+    }
+
+    @Test
+    void saveValidationError() {
+        ExpenseCategory expenseCategory = ExpenseCategory.builder().code(null).name("Meal").build();
+
+        ConstraintViolationException constraintViolationException = assertThrows(ConstraintViolationException.class, () -> expenseCategoryServiceJPA.save(expenseCategory));
+        Assertions.assertThat(constraintViolationException.getMessage()).contains("save.arg0.code: must not be blank");
+    }
+
+    @Test
+    void update() {
+        ExpenseCategory expenseCategory = ExpenseCategory.builder().code("OTHER").name("Other").build();
+
+        expenseCategory = expenseCategoryServiceJPA.save(expenseCategory);
+
+        assertThat(expenseCategory).isNotNull();
+        assertThat(expenseCategory.getId()).isNotNull();
+
+        ExpenseCategory updatedExpenseCategory = expenseCategoryServiceJPA.findById(expenseCategory.getId());
+
+        updatedExpenseCategory.setName("Other_1");
+
+        updatedExpenseCategory = expenseCategoryServiceJPA.save(updatedExpenseCategory);
+
+        AssertionsUtil.entityUpdateAssertions(expenseCategory, updatedExpenseCategory);
+        assertThat(expenseCategory.getName()).isNotEqualTo(updatedExpenseCategory.getName());
     }
 
     @Test
@@ -72,10 +102,9 @@ class ExpenseCategoryServiceJPAImplIT {
         ExpenseCategory savedExpenseCategory = expenseCategoryServiceJPA.save(expenseCategory);
         Long expenseCategoryId = savedExpenseCategory.getId();
 
-        Optional<ExpenseCategory> expenseCategoryById = expenseCategoryServiceJPA.findById(expenseCategoryId);
+        ExpenseCategory expenseCategoryById = expenseCategoryServiceJPA.findById(expenseCategoryId);
 
-        assertThat(expenseCategoryById).isPresent();
-        assertThat(expenseCategoryById.get()).isEqualTo(savedExpenseCategory);
+        assertThat(expenseCategoryById).isEqualTo(savedExpenseCategory);
     }
 
     @Test
@@ -87,9 +116,7 @@ class ExpenseCategoryServiceJPAImplIT {
 
         expenseCategoryServiceJPA.deleteById(expenseCategoryId);
 
-        Optional<ExpenseCategory> expenseCategoryById = expenseCategoryServiceJPA.findById(expenseCategoryId);
-
-        assertThat(expenseCategoryById.isEmpty());
+        assertThrows(DataNotFoundException.class, () -> expenseCategoryServiceJPA.findById(expenseCategoryId));
     }
 
     @Test
@@ -99,9 +126,26 @@ class ExpenseCategoryServiceJPAImplIT {
         ExpenseCategory savedExpenseCategory = expenseCategoryServiceJPA.save(expenseCategory);
         String categoryCode = savedExpenseCategory.getCode();
 
-        Optional<ExpenseCategory> categoryByCode = expenseCategoryServiceJPA.findByCode(categoryCode);
+        ExpenseCategory categoryByCode = expenseCategoryServiceJPA.findByCode(categoryCode);
 
-        assertThat(categoryByCode).isPresent();
-        assertThat(categoryByCode.get()).isEqualTo(savedExpenseCategory);
+        assertThat(categoryByCode).isEqualTo(savedExpenseCategory);
+    }
+
+    @Test
+    void findByCodeNotFound() {
+        String code = "1000";
+        DataNotFoundException dataNotFoundException = assertThrows(DataNotFoundException.class, () -> expenseCategoryServiceJPA.findByCode(code));
+        AssertionsForClassTypes.assertThat(dataNotFoundException.getMessage()).containsIgnoringCase(ExpenseCategory.class.getName());
+        AssertionsForClassTypes.assertThat(dataNotFoundException.getMessage().compareToIgnoreCase(Fields.CODE.toString()));
+        AssertionsForClassTypes.assertThat(dataNotFoundException.getMessage().compareToIgnoreCase(code));
+    }
+
+    @Test
+    void findByIdNotFound() {
+        Long id = 1000L;
+        DataNotFoundException dataNotFoundException = assertThrows(DataNotFoundException.class, () -> expenseCategoryServiceJPA.findById(id));
+        AssertionsForClassTypes.assertThat(dataNotFoundException.getMessage()).containsIgnoringCase(ExpenseCategory.class.getName());
+        AssertionsForClassTypes.assertThat(dataNotFoundException.getMessage()).containsIgnoringCase(Fields.ID.toString());
+        AssertionsForClassTypes.assertThat(dataNotFoundException.getMessage()).containsIgnoringCase(id.toString());
     }
 }

@@ -10,5 +10,7 @@ public class ExpenseItemDtoV1ToModel extends PropertyMap<ExpenseItemDtoV1, Expen
     protected void configure() {
         map().getExpenseCity().setCode(source.getExpenseCity().getCityCode());
         skip().getExpenseCity().setName(null);
+
+        map().getExpenseCity().getStateOrProvince().getCountry().setCode(source.getExpenseCity().getCountryCode());
     }
 }

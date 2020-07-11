@@ -1,14 +1,14 @@
 package com.mobnova.expense_mgt.services.impl.jpa;
 
+import com.mobnova.expense_mgt.exception.constant.Fields;
+import com.mobnova.expense_mgt.exceptions.DataNotFoundException;
 import com.mobnova.expense_mgt.model.Currency;
 import com.mobnova.expense_mgt.repositories.CurrencyRepository;
 import com.mobnova.expense_mgt.services.CurrencyService;
-import com.mobnova.expense_mgt.validation.BeanValidator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
-import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -18,11 +18,9 @@ import java.util.stream.Collectors;
 public class CurrencyServiceJPAImpl implements CurrencyService {
 
     private final CurrencyRepository currencyRepository;
-    private final BeanValidator beanValidator;
 
     @Override
     public Currency save(Currency currency) {
-        beanValidator.validateObject(currency);
         return currencyRepository.save(currency);
     }
 
@@ -32,8 +30,8 @@ public class CurrencyServiceJPAImpl implements CurrencyService {
     }
 
     @Override
-    public Optional<Currency> findById(Long id) {
-        return currencyRepository.findById(id);
+    public Currency findById(Long id) {
+        return currencyRepository.findById(id).orElseThrow(() -> new DataNotFoundException(Currency.class, Fields.ID, id));
     }
 
     @Override
@@ -42,7 +40,7 @@ public class CurrencyServiceJPAImpl implements CurrencyService {
     }
 
     @Override
-    public Optional<Currency> findByCode(String code) {
-        return currencyRepository.findByCode(code);
+    public Currency findByCode(String code) {
+        return currencyRepository.findByCode(code).orElseThrow(() -> new DataNotFoundException(Currency.class, Fields.CODE, code));
     }
 }

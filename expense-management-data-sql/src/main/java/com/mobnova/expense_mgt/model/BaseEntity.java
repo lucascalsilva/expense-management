@@ -23,10 +23,10 @@ public class BaseEntity {
     @Setter
     private Long id;
 
-    @Column(name="CREATION_DATE", updatable = false)
+    @Column(name="CREATION_DATE", updatable = false, nullable = false)
     private LocalDateTime creationDate;
 
-    @Column(name="LAST_UPDATE_DATE", insertable = false)
+    @Column(name="LAST_UPDATE_DATE", nullable = false)
     private LocalDateTime lastUpdateDate;
 
     @Version
@@ -37,6 +37,7 @@ public class BaseEntity {
     @PrePersist
     public void onPrePersist(){
         this.creationDate = LocalDateTime.now();
+        this.lastUpdateDate = LocalDateTime.now();
     }
 
     @PreUpdate

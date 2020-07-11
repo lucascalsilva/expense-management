@@ -1,14 +1,14 @@
 package com.mobnova.expense_mgt.services.impl.jpa;
 
+import com.mobnova.expense_mgt.exception.constant.Fields;
+import com.mobnova.expense_mgt.exceptions.DataNotFoundException;
 import com.mobnova.expense_mgt.model.ExpenseCategory;
 import com.mobnova.expense_mgt.repositories.ExpenseCategoryRepository;
 import com.mobnova.expense_mgt.services.ExpenseCategoryService;
-import com.mobnova.expense_mgt.validation.BeanValidator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
-import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -18,11 +18,9 @@ import java.util.stream.Collectors;
 public class ExpenseCategoryServiceJPAImpl implements ExpenseCategoryService {
 
     private final ExpenseCategoryRepository expenseCategoryRepository;
-    private final BeanValidator beanValidator;
 
     @Override
     public ExpenseCategory save(ExpenseCategory category) {
-        beanValidator.validateObject(category);
         return expenseCategoryRepository.save(category);
     }
 
@@ -32,8 +30,8 @@ public class ExpenseCategoryServiceJPAImpl implements ExpenseCategoryService {
     }
 
     @Override
-    public Optional<ExpenseCategory> findById(Long id) {
-        return expenseCategoryRepository.findById(id);
+    public ExpenseCategory findById(Long id) {
+        return expenseCategoryRepository.findById(id).orElseThrow(() -> new DataNotFoundException(ExpenseCategory.class, Fields.ID, id));
     }
 
     @Override
@@ -42,7 +40,7 @@ public class ExpenseCategoryServiceJPAImpl implements ExpenseCategoryService {
     }
 
     @Override
-    public Optional<ExpenseCategory> findByCode(String code) {
-        return expenseCategoryRepository.findByCode(code);
+    public ExpenseCategory findByCode(String code) {
+        return expenseCategoryRepository.findByCode(code).orElseThrow(() -> new DataNotFoundException(ExpenseCategory.class, Fields.CODE, code));
     }
 }

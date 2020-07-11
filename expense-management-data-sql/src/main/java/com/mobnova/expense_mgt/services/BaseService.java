@@ -1,13 +1,16 @@
 package com.mobnova.expense_mgt.services;
 
-import java.util.Optional;
+import org.springframework.validation.annotation.Validated;
+
+import javax.validation.Valid;
 import java.util.Set;
 
+@Validated
 public interface BaseService<T, ID> {
 
-    T save(T object);
+    T save(@Valid T object);
     Set<T> saveBulk(Set<T> objects);
-    Optional<T> findById(ID id);
+    T findById(ID id);
     void deleteById(ID id);
 
 }
