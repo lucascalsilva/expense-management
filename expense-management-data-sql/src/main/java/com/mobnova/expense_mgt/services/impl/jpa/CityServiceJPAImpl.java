@@ -33,25 +33,20 @@ public class CityServiceJPAImpl extends AbstractNameCodeEntityBaseServiceJPA<Cit
 
     @Override
     public CityDto save(CityDto cityDto) {
-        if (cityDto.getCounty() != null && cityDto.getCounty().getCode() != null) {
-            String countyCode = cityDto.getCounty().getCode();
-            countyRepository.findByCode(countyCode).ifPresentOrElse(county -> {
-                CountyDto countyDto = modelMapper.map(county, CountyDto.class);
-                cityDto.setCounty(countyDto);
-            }, () -> {
+        City city = modelMapper.map(cityDto, City.class);
+
+        if (city.getCounty() != null && city.getCounty().getCode() != null) {
+            String countyCode = city.getCounty().getCode();
+            countyRepository.findByCode(countyCode).ifPresentOrElse(city::setCounty, () -> {
                 throw new DataNotFoundException(County.class, Fields.CODE, countyCode);
             });
         }
 
-        String stateOrProvinceCode = cityDto.getStateOrProvince().getCode();
-        stateOrProvinceRepository.findByCode(stateOrProvinceCode).ifPresentOrElse(stateOrProvince -> {
-            StateOrProvinceDto stateOrProvinceDto = modelMapper.map(stateOrProvince, StateOrProvinceDto.class);
-            cityDto.setStateOrProvince(stateOrProvinceDto);
-        }, () -> {
+        String stateOrProvinceCode = city.getStateOrProvince().getCode();
+        stateOrProvinceRepository.findByCode(stateOrProvinceCode).ifPresentOrElse(city::setStateOrProvince, () -> {
             throw new DataNotFoundException(StateOrProvince.class, Fields.CODE, stateOrProvinceCode);
         });
 
-        City city = modelMapper.map(cityDto, City.class);
         City savedCity = cityRepository.save(city);
 
         return modelMapper.map(findById(city.getId()), CityDto.class);

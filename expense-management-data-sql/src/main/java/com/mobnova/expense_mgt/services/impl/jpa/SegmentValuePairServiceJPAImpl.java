@@ -31,15 +31,13 @@ public class SegmentValuePairServiceJPAImpl extends AbstractBaseServiceJPA<Segme
 
     @Override
     public SegmentValuePairDto save(SegmentValuePairDto segmentValuePairDto) {
-        String segmentTypeCode = segmentValuePairDto.getSegmentType().getCode();
-        segmentTypeRepository.findByCode(segmentTypeCode).ifPresentOrElse(segmentType -> {
-            SegmentTypeDto segmentTypeDto = modelMapper.map(segmentType, SegmentTypeDto.class);
-            segmentValuePairDto.setSegmentType(segmentTypeDto);
-        }, () -> {
+        SegmentValuePair segmentValuePair = modelMapper.map(segmentValuePairDto, SegmentValuePair.class);
+
+        String segmentTypeCode = segmentValuePair.getSegmentType().getCode();
+        segmentTypeRepository.findByCode(segmentTypeCode).ifPresentOrElse(segmentValuePair::setSegmentType, () -> {
             throw new DataNotFoundException(SegmentType.class, Fields.SEGMENT_TYPE_CODE, segmentTypeCode);
         });
 
-        SegmentValuePair segmentValuePair = modelMapper.map(segmentValuePairDto, SegmentValuePair.class);
         SegmentValuePair savedSegmentValuePair = segmentValuePairRepository.save(segmentValuePair);
 
         return modelMapper.map(findById(savedSegmentValuePair.getId()), SegmentValuePairDto.class);

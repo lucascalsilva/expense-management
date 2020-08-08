@@ -28,17 +28,15 @@ public class StateOrProvinceServiceJPAImpl extends AbstractNameCodeEntityBaseSer
 
     @Override
     public StateOrProvinceDto save(StateOrProvinceDto stateOrProvinceDto) {
-        String countryCode = stateOrProvinceDto.getCountry().getCode();
+        StateOrProvince stateOrProvince = modelMapper.map(stateOrProvinceDto, StateOrProvince.class);
+
+        String countryCode = stateOrProvince.getCountry().getCode();
         countryRepository.findByCode(countryCode)
-                .ifPresentOrElse(country -> {
-                            CountryDto countryDto = modelMapper.map(country, CountryDto.class);
-                            stateOrProvinceDto.setCountry(countryDto);
-                        },
+                .ifPresentOrElse(stateOrProvince::setCountry,
                         () -> {
                             throw new DataNotFoundException(Country.class, Fields.CODE, countryCode);
                         });
 
-        StateOrProvince stateOrProvince = modelMapper.map(stateOrProvinceDto, StateOrProvince.class);
         StateOrProvince savedStateOrProvince = stateOrProvinceRepository.save(stateOrProvince);
 
         return modelMapper.map(findById(savedStateOrProvince.getId()), StateOrProvinceDto.class);

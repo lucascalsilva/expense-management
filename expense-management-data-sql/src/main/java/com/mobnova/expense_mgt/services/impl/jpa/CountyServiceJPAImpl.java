@@ -28,16 +28,14 @@ public class CountyServiceJPAImpl extends AbstractNameCodeEntityBaseServiceJPA<C
 
     @Override
     public CountyDto save(CountyDto countyDto) {
-        if (countyDto.getStateOrProvince() != null && countyDto.getStateOrProvince().getCode() != null) {
-            String stateOrProvinceCode = countyDto.getStateOrProvince().getCode();
-            stateOrProvinceRepository.findByCode(stateOrProvinceCode).ifPresentOrElse(stateOrProvince -> {
-                StateOrProvinceDto stateOrProvinceDto = modelMapper.map(stateOrProvince, StateOrProvinceDto.class);
-                countyDto.setStateOrProvince(stateOrProvinceDto);
-            }, () -> {
+        County county = modelMapper.map(countyDto, County.class);
+
+        if (county.getStateOrProvince() != null && county.getStateOrProvince().getCode() != null) {
+            String stateOrProvinceCode = county.getStateOrProvince().getCode();
+            stateOrProvinceRepository.findByCode(stateOrProvinceCode).ifPresentOrElse(county::setStateOrProvince, () -> {
                 throw new DataNotFoundException(StateOrProvince.class, Fields.CODE, stateOrProvinceCode);
             });
         }
-        County county = modelMapper.map(countyDto, County.class);
         County savedCounty = countyRepository.save(county);
 
         return modelMapper.map(findById(savedCounty.getId()), CountyDto.class);
