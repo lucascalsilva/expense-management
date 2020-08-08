@@ -5,6 +5,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 import lombok.experimental.SuperBuilder;
+import org.hibernate.annotations.NaturalId;
 
 import javax.persistence.*;
 
@@ -19,5 +20,6 @@ public class StateOrProvince extends NameCodeEntity {
 
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name="COUNTRY_ID")
+    @NaturalId
     private Country country;
 }

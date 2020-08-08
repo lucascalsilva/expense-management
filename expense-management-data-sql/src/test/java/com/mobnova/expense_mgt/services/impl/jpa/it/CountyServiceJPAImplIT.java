@@ -1,5 +1,7 @@
 package com.mobnova.expense_mgt.services.impl.jpa.it;
 
+import com.mobnova.expense_mgt.dto.v1.CityDto;
+import com.mobnova.expense_mgt.dto.v1.CountryDto;
 import com.mobnova.expense_mgt.dto.v1.CountyDto;
 import com.mobnova.expense_mgt.dto.v1.StateOrProvinceDto;
 import com.mobnova.expense_mgt.exception.constant.Fields;
@@ -55,14 +57,26 @@ class CountyServiceJPAImplIT {
     @BeforeEach
     public void init(){
         Country country = Country.builder().code("BR").name("Brazil").build();
+        Country country1 = Country.builder().code("DE").name("Deutschland").build();
+        Country country2 = Country.builder().code("USA").name("United States of America").build();
+
         stateOrProvince = StateOrProvince.builder().code("RS").name("Rio Grande do Sul")
                 .country(country).build();
+        StateOrProvince stateOrProvince1 = StateOrProvince.builder().code("BE").name("Berlin")
+                .country(country1).build();
+        StateOrProvince stateOrProvince2 = StateOrProvince.builder().code("NH").name("New Hampshire")
+                .country(country2).build();
+
         stateOrProvinceDto = modelMapper.map(stateOrProvince, StateOrProvinceDto.class);
 
         if(!dbInitialized) {
             integrationTestHelper.cleanAllData();
             countryRepository.save(country);
+            countryRepository.save(country1);
+            countryRepository.save(country2);
             stateOrProvinceRepository.save(stateOrProvince);
+            stateOrProvinceRepository.save(stateOrProvince1);
+            stateOrProvinceRepository.save(stateOrProvince2);
             dbInitialized = true;
         }
     }
@@ -114,10 +128,15 @@ class CountyServiceJPAImplIT {
 
     @Test
     void saveBulk() {
-        CountyDto countyDto1 = CountyDto.builder().code("CAX").name("Condado de Caxias")
-                .stateOrProvince(stateOrProvinceDto).build();
-        CountyDto countyDto2 = CountyDto.builder().code("PEL").name("Condado de Pelotas")
-                .stateOrProvince(stateOrProvinceDto).build();
+        CountyDto countyDto1 = CountyDto.builder().code("BE").name("Berlin")
+                .stateOrProvince(StateOrProvinceDto.builder().name("Berlin").code("BE")
+                        .country(CountryDto.builder().name("Deutschland").code("DE").build())
+                        .build()).build();
+
+        CountyDto countyDto2 = CountyDto.builder().code("BE").name("Berlin")
+                .stateOrProvince(StateOrProvinceDto.builder().name("New Hampshire").code("NH")
+                        .country(CountryDto.builder().name("United States of America").code("USA").build())
+                        .build()).build();
 
         Set<CountyDto> countyDtos = new HashSet<>();
 

@@ -1,6 +1,7 @@
 package com.mobnova.expense_mgt.services.impl.jpa.it;
 
 import com.mobnova.expense_mgt.dto.v1.CityDto;
+import com.mobnova.expense_mgt.dto.v1.CountryDto;
 import com.mobnova.expense_mgt.dto.v1.CountyDto;
 import com.mobnova.expense_mgt.dto.v1.StateOrProvinceDto;
 import com.mobnova.expense_mgt.exception.constant.Fields;
@@ -65,9 +66,16 @@ class CityServiceJPAImplIT {
     @BeforeEach
     public void init(){
         country = Country.builder().code("BR").name("Brazil").build();
+        Country country1 = Country.builder().code("DE").name("Deutschland").build();
+        Country country2 = Country.builder().code("USA").name("United States of America").build();
 
         stateOrProvince = StateOrProvince.builder().code("RS").name("Rio Grande do Sul")
                 .country(country).build();
+        StateOrProvince stateOrProvince1 = StateOrProvince.builder().code("BE").name("Berlin")
+                .country(country1).build();
+        StateOrProvince stateOrProvince2 = StateOrProvince.builder().code("NH").name("New Hampshire")
+                .country(country2).build();
+
         stateOrProvinceDto = modelMapper.map(stateOrProvince, StateOrProvinceDto.class);
 
         county = County.builder().code("POA").name("Condado de Porto Alegre")
@@ -77,7 +85,11 @@ class CityServiceJPAImplIT {
         if(!dbInitialized) {
             integrationTestHelper.cleanAllData();
             countryRepository.save(country);
+            countryRepository.save(country1);
+            countryRepository.save(country2);
             stateOrProvinceRepository.save(stateOrProvince);
+            stateOrProvinceRepository.save(stateOrProvince1);
+            stateOrProvinceRepository.save(stateOrProvince2);
             countyRepository.save(county);
             dbInitialized = true;
         }
@@ -130,10 +142,15 @@ class CityServiceJPAImplIT {
 
     @Test
     void saveBulk() {
-        CityDto cityDto1 = CityDto.builder().code("EST").name("Esteio")
-                .stateOrProvince(stateOrProvinceDto).build();
-        CityDto cityDto2 = CityDto.builder().code("CAN").name("Canoas")
-                .stateOrProvince(stateOrProvinceDto).build();
+        CityDto cityDto1 = CityDto.builder().code("BE").name("Berlin")
+                .stateOrProvince(StateOrProvinceDto.builder().name("Berlin").code("BE")
+                        .country(CountryDto.builder().name("Deutschland").code("DE").build())
+                        .build()).build();
+
+        CityDto cityDto2 = CityDto.builder().code("BE").name("Berlin")
+                .stateOrProvince(StateOrProvinceDto.builder().name("New Hampshire").code("NH")
+                        .country(CountryDto.builder().name("United States of America").code("USA").build())
+                        .build()).build();
 
         Set<CityDto> cityDtos = new HashSet<>();
         cityDtos.add(cityDto1);

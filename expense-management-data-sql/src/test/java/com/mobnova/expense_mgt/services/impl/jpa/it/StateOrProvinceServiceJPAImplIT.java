@@ -1,6 +1,7 @@
 package com.mobnova.expense_mgt.services.impl.jpa.it;
 
 import com.mobnova.expense_mgt.dto.v1.CountryDto;
+import com.mobnova.expense_mgt.dto.v1.CountyDto;
 import com.mobnova.expense_mgt.dto.v1.StateOrProvinceDto;
 import com.mobnova.expense_mgt.exception.constant.Fields;
 import com.mobnova.expense_mgt.exceptions.DataNotFoundException;
@@ -49,13 +50,18 @@ class StateOrProvinceServiceJPAImplIT {
     private static Boolean dbInitialized = false;
 
     @BeforeEach
-    public void init(){
+    public void init() {
         country = Country.builder().code("BR").name("Brazil").build();
+        Country country1 = Country.builder().code("DE").name("Deutschland").build();
+        Country country2 = Country.builder().code("USA").name("United States of America").build();
+
         countryDto = modelMapper.map(country, CountryDto.class);
 
-        if(!dbInitialized) {
+        if (!dbInitialized) {
             integrationTestHelper.cleanAllData();
             countryRepository.save(country);
+            countryRepository.save(country1);
+            countryRepository.save(country2);
             dbInitialized = true;
         }
     }
@@ -104,10 +110,14 @@ class StateOrProvinceServiceJPAImplIT {
 
     @Test
     void saveBulk() {
-        StateOrProvinceDto stateOrProvinceDto1 = StateOrProvinceDto.builder().code("PR").name("Parana")
-                .country(countryDto).build();
-        StateOrProvinceDto stateOrProvinceDto2 = StateOrProvinceDto.builder().code("SC").name("Santa Catarina")
-                .country(countryDto).build();
+        StateOrProvinceDto stateOrProvinceDto1 = StateOrProvinceDto.builder().code("BE").name("Berlin")
+                .country(CountryDto.builder().name("Deutschland").code("DE").build())
+                .build();
+
+        StateOrProvinceDto stateOrProvinceDto2 = StateOrProvinceDto.builder().code("BE").name("Berlin")
+                .country(CountryDto.builder().name("United States of America").code("USA").build())
+                .build();
+
         Set<StateOrProvinceDto> stateOrProvinceDtos = new HashSet<>();
 
         stateOrProvinceDtos.add(stateOrProvinceDto1);
@@ -115,7 +125,7 @@ class StateOrProvinceServiceJPAImplIT {
 
         Set<StateOrProvinceDto> savedStateOrProvince = stateOrProvinceServiceJPA.saveBulk(stateOrProvinceDtos);
 
-        for(StateOrProvinceDto stateOrProvinceDto : savedStateOrProvince){
+        for (StateOrProvinceDto stateOrProvinceDto : savedStateOrProvince) {
             assertThat(stateOrProvinceDto.getId()).isNotNull();
             assertThat(stateOrProvinceDto.getCreationDate()).isNotNull();
         }
