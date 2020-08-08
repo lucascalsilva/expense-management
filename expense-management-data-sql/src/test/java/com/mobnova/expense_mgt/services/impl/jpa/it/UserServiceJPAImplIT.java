@@ -1,10 +1,11 @@
 package com.mobnova.expense_mgt.services.impl.jpa.it;
 
+import com.mobnova.expense_mgt.dto.v1.UserDto;
 import com.mobnova.expense_mgt.exception.constant.Fields;
 import com.mobnova.expense_mgt.exceptions.DataNotFoundException;
 import com.mobnova.expense_mgt.model.User;
 import com.mobnova.expense_mgt.services.impl.jpa.UserServiceJPAImpl;
-import com.mobnova.expense_mgt.util.AssertionsUtil;
+import com.mobnova.expense_mgt.util.AssertionUtils;
 import com.mobnova.expense_mgt.util.IntegrationTestHelper;
 import org.assertj.core.api.Assertions;
 import org.assertj.core.api.AssertionsForClassTypes;
@@ -44,21 +45,21 @@ class UserServiceJPAImplIT {
 
     @Test
     void save() {
-        User user = User.builder().username("user_one").password("123456").email("user_one@domain.com")
+        UserDto userDto = UserDto.builder().username("user_one").password("123456").email("user_one@domain.com")
                 .firstName("Lucas").lastName("Silva").build();
 
-        User savedUser = userServiceJPA.save(user);
+        UserDto savedUserDto = userServiceJPA.save(userDto);
 
-        assertThat(savedUser.getId()).isNotNull();
-        assertThat(savedUser.getCreationDate()).isNotNull();
+        assertThat(savedUserDto.getId()).isNotNull();
+        assertThat(savedUserDto.getCreationDate()).isNotNull();
     }
 
 
     @Test
     void saveValidationError() {
-        User user = User.builder().username("user_one").build();
+        UserDto userDto = UserDto.builder().username("user_one").build();
 
-        ConstraintViolationException constraintViolationException = assertThrows(ConstraintViolationException.class, () -> userServiceJPA.save(user));
+        ConstraintViolationException constraintViolationException = assertThrows(ConstraintViolationException.class, () -> userServiceJPA.save(userDto));
         Assertions.assertThat(constraintViolationException.getMessage()).contains("save.arg0.email: must not be blank");
         Assertions.assertThat(constraintViolationException.getMessage()).contains("save.arg0.password: must not be blank");
         Assertions.assertThat(constraintViolationException.getMessage()).contains("save.arg0.firstName: must not be blank");
@@ -68,62 +69,62 @@ class UserServiceJPAImplIT {
 
     @Test
     void update() {
-        User user = User.builder().username("user_seven").password("123456").email("user_seven@domain.com")
+        UserDto userDto = UserDto.builder().username("user_seven").password("123456").email("user_seven@domain.com")
                 .firstName("Lucas").lastName("Silva").build();
 
-        user = userServiceJPA.save(user);
+        userDto = userServiceJPA.save(userDto);
 
-        assertThat(user).isNotNull();
-        assertThat(user.getId()).isNotNull();
+        assertThat(userDto).isNotNull();
+        assertThat(userDto.getId()).isNotNull();
 
-        User updatedUser = userServiceJPA.findById(user.getId());
+        UserDto updatedUserDto = userServiceJPA.findById(userDto.getId());
 
-        updatedUser.setEmail("user_seven1@domain.com");
+        updatedUserDto.setEmail("user_seven1@domain.com");
 
-        updatedUser = userServiceJPA.save(updatedUser);
+        updatedUserDto = userServiceJPA.save(updatedUserDto);
 
-        AssertionsUtil.entityUpdateAssertions(user, updatedUser);
-        assertThat(user.getEmail()).isNotEqualTo(updatedUser.getEmail());
+        AssertionUtils.dtoUpdateAssertions(userDto, updatedUserDto);
+        assertThat(userDto.getEmail()).isNotEqualTo(updatedUserDto.getEmail());
     }
 
     @Test
     void saveBulk() {
-        User user1 = User.builder().username("user_two").password("123456").email("user_two@domain.com")
+        UserDto userDto1 = UserDto.builder().username("user_two").password("123456").email("user_two@domain.com")
                 .firstName("Lucas").lastName("Silva").build();
-        User user2 = User.builder().username("user_three").password("123456").email("user_three@domain.com")
+        UserDto userDto2 = UserDto.builder().username("user_three").password("123456").email("user_three@domain.com")
                 .firstName("Lucas").lastName("Silva").build();
-        Set<User> users = new HashSet<>();
+        Set<UserDto> userDtos = new HashSet<>();
 
-        users.add(user1);
-        users.add(user2);
+        userDtos.add(userDto1);
+        userDtos.add(userDto2);
 
-        Set<User> savedUsers = userServiceJPA.saveBulk(users);
+        Set<UserDto> savedUserDtos = userServiceJPA.saveBulk(userDtos);
 
-        for(User user : savedUsers){
-            assertThat(user.getId()).isNotNull();
-            assertThat(user.getCreationDate()).isNotNull();
+        for(UserDto userDto : savedUserDtos){
+            assertThat(userDto.getId()).isNotNull();
+            assertThat(userDto.getCreationDate()).isNotNull();
         }
     }
 
     @Test
     void findById() {
-        User user = User.builder().username("user_four").password("123456").email("user_foura@domain.com")
+        UserDto userDto = UserDto.builder().username("user_four").password("123456").email("user_foura@domain.com")
                 .firstName("Lucas").lastName("Silva").build();
 
-        User savedUser = userServiceJPA.save(user);
-        Long savedUserId = savedUser.getId();
+        UserDto savedUserDto = userServiceJPA.save(userDto);
+        Long savedUserId = savedUserDto.getId();
 
-        User userById = userServiceJPA.findById(savedUserId);
+        UserDto userById = userServiceJPA.findById(savedUserId);
 
-        assertThat(userById).isEqualTo(user);
+        assertThat(userById).isEqualTo(savedUserDto);
     }
 
     @Test
     void deleteById() {
-        User user = User.builder().username("user_five").password("123456").email("user_five@domain.com")
+        UserDto userDto = UserDto.builder().username("user_five").password("123456").email("user_five@domain.com")
                 .firstName("Lucas").lastName("Silva").build();
 
-        User savedUser = userServiceJPA.save(user);
+        UserDto savedUser = userServiceJPA.save(userDto);
         Long savedUserId = savedUser.getId();
 
         userServiceJPA.deleteById(savedUserId);
@@ -134,22 +135,22 @@ class UserServiceJPAImplIT {
 
     @Test
     void findByUsername() {
-        User user = User.builder().username("user_six").password("123456").email("user_six@domain.com")
+        UserDto userDto = UserDto.builder().username("user_six").password("123456").email("user_six@domain.com")
                 .firstName("Lucas").lastName("Silva").build();
 
-        User savedUser = userServiceJPA.save(user);
-        String savedUserUsername = savedUser.getUsername();
+        UserDto savedUserDto = userServiceJPA.save(userDto);
+        String savedUserUsername = savedUserDto.getUsername();
 
-        User userByUsername = userServiceJPA.findByUsername(savedUserUsername);
+        UserDto userByUsernameDto = userServiceJPA.findByUsername(savedUserUsername);
 
-        assertThat(userByUsername).isEqualTo(user);
+        assertThat(userByUsernameDto).isEqualTo(savedUserDto);
     }
 
     @Test
     void findByUsernameNotFound() {
         String username = "someUser";
         DataNotFoundException dataNotFoundException = assertThrows(DataNotFoundException.class, () -> userServiceJPA.findByUsername(username));
-        AssertionsForClassTypes.assertThat(dataNotFoundException.getMessage()).containsIgnoringCase(User.class.getName());
+        AssertionsForClassTypes.assertThat(dataNotFoundException.getMessage()).containsIgnoringCase(User.class.getSimpleName());
         AssertionsForClassTypes.assertThat(dataNotFoundException.getMessage()).containsIgnoringCase(Fields.USERNAME.toString());
         AssertionsForClassTypes.assertThat(dataNotFoundException.getMessage()).containsIgnoringCase(username);
     }
@@ -158,7 +159,7 @@ class UserServiceJPAImplIT {
     void findByIdNotFound() {
         Long id = 1000L;
         DataNotFoundException dataNotFoundException = assertThrows(DataNotFoundException.class, () -> userServiceJPA.findById(id));
-        AssertionsForClassTypes.assertThat(dataNotFoundException.getMessage()).containsIgnoringCase(User.class.getName());
+        AssertionsForClassTypes.assertThat(dataNotFoundException.getMessage()).containsIgnoringCase(User.class.getSimpleName());
         AssertionsForClassTypes.assertThat(dataNotFoundException.getMessage()).containsIgnoringCase(Fields.ID.toString());
         AssertionsForClassTypes.assertThat(dataNotFoundException.getMessage()).containsIgnoringCase(id.toString());
     }

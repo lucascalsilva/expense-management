@@ -8,6 +8,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.IntStream;
+import java.util.stream.LongStream;
 
 import static com.mobnova.expense_mgt.number.NumberUtil.getRandomNumberInRange;
 
@@ -38,23 +39,24 @@ public class ExpenseReportTestHelper {
         user = User.builder().username("user_one").build();
         expenseCategory = ExpenseCategory.builder().code("MEAL").build();
         currency = Currency.builder().code("BRL").build();
-        segmentTypeCC = SegmentType.builder().code("CC").build();
-        segmentTypeAC = SegmentType.builder().code("NA").build();
+        segmentTypeCC = SegmentType.builder().code("CC").order(4L).build();
+        segmentTypeAC = SegmentType.builder().code("NA").order(5L).build();
         segmentValuePairCC = SegmentValuePair.builder().segmentValue("1000").segmentType(segmentTypeCC).build();
         segmentValuePairAC = SegmentValuePair.builder().segmentValue("5000").segmentType(segmentTypeAC).build();
     }
 
-    public Set<ExpenseReport> createDummyExpenseReports(Integer expenseReportQuantity, Integer expenseItemQuantity) {
+    public Set<ExpenseReport> createDummyExpenseReports(Long expenseReportQuantity, Long expenseItemQuantity, Boolean withIds) {
         Set<ExpenseReport> expenseReports = new HashSet<ExpenseReport>();
-        IntStream.range(0, expenseReportQuantity).forEach(number_ -> {
-            expenseReports.add(createDummyExpenseReport(expenseItemQuantity));
+        LongStream.range(0, expenseReportQuantity).forEach(number_ -> {
+            Long id = withIds ? number_ + 1 : null;
+            expenseReports.add(createDummyExpenseReport(id, expenseItemQuantity));
         });
 
         return expenseReports;
     }
 
-    public ExpenseReport createDummyExpenseReport(Integer expenseItemQuantity) {
-        ExpenseReport expenseReport = ExpenseReport.builder().referenceID(UUID.randomUUID().toString())
+    public ExpenseReport createDummyExpenseReport(Long id, Long expenseItemQuantity) {
+        ExpenseReport expenseReport = ExpenseReport.builder().id(id).referenceID(UUID.randomUUID().toString())
                 .tripStartDate(LocalDate.now().minusDays(getRandomNumberInRange(1, 100)))
                 .tripEndDate(LocalDate.now().plusDays(getRandomNumberInRange(1, 100)))
                 .justification("Justification " + UUID.randomUUID().toString())
@@ -63,12 +65,12 @@ public class ExpenseReportTestHelper {
                 .expenses(new HashSet<>())
                 .user(user).build();
 
-        IntStream.range(0, expenseItemQuantity).forEach(value -> {
+        LongStream.range(0, expenseItemQuantity).forEach(value -> {
             List<SegmentValuePair> segmentValuePairs = new ArrayList<>();
             segmentValuePairs.add(segmentValuePairCC);
             segmentValuePairs.add(segmentValuePairAC);
 
-            ExpenseItem expenseItem = ExpenseItem.builder().expenseItemNumber((long) value + 1)
+            ExpenseItem expenseItem = ExpenseItem.builder().expenseItemNumber(value + 1L)
                     .amount(new BigDecimal(1000))
                     .currency(currency)
                     .expenseCity(city)

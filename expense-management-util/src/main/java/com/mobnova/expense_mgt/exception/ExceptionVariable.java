@@ -8,7 +8,7 @@ import lombok.Getter;
 @Getter
 public class ExceptionVariable {
 
-    private Fields field;
-    private Object value;
+    private final Fields field;
+    private final Object value;
 
 }

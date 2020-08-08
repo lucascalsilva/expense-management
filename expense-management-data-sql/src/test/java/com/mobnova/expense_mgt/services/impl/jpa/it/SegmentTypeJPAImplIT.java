@@ -1,12 +1,12 @@
 package com.mobnova.expense_mgt.services.impl.jpa.it;
 
+import com.mobnova.expense_mgt.dto.v1.SegmentTypeDto;
 import com.mobnova.expense_mgt.exception.constant.Fields;
 import com.mobnova.expense_mgt.exceptions.DataNotFoundException;
 import com.mobnova.expense_mgt.model.SegmentType;
 import com.mobnova.expense_mgt.services.impl.jpa.SegmentTypeServiceJPAImpl;
-import com.mobnova.expense_mgt.util.AssertionsUtil;
+import com.mobnova.expense_mgt.util.AssertionUtils;
 import com.mobnova.expense_mgt.util.IntegrationTestHelper;
-import org.assertj.core.api.Assertions;
 import org.assertj.core.api.AssertionsForClassTypes;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -43,76 +43,77 @@ class SegmentTypeJPAImplIT {
 
     @Test
     void save() {
-        SegmentType segmentType = SegmentType.builder().code("CC").name("Cost Center").order(4L).build();
+        SegmentTypeDto segmentTypeDto = SegmentTypeDto.builder().code("CC").name("Cost Center").order(4L).build();
 
-        SegmentType savedSegmentType = segmentTypeServiceJPA.save(segmentType);
+        SegmentTypeDto savedSegmentDtoType = segmentTypeServiceJPA.save(segmentTypeDto);
 
-        assertThat(savedSegmentType.getId()).isNotNull();
-        assertThat(savedSegmentType.getCreationDate()).isNotNull();
+        assertThat(savedSegmentDtoType.getId()).isNotNull();
+        assertThat(savedSegmentDtoType.getCreationDate()).isNotNull();
     }
 
     @Test
     void saveValidationError() {
-        SegmentType segmentType = SegmentType.builder().code(null).name("Cost Center").order(4L).build();
+        SegmentTypeDto segmentTypeDto = SegmentTypeDto.builder().code(null).name("Cost Center").order(4L).build();
 
-        ConstraintViolationException constraintViolationException = assertThrows(ConstraintViolationException.class, () -> segmentTypeServiceJPA.save(segmentType));
-        Assertions.assertThat(constraintViolationException.getMessage()).contains("save.arg0.code: must not be blank");
+        ConstraintViolationException constraintViolationException = assertThrows(ConstraintViolationException.class, () -> segmentTypeServiceJPA.save(segmentTypeDto));
+        assertThat(constraintViolationException.getMessage()).contains("code");
+        assertThat(constraintViolationException.getMessage()).contains("must not be blank");
     }
 
     @Test
     void update() {
-        SegmentType segmentType = SegmentType.builder().code("FUTURE3").name("Future 3").order(8L).build();
+        SegmentTypeDto segmentTypeDto = SegmentTypeDto.builder().code("FUTURE3").name("Future 3").order(8L).build();
 
-        segmentType = segmentTypeServiceJPA.save(segmentType);
+        segmentTypeDto = segmentTypeServiceJPA.save(segmentTypeDto);
 
-        assertThat(segmentType).isNotNull();
-        assertThat(segmentType.getId()).isNotNull();
+        assertThat(segmentTypeDto).isNotNull();
+        assertThat(segmentTypeDto.getId()).isNotNull();
 
-        SegmentType updatedSegmentType = segmentTypeServiceJPA.findById(segmentType.getId());
+        SegmentTypeDto updatedSegmentTypeDto = segmentTypeServiceJPA.findById(segmentTypeDto.getId());
 
-        updatedSegmentType.setName("Future 3_1");
+        updatedSegmentTypeDto.setName("Future 3_1");
 
-        updatedSegmentType = segmentTypeServiceJPA.save(updatedSegmentType);
+        updatedSegmentTypeDto = segmentTypeServiceJPA.save(updatedSegmentTypeDto);
 
-        AssertionsUtil.entityUpdateAssertions(segmentType, updatedSegmentType);
-        assertThat(segmentType.getName()).isNotEqualTo(updatedSegmentType.getName());
+        AssertionUtils.dtoUpdateAssertions(segmentTypeDto, updatedSegmentTypeDto);
+        assertThat(segmentTypeDto.getName()).isNotEqualTo(updatedSegmentTypeDto.getName());
     }
 
     @Test
     void saveBulk() {
-        SegmentType segmentType1 = SegmentType.builder().code("LE").name("Legal Entity").order(2L).build();
-        SegmentType segmentType2 = SegmentType.builder().code("BU").name("Business Unit").order(3L).build();
+        SegmentTypeDto segmentTypeDto1 = SegmentTypeDto.builder().code("LE").name("Legal Entity").order(2L).build();
+        SegmentTypeDto segmentTypeDto2 = SegmentTypeDto.builder().code("BU").name("Business Unit").order(3L).build();
 
-        Set<SegmentType> segmentTypes = new HashSet<>();
-        segmentTypes.add(segmentType1);
-        segmentTypes.add(segmentType2);
+        Set<SegmentTypeDto> segmentTypeDtos = new HashSet<>();
+        segmentTypeDtos.add(segmentTypeDto1);
+        segmentTypeDtos.add(segmentTypeDto2);
 
-        Set<SegmentType> savedSegmentTypes = segmentTypeServiceJPA.saveBulk(segmentTypes);
+        Set<SegmentTypeDto> savedSegmentTypeDtos = segmentTypeServiceJPA.saveBulk(segmentTypeDtos);
 
-        for(SegmentType segmentType : savedSegmentTypes){
-            assertThat(segmentType.getId()).isNotNull();
-            assertThat(segmentType.getCreationDate()).isNotNull();
+        for(SegmentTypeDto segmentTypeDto : savedSegmentTypeDtos){
+            assertThat(segmentTypeDto.getId()).isNotNull();
+            assertThat(segmentTypeDto.getCreationDate()).isNotNull();
         }
     }
 
     @Test
     void findById() {
-        SegmentType segmentType = SegmentType.builder().code("NA").name("Natural Account").order(5L).build();
+        SegmentTypeDto segmentTypeDto = SegmentTypeDto.builder().code("NA").name("Natural Account").order(5L).build();
 
-        SegmentType savedSegmentType = segmentTypeServiceJPA.save(segmentType);
-        Long segmentTypeId = savedSegmentType.getId();
+        SegmentTypeDto savedSegmentTypeDto = segmentTypeServiceJPA.save(segmentTypeDto);
+        Long segmentTypeId = savedSegmentTypeDto.getId();
 
-        SegmentType segmentTypeById = segmentTypeServiceJPA.findById(segmentTypeId);
+        SegmentTypeDto segmentTypeDtoById = segmentTypeServiceJPA.findById(segmentTypeId);
 
-        assertThat(segmentTypeById).isEqualTo(savedSegmentType);
+        assertThat(segmentTypeDtoById).isEqualTo(segmentTypeDtoById);
     }
 
     @Test
     void deleteById() {
-        SegmentType segmentType = SegmentType.builder().code("FUTURE1").name("Future 1").order(6L).build();
+        SegmentTypeDto segmentTypeDto = SegmentTypeDto.builder().code("FUTURE1").name("Future 1").order(6L).build();
 
-        SegmentType savedSegmentType  = segmentTypeServiceJPA.save(segmentType);
-        Long savedSegmentTypeId = savedSegmentType.getId();
+        SegmentTypeDto savedSegmentTypeDto  = segmentTypeServiceJPA.save(segmentTypeDto);
+        Long savedSegmentTypeId = savedSegmentTypeDto.getId();
 
         segmentTypeServiceJPA.deleteById(savedSegmentTypeId);
 
@@ -121,21 +122,21 @@ class SegmentTypeJPAImplIT {
 
     @Test
     void findByCode() {
-        SegmentType segmentType = SegmentType.builder().code("FUTURE2").name("Future 2").order(7L).build();
+        SegmentTypeDto segmentTypeDto = SegmentTypeDto.builder().code("FUTURE2").name("Future 2").order(7L).build();
 
-        SegmentType savedSegmentType  = segmentTypeServiceJPA.save(segmentType);
-        String segmentTypeCode = savedSegmentType.getCode();
+        SegmentTypeDto savedSegmentTypeDto  = segmentTypeServiceJPA.save(segmentTypeDto);
+        String segmentTypeCode = savedSegmentTypeDto.getCode();
 
-        SegmentType segmentTypeByCode = segmentTypeServiceJPA.findByCode(segmentTypeCode);
+        SegmentTypeDto segmentTypeDtoByCode = segmentTypeServiceJPA.findByCode(segmentTypeCode);
 
-        assertThat(segmentTypeByCode).isEqualTo(savedSegmentType);
+        assertThat(segmentTypeDtoByCode).isEqualTo(savedSegmentTypeDto);
     }
 
     @Test
     void findByCodeNotFound() {
         String code = "1000";
         DataNotFoundException dataNotFoundException = assertThrows(DataNotFoundException.class, () -> segmentTypeServiceJPA.findByCode(code));
-        AssertionsForClassTypes.assertThat(dataNotFoundException.getMessage()).containsIgnoringCase(SegmentType.class.getName());
+        AssertionsForClassTypes.assertThat(dataNotFoundException.getMessage()).containsIgnoringCase(SegmentType.class.getSimpleName());
         AssertionsForClassTypes.assertThat(dataNotFoundException.getMessage()).containsIgnoringCase(Fields.CODE.toString());
         AssertionsForClassTypes.assertThat(dataNotFoundException.getMessage()).containsIgnoringCase(code);
     }
@@ -144,7 +145,7 @@ class SegmentTypeJPAImplIT {
     void findByIdNotFound() {
         Long id = 1000L;
         DataNotFoundException dataNotFoundException = assertThrows(DataNotFoundException.class, () -> segmentTypeServiceJPA.findById(id));
-        AssertionsForClassTypes.assertThat(dataNotFoundException.getMessage()).containsIgnoringCase(SegmentType.class.getName());
+        AssertionsForClassTypes.assertThat(dataNotFoundException.getMessage()).containsIgnoringCase(SegmentType.class.getSimpleName());
         AssertionsForClassTypes.assertThat(dataNotFoundException.getMessage()).containsIgnoringCase(Fields.ID.toString());
         AssertionsForClassTypes.assertThat(dataNotFoundException.getMessage()).containsIgnoringCase(id.toString());
     }

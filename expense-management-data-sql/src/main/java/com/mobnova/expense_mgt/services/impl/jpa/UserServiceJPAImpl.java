@@ -1,46 +1,29 @@
 package com.mobnova.expense_mgt.services.impl.jpa;
 
+import com.mobnova.expense_mgt.dto.v1.UserDto;
 import com.mobnova.expense_mgt.exception.constant.Fields;
 import com.mobnova.expense_mgt.exceptions.DataNotFoundException;
 import com.mobnova.expense_mgt.model.User;
 import com.mobnova.expense_mgt.repositories.UserRepository;
 import com.mobnova.expense_mgt.services.UserService;
-import lombok.RequiredArgsConstructor;
+import org.modelmapper.ModelMapper;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
-import java.util.Set;
-import java.util.stream.Collectors;
-
 @Service
 @Profile("jpa")
-@RequiredArgsConstructor
-public class UserServiceJPAImpl implements UserService {
+public class UserServiceJPAImpl extends AbstractBaseServiceJPA<User, UserDto, Long> implements UserService {
 
-    private final UserRepository repository;
+    private final UserRepository userRepository;
 
-    @Override
-    public User save(User user) {
-        return repository.save(user);
+    public UserServiceJPAImpl(UserRepository userRepository, ModelMapper modelMapper) {
+        super(userRepository, modelMapper, User.class, UserDto.class);
+        this.userRepository = userRepository;
     }
 
     @Override
-    public Set<User> saveBulk(Set<User> users) {
-        return users.stream().map(this::save).collect(Collectors.toSet());
-    }
-
-    @Override
-    public User findById(Long id) {
-        return repository.findById(id).orElseThrow(() -> new DataNotFoundException(User.class, Fields.ID, id));
-    }
-
-    @Override
-    public void deleteById(Long id) {
-        repository.deleteById(id);
-    }
-
-    @Override
-    public User findByUsername(String username) {
-        return repository.findByUsername(username).orElseThrow(() -> new DataNotFoundException(User.class, Fields.USERNAME, username));
+    public UserDto findByUsername(String username) {
+        return modelMapper.map(userRepository.findByUsername(username)
+                .orElseThrow(() -> new DataNotFoundException(User.class, Fields.USERNAME, username)), UserDto.class);
     }
 }

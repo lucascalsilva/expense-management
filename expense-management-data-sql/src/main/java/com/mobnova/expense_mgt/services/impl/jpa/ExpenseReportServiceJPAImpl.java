@@ -2,26 +2,25 @@ package com.mobnova.expense_mgt.services.impl.jpa;
 
 import com.mobnova.expense_mgt.config.CriteriaConfigBean;
 import com.mobnova.expense_mgt.criteria.CriteriaUtil;
+import com.mobnova.expense_mgt.dto.v1.ExpenseReportDto;
+import com.mobnova.expense_mgt.exception.ExceptionVariable;
 import com.mobnova.expense_mgt.exception.constant.Fields;
 import com.mobnova.expense_mgt.exceptions.DataNotFoundException;
-import com.mobnova.expense_mgt.exceptions.InvalidDataException;
 import com.mobnova.expense_mgt.model.Currency;
 import com.mobnova.expense_mgt.model.*;
 import com.mobnova.expense_mgt.repositories.*;
 import com.mobnova.expense_mgt.services.ExpenseReportService;
-import lombok.RequiredArgsConstructor;
+import org.modelmapper.ModelMapper;
 import org.springframework.context.annotation.Profile;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
-import javax.transaction.Transactional;
 import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
 @Profile("jpa")
-@RequiredArgsConstructor
-public class ExpenseReportServiceJPAImpl implements ExpenseReportService {
+public class ExpenseReportServiceJPAImpl extends AbstractBaseServiceJPA<ExpenseReport, ExpenseReportDto, Long> implements ExpenseReportService {
 
     private final ExpenseReportRepository expenseReportRepository;
     private final UserRepository userRepository;
@@ -29,11 +28,31 @@ public class ExpenseReportServiceJPAImpl implements ExpenseReportService {
     private final CurrencyRepository currencyRepository;
     private final CityRepository cityRepository;
     private final ExpenseCategoryRepository categoryRepository;
+    private final ModelMapper modelMapper;
     private final CriteriaConfigBean criteriaConfigBean;
     private final SegmentValuePairRepository segmentValuePairRepository;
 
+    public ExpenseReportServiceJPAImpl(ExpenseReportRepository expenseReportRepository, UserRepository userRepository,
+                                       CountryRepository countryRepository, CurrencyRepository currencyRepository,
+                                       CityRepository cityRepository, ExpenseCategoryRepository categoryRepository,
+                                       SegmentValuePairRepository segmentValuePairRepository, ModelMapper modelMapper,
+                                       CriteriaConfigBean criteriaConfigBean) {
+        super(expenseReportRepository, modelMapper, ExpenseReport.class, ExpenseReportDto.class);
+        this.expenseReportRepository = expenseReportRepository;
+        this.userRepository = userRepository;
+        this.countryRepository = countryRepository;
+        this.currencyRepository = currencyRepository;
+        this.cityRepository = cityRepository;
+        this.categoryRepository = categoryRepository;
+        this.modelMapper = modelMapper;
+        this.criteriaConfigBean = criteriaConfigBean;
+        this.segmentValuePairRepository = segmentValuePairRepository;
+    }
+
     @Override
-    public ExpenseReport save(ExpenseReport expenseReport) {
+    public ExpenseReportDto save(ExpenseReportDto expenseReportDto) {
+        ExpenseReport expenseReport = modelMapper.map(expenseReportDto, ExpenseReport.class);
+
         if (expenseReport.getId() != null) {
             expenseReportRepository.findById(expenseReport.getId())
                     .ifPresent(currentObject -> {
@@ -46,7 +65,7 @@ public class ExpenseReportServiceJPAImpl implements ExpenseReportService {
         userRepository.findByUsername(username)
                 .ifPresentOrElse(expenseReport::setUser,
                         () -> {
-                            throw new InvalidDataException(User.class, "username", username);
+                            throw new DataNotFoundException(User.class, Fields.USERNAME, username);
                         });
 
 
@@ -54,7 +73,7 @@ public class ExpenseReportServiceJPAImpl implements ExpenseReportService {
         countryRepository.findByCode(countryCode)
                 .ifPresentOrElse(expenseReport::setCountry,
                         () -> {
-                            throw new InvalidDataException(Country.class, "countryCode", countryCode);
+                            throw new DataNotFoundException(Country.class, Fields.CODE, countryCode);
                         });
 
 
@@ -63,7 +82,7 @@ public class ExpenseReportServiceJPAImpl implements ExpenseReportService {
             currencyRepository.findByCode(currencyCode)
                     .ifPresentOrElse(expenseItem::setCurrency,
                             () -> {
-                                throw new InvalidDataException(Currency.class, "currencyCode", currencyCode);
+                                throw new DataNotFoundException(Currency.class, Fields.CODE, currencyCode);
                             });
 
             if (expenseItem.getExpenseCity() != null && expenseItem.getExpenseCity().getCode() != null) {
@@ -71,7 +90,7 @@ public class ExpenseReportServiceJPAImpl implements ExpenseReportService {
                 cityRepository.findByCode(expenseCityCode)
                         .ifPresentOrElse(expenseItem::setExpenseCity,
                                 () -> {
-                                    throw new InvalidDataException(City.class, "expenseCityCode", expenseCityCode);
+                                    throw new DataNotFoundException(City.class, Fields.CODE, expenseCityCode);
                                 });
 
             }
@@ -80,59 +99,51 @@ public class ExpenseReportServiceJPAImpl implements ExpenseReportService {
             categoryRepository.findByCode(categoryCode)
                     .ifPresentOrElse(expenseItem::setCategory,
                             () -> {
-                                throw new InvalidDataException(ExpenseCategory.class, "expenseCategoryCode", categoryCode);
+                                throw new DataNotFoundException(ExpenseCategory.class, Fields.CODE, categoryCode);
                             });
 
-            List<SegmentValuePair> segmentValuePairs = expenseItem.getSegmentValuePairs().stream().map(segmentValuePair -> {
-                String segmentValuePairValue = segmentValuePair.getSegmentValue();
-                String segmentTypeCode = segmentValuePair.getSegmentType().getCode();
+            List<SegmentValuePair> segmentValuePairs = expenseItem.getSegmentValuePairs().stream()
+                    .filter(segmentValuePair -> !segmentValuePair.getSegmentValue().equalsIgnoreCase("0")).map(segmentValuePair -> {
+                        String segmentValuePairValue = segmentValuePair.getSegmentValue();
+                        Long order = segmentValuePair.getSegmentType().getOrder();
 
-                SegmentValuePair currentObject = segmentValuePairRepository.findByValueAndSegmentTypeCode(segmentValuePairValue, segmentTypeCode)
-                        .orElseThrow(() -> {
-                            Map<String, String> fieldValuePairs = new HashMap<String, String>();
-                            fieldValuePairs.put("segmentValuePairValue", segmentValuePairValue);
-                            fieldValuePairs.put("segmentTypeCode", segmentTypeCode);
-                            throw new InvalidDataException(SegmentValuePair.class, fieldValuePairs);
-                        });
+                        SegmentValuePair currentObject = segmentValuePairRepository.findByValueAndSegmentTypeOrder(segmentValuePairValue, order)
+                                .orElseThrow(() -> {
+                                    List<ExceptionVariable> exceptionVariables = new ArrayList<ExceptionVariable>();
+                                    exceptionVariables.add(ExceptionVariable.builder().field(Fields.ORDER).value(order).build());
+                                    exceptionVariables.add(ExceptionVariable.builder().field(Fields.SEGMENT_VALUE).value(segmentValuePairValue).build());
 
-                return currentObject;
-            }).collect(Collectors.toList());
+                                    throw new DataNotFoundException(SegmentValuePair.class, exceptionVariables);
+                                });
+
+                        return currentObject;
+                    }).collect(Collectors.toList());
 
             expenseItem.setSegmentValuePairs(segmentValuePairs);
 
-            if(expenseItem.getExpenseReport() == null){
+            if (expenseItem.getExpenseReport() == null) {
                 expenseItem.setExpenseReport(expenseReport);
             }
 
         }
 
-        return expenseReportRepository.save(expenseReport);
+        ExpenseReport savedExpenseReport = expenseReportRepository.save(expenseReport);
+
+        return modelMapper.map(findById(savedExpenseReport.getId()), ExpenseReportDto.class);
     }
 
     @Override
-    @Transactional
-    public Set<ExpenseReport> saveBulk(Set<ExpenseReport> expenseReports) {
-        return expenseReports.stream().map(this::save).collect(Collectors.toSet());
+    public Set<ExpenseReportDto> search(String search) {
+        Specification<ExpenseReport> specification = CriteriaUtil.extractSpecification(search, criteriaConfigBean);
+
+        return expenseReportRepository.findAll(specification).stream()
+                .map(expenseReport -> modelMapper.map(expenseReport, ExpenseReportDto.class))
+                .collect(Collectors.toSet());
     }
 
     @Override
-    public Set<ExpenseReport> search(String search) {
-        Specification specification = CriteriaUtil.extractSpecification(search, criteriaConfigBean);
-        return new HashSet(expenseReportRepository.findAll(specification));
-    }
-
-    @Override
-    public ExpenseReport findById(Long id) {
-        return expenseReportRepository.findById(id).orElseThrow(() -> new DataNotFoundException(ExpenseReport.class, Fields.ID, id));
-    }
-
-    @Override
-    public void deleteById(Long id) {
-        expenseReportRepository.deleteById(id);
-    }
-
-    @Override
-    public ExpenseReport findByReferenceID(String referenceID) {
-        return expenseReportRepository.findByReferenceID(referenceID).orElseThrow(() -> new DataNotFoundException(ExpenseReport.class, Fields.REFERENCE_ID, referenceID));
+    public ExpenseReportDto findByReferenceID(String referenceID) {
+        return modelMapper.map(expenseReportRepository.findByReferenceID(referenceID)
+                .orElseThrow(() -> new DataNotFoundException(ExpenseReport.class, Fields.REFERENCE_ID, referenceID)), ExpenseReportDto.class);
     }
 }

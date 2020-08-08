@@ -1,17 +1,20 @@
 package com.mobnova.expense_mgt.services.impl.jpa.test;
 
+import com.mobnova.expense_mgt.config.ModelMapperConfiguration;
+import com.mobnova.expense_mgt.dto.v1.SegmentTypeDto;
 import com.mobnova.expense_mgt.exception.constant.Fields;
 import com.mobnova.expense_mgt.exceptions.DataNotFoundException;
 import com.mobnova.expense_mgt.model.SegmentType;
 import com.mobnova.expense_mgt.repositories.SegmentTypeRepository;
 import com.mobnova.expense_mgt.services.impl.jpa.SegmentTypeServiceJPAImpl;
 import org.assertj.core.api.AssertionsForClassTypes;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Spy;
+import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.modelmapper.ModelMapper;
 
 import java.util.HashSet;
 import java.util.Optional;
@@ -26,54 +29,67 @@ import static org.mockito.Mockito.*;
 @ExtendWith(MockitoExtension.class)
 class SegmentTypeJPAImplTest {
 
-    @InjectMocks
-    @Spy
     private SegmentTypeServiceJPAImpl segmentTypeServiceJPA;
 
     @Mock
     private SegmentTypeRepository segmentTypeRepository;
 
+    private ModelMapper modelMapper;
+
+    @BeforeEach
+    public void setup(){
+        modelMapper = new ModelMapperConfiguration().globalMapper();
+        segmentTypeServiceJPA = Mockito.spy(new SegmentTypeServiceJPAImpl(segmentTypeRepository, modelMapper));
+    }
+
     @Test
     void save() {
-        SegmentType segmentType = SegmentType.builder().code("CC").name("Cost Center").build();
+        SegmentTypeDto segmentTypeDto = SegmentTypeDto.builder().id(1L).code("CC").name("Cost Center").build();
+        SegmentType segmentType = modelMapper.map(segmentTypeDto, SegmentType.class);
+
+        when(segmentTypeRepository.findById(1L)).thenReturn(Optional.of(segmentType));
 
         doAnswer(returnsFirstArg()).when(segmentTypeRepository).save(segmentType);
 
-        segmentTypeServiceJPA.save(segmentType);
+        segmentTypeServiceJPA.save(segmentTypeDto);
 
         verify(segmentTypeRepository).save(segmentType);
     }
 
     @Test
     void saveBulk() {
-        SegmentType segmentType1 = SegmentType.builder().code("CC").name("Cost Center").build();
-        SegmentType segmentType2 = SegmentType.builder().code("NC").name("Natural Account").build();
+        SegmentTypeDto segmentTypeDto1 = SegmentTypeDto.builder().id(1L).code("CC").name("Cost Center").build();
+        SegmentTypeDto segmentTypeDto2 = SegmentTypeDto.builder().id(2L).code("NC").name("Natural Account").build();
+        SegmentType segmentType1 = modelMapper.map(segmentTypeDto1, SegmentType.class);
+        SegmentType segmentType2 = modelMapper.map(segmentTypeDto2, SegmentType.class);
 
-        Set<SegmentType> segmentTypes = new HashSet<>();
+        Set<SegmentTypeDto> segmentTypeDtos = new HashSet<>();
 
-        segmentTypes.add(segmentType1);
-        segmentTypes.add(segmentType2);
+        segmentTypeDtos.add(segmentTypeDto1);
+        segmentTypeDtos.add(segmentTypeDto2);
+
+        when(segmentTypeRepository.findById(1L)).thenReturn(Optional.of(segmentType1));
+        when(segmentTypeRepository.findById(2L)).thenReturn(Optional.of(segmentType2));
 
         doAnswer(returnsFirstArg()).when(segmentTypeRepository).save(any(SegmentType.class));
 
-        Set<SegmentType> savedSegmentTypes = segmentTypeServiceJPA.saveBulk(segmentTypes);
+        Set<SegmentTypeDto> savedSegmentTypeDtos = segmentTypeServiceJPA.saveBulk(segmentTypeDtos);
+        assertThat(savedSegmentTypeDtos).hasSize(2);
 
-        for(SegmentType segmentType : savedSegmentTypes){
-            verify(segmentTypeRepository, times(1)).save(segmentType);
-            verify(segmentTypeServiceJPA, times(1)).save(segmentType);
-        }
+        verify(segmentTypeRepository, times(2)).save(any(SegmentType.class));
+        verify(segmentTypeServiceJPA, times(2)).save(any(SegmentTypeDto.class));
     }
 
     @Test
     void findById() {
-        SegmentType segmentType = SegmentType.builder().id(1L).code("CC").name("Cost Center").build();
+        SegmentTypeDto segmentTypeDto = SegmentTypeDto.builder().id(1L).code("CC").name("Cost Center").build();
+        SegmentType segmentType = modelMapper.map(segmentTypeDto, SegmentType.class);
 
         when(segmentTypeRepository.findById(segmentType.getId())).thenReturn(Optional.of(segmentType));
 
-        Optional<SegmentType> segmentTypeById = segmentTypeRepository.findById(1L);
+        SegmentTypeDto segmentTypeDtoById = segmentTypeServiceJPA.findById(1L);
 
-        assertThat(segmentTypeById.isPresent());
-        assertThat(segmentTypeById.get()).isEqualTo(segmentType);
+        assertThat(segmentTypeDtoById.getId()).isEqualTo(segmentType.getId());
     }
 
     @Test
@@ -85,22 +101,23 @@ class SegmentTypeJPAImplTest {
 
     @Test
     void findByCode() {
-        SegmentType segmentType = SegmentType.builder().code("CC").name("Cost Center").build();
+        SegmentTypeDto segmentTypeDto = SegmentTypeDto.builder().code("CC").name("Cost Center").build();
+        SegmentType segmentType = modelMapper.map(segmentTypeDto, SegmentType.class);
 
-        when(segmentTypeRepository.findByCode(segmentType.getCode())).thenReturn(Optional.of(segmentType));
+        when(segmentTypeRepository.findByCode(segmentTypeDto.getCode())).thenReturn(Optional.of(segmentType));
 
-        SegmentType segmentTypeByCode = segmentTypeServiceJPA.findByCode("CC");
+        SegmentTypeDto segmentTypeDtoByCode = segmentTypeServiceJPA.findByCode("CC");
 
         verify(segmentTypeRepository, times(1)).findByCode(segmentType.getCode());
 
-        assertThat(segmentTypeByCode).isEqualTo(segmentType);
+        assertThat(segmentTypeDtoByCode.getId()).isEqualTo(segmentType.getId());
     }
 
     @Test
     void findByCodeNotFound() {
         String code = "1000";
         DataNotFoundException dataNotFoundException = assertThrows(DataNotFoundException.class, () -> segmentTypeServiceJPA.findByCode(code));
-        AssertionsForClassTypes.assertThat(dataNotFoundException.getMessage()).containsIgnoringCase(SegmentType.class.getName());
+        AssertionsForClassTypes.assertThat(dataNotFoundException.getMessage()).containsIgnoringCase(SegmentType.class.getSimpleName());
         AssertionsForClassTypes.assertThat(dataNotFoundException.getMessage()).containsIgnoringCase(Fields.CODE.toString());
         AssertionsForClassTypes.assertThat(dataNotFoundException.getMessage()).containsIgnoringCase(code);
     }
@@ -109,7 +126,7 @@ class SegmentTypeJPAImplTest {
     void findByIdNotFound() {
         Long id = 1000L;
         DataNotFoundException dataNotFoundException = assertThrows(DataNotFoundException.class, () -> segmentTypeServiceJPA.findById(id));
-        AssertionsForClassTypes.assertThat(dataNotFoundException.getMessage()).containsIgnoringCase(SegmentType.class.getName());
+        AssertionsForClassTypes.assertThat(dataNotFoundException.getMessage()).containsIgnoringCase(SegmentType.class.getSimpleName());
         AssertionsForClassTypes.assertThat(dataNotFoundException.getMessage()).containsIgnoringCase(Fields.ID.toString());
         AssertionsForClassTypes.assertThat(dataNotFoundException.getMessage()).containsIgnoringCase(id.toString());
     }

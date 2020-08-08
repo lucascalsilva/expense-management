@@ -1,5 +1,8 @@
 package com.mobnova.expense_mgt.services.impl.jpa.test;
 
+import com.mobnova.expense_mgt.config.ModelMapperConfiguration;
+import com.mobnova.expense_mgt.dto.v1.CountyDto;
+import com.mobnova.expense_mgt.dto.v1.StateOrProvinceDto;
 import com.mobnova.expense_mgt.exception.constant.Fields;
 import com.mobnova.expense_mgt.exceptions.DataNotFoundException;
 import com.mobnova.expense_mgt.model.County;
@@ -11,16 +14,16 @@ import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Spy;
+import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.modelmapper.ModelMapper;
 
 import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
 
-import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.AdditionalAnswers.returnsFirstArg;
 import static org.mockito.ArgumentMatchers.any;
@@ -29,8 +32,6 @@ import static org.mockito.Mockito.*;
 @ExtendWith(MockitoExtension.class)
 class CountyServiceJPAImplTest {
 
-    @InjectMocks
-    @Spy
     private CountyServiceJPAImpl countyServiceJPA;
 
     @Mock
@@ -39,72 +40,89 @@ class CountyServiceJPAImplTest {
     @Mock
     private StateOrProvinceRepository stateOrProvinceRepository;
 
+    private ModelMapper modelMapper;
+
     private StateOrProvince stateOrProvince;
+    private StateOrProvinceDto stateOrProvinceDto;
 
     @BeforeEach
-    void init(){
-        stateOrProvince = StateOrProvince.builder().id(1L).code("RS")
+    void init() {
+        modelMapper = new ModelMapperConfiguration().globalMapper();
+        countyServiceJPA = Mockito.spy(new CountyServiceJPAImpl(countyRepository, stateOrProvinceRepository, modelMapper));
+
+        stateOrProvinceDto = StateOrProvinceDto.builder().id(1L).code("RS")
                 .name("Rio Grande do Sul").build();
+        stateOrProvince = modelMapper.map(stateOrProvinceDto, StateOrProvince.class);
     }
 
     @Test
     void save() {
-        County county = County.builder().code("POA").name("Condado de Porto Alegre")
-                .stateOrProvince(stateOrProvince).build();
+        CountyDto countyDto = CountyDto.builder().id(1L).code("POA").name("Condado de Porto Alegre")
+                .stateOrProvince(stateOrProvinceDto).build();
+        County county = modelMapper.map(countyDto, County.class);
 
-        doAnswer(returnsFirstArg()).when(countyRepository).save(any(County.class));
-
+        doAnswer(returnsFirstArg()).when(countyRepository).save(county);
         when(stateOrProvinceRepository.findByCode(stateOrProvince.getCode()))
                 .thenReturn(Optional.of(stateOrProvince));
+        when(countyRepository.findById(1L))
+                .thenReturn(Optional.of(county));
 
-        County savedCounty = countyServiceJPA.save(county);
+        CountyDto savedCountyDto = countyServiceJPA.save(countyDto);
 
         verify(stateOrProvinceRepository, times(1)).findByCode(stateOrProvince.getCode());
         verify(countyRepository, times(1)).save(county);
 
-        assertThat(savedCounty.getStateOrProvince().getId()).isEqualTo(1L);
+        assertThat(savedCountyDto.getStateOrProvince().getId()).isEqualTo(1L);
     }
 
     @Test
     void saveBulk() {
-        County county1 = County.builder().code("POA").name("Condado de Porto Alegre")
-                .stateOrProvince(stateOrProvince).build();
+        CountyDto countyDto1 = CountyDto.builder().id(1L).code("POA").name("Condado de Porto Alegre")
+                .stateOrProvince(stateOrProvinceDto).build();
+        CountyDto countyDto2 = CountyDto.builder().id(2L).code("CAX").name("Condado de Caxias")
+                .stateOrProvince(stateOrProvinceDto).build();
 
-        County county2 = County.builder().code("CAX").name("Condado de Caxias")
-                .stateOrProvince(stateOrProvince).build();
+        County county1 = modelMapper.map(countyDto1, County.class);
+        County county2 = modelMapper.map(countyDto2, County.class);
 
-        Set<County> counties = new HashSet<>();
-        counties.add(county1);
-        counties.add(county2);
+        Set<CountyDto> countyDtos = new HashSet<>();
+        countyDtos.add(countyDto1);
+        countyDtos.add(countyDto2);
+
+        when(countyRepository.findById(1L)).thenReturn(Optional.of(county1));
+        when(countyRepository.findById(2L)).thenReturn(Optional.of(county2));
 
         doAnswer(returnsFirstArg()).when(countyRepository).save(any(County.class));
         when(stateOrProvinceRepository.findByCode(stateOrProvince.getCode()))
                 .thenReturn(Optional.of(stateOrProvince));
 
-        Set<County> savedCounties = countyServiceJPA.saveBulk(counties);
+        Set<CountyDto> savedCountyDtos = countyServiceJPA.saveBulk(countyDtos);
+        assertThat(savedCountyDtos).hasSize(2);
 
-        verify(stateOrProvinceRepository, times(counties.size())).findByCode(stateOrProvince.getCode());
+        verify(stateOrProvinceRepository, times(savedCountyDtos.size())).findByCode(stateOrProvince.getCode());
 
-        for(County county : savedCounties){
-            verify(countyRepository, times(1)).save(county);
-            verify(countyServiceJPA, times(1)).save(county);
 
-            Assertions.assertThat(county.getStateOrProvince().getId()).isEqualTo(1L);
+        verify(countyRepository, times(2)).save(any(County.class));
+        verify(countyServiceJPA, times(2)).save(any(CountyDto.class));
+
+        for (CountyDto countyDto : savedCountyDtos) {
+            Assertions.assertThat(countyDto.getStateOrProvince().getId()).isEqualTo(1L);
         }
     }
 
     @Test
     void findById() {
-        County county = County.builder().id(1L).code("POA").name("Condado de Porto Alegre")
-                .stateOrProvince(stateOrProvince).build();
+        CountyDto countyDto = CountyDto.builder().id(1L).code("POA").name("Condado de Porto Alegre")
+                .stateOrProvince(stateOrProvinceDto).build();
+        County county = modelMapper.map(countyDto, County.class);
 
         when(countyRepository.findById(county.getId())).thenReturn(Optional.of(county));
 
-        County countyById = countyServiceJPA.findById(1L);
+        CountyDto countyByIdDto = countyServiceJPA.findById(1L);
 
         verify(countyRepository, times(1)).findById(1L);
 
-        assertThat(countyById).isEqualTo(county);
+        assertThat(countyByIdDto).isEqualTo(countyDto);
     }
 
     @Test
@@ -116,24 +134,25 @@ class CountyServiceJPAImplTest {
     }
 
     @Test
-    void findByCode(){
-        County county = County.builder().code("POA").name("Condado de Porto Alegre")
-                .stateOrProvince(stateOrProvince).build();
+    void findByCode() {
+        CountyDto countyDto = CountyDto.builder().id(1L).code("POA").name("Condado de Porto Alegre")
+                .stateOrProvince(stateOrProvinceDto).build();
+        County county = modelMapper.map(countyDto, County.class);
 
         when(countyRepository.findByCode(county.getCode())).thenReturn(Optional.of(county));
 
-        County countyByCode = countyServiceJPA.findByCode("POA");
+        CountyDto countyByCodeDto = countyServiceJPA.findByCode("POA");
 
         verify(countyRepository, times(1)).findByCode(county.getCode());
 
-        assertThat(countyByCode).isEqualTo(county);
+        assertThat(countyByCodeDto).isEqualTo(countyDto);
     }
 
     @Test
     void findByCodeNotFound() {
         String code = "1000";
         DataNotFoundException dataNotFoundException = assertThrows(DataNotFoundException.class, () -> countyServiceJPA.findByCode(code));
-        assertThat(dataNotFoundException.getMessage()).containsIgnoringCase(County.class.getName());
+        assertThat(dataNotFoundException.getMessage()).containsIgnoringCase(County.class.getSimpleName());
         assertThat(dataNotFoundException.getMessage().compareToIgnoreCase(Fields.CODE.toString()));
         assertThat(dataNotFoundException.getMessage().compareToIgnoreCase(code));
     }
@@ -142,7 +161,7 @@ class CountyServiceJPAImplTest {
     void findByIdNotFound() {
         Long id = 1000L;
         DataNotFoundException dataNotFoundException = assertThrows(DataNotFoundException.class, () -> countyServiceJPA.findById(id));
-        assertThat(dataNotFoundException.getMessage()).containsIgnoringCase(County.class.getName());
+        assertThat(dataNotFoundException.getMessage()).containsIgnoringCase(County.class.getSimpleName());
         assertThat(dataNotFoundException.getMessage()).containsIgnoringCase(Fields.ID.toString());
         assertThat(dataNotFoundException.getMessage()).containsIgnoringCase(id.toString());
     }

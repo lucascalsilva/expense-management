@@ -8,7 +8,7 @@ import org.springframework.stereotype.Repository;
 import java.util.Optional;
 
 @Repository
-public interface ExpenseReportRepository extends JpaRepository<ExpenseReport, Long>, JpaSpecificationExecutor  {
+public interface ExpenseReportRepository extends SearchRepository<ExpenseReport>  {
 
     Optional<ExpenseReport> findByReferenceID(String referenceID);
 

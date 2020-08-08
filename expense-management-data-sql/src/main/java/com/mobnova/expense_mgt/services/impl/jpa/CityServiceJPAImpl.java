@@ -1,8 +1,10 @@
 package com.mobnova.expense_mgt.services.impl.jpa;
 
+import com.mobnova.expense_mgt.dto.v1.CityDto;
+import com.mobnova.expense_mgt.dto.v1.CountyDto;
+import com.mobnova.expense_mgt.dto.v1.StateOrProvinceDto;
 import com.mobnova.expense_mgt.exception.constant.Fields;
 import com.mobnova.expense_mgt.exceptions.DataNotFoundException;
-import com.mobnova.expense_mgt.exceptions.InvalidDataException;
 import com.mobnova.expense_mgt.model.City;
 import com.mobnova.expense_mgt.model.County;
 import com.mobnova.expense_mgt.model.StateOrProvince;
@@ -10,55 +12,48 @@ import com.mobnova.expense_mgt.repositories.CityRepository;
 import com.mobnova.expense_mgt.repositories.CountyRepository;
 import com.mobnova.expense_mgt.repositories.StateOrProvinceRepository;
 import com.mobnova.expense_mgt.services.CityService;
-import lombok.RequiredArgsConstructor;
+import org.modelmapper.ModelMapper;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
-import java.util.Set;
-import java.util.stream.Collectors;
-
 @Service
 @Profile("jpa")
-@RequiredArgsConstructor
-public class CityServiceJPAImpl implements CityService {
+public class CityServiceJPAImpl extends AbstractNameCodeEntityBaseServiceJPA<City, CityDto, Long> implements CityService {
 
     private final CityRepository cityRepository;
     private final CountyRepository countyRepository;
     private final StateOrProvinceRepository stateOrProvinceRepository;
 
+    public CityServiceJPAImpl(CityRepository cityRepository, CountyRepository countyRepository, StateOrProvinceRepository stateOrProvinceRepository, ModelMapper modelMapper) {
+        super(cityRepository, modelMapper, City.class, CityDto.class);
+        this.cityRepository = cityRepository;
+        this.countyRepository = countyRepository;
+        this.stateOrProvinceRepository = stateOrProvinceRepository;
+    }
+
     @Override
-    public City save(City city) {
-        if (city.getCounty() != null && city.getCounty().getCode() != null) {
-            String countyCode = city.getCounty().getCode();
-            countyRepository.findByCode(countyCode).ifPresentOrElse(city::setCounty, () -> {
-                throw new InvalidDataException(County.class, "countyCode", countyCode);
+    public CityDto save(CityDto cityDto) {
+        if (cityDto.getCounty() != null && cityDto.getCounty().getCode() != null) {
+            String countyCode = cityDto.getCounty().getCode();
+            countyRepository.findByCode(countyCode).ifPresentOrElse(county -> {
+                CountyDto countyDto = modelMapper.map(county, CountyDto.class);
+                cityDto.setCounty(countyDto);
+            }, () -> {
+                throw new DataNotFoundException(County.class, Fields.CODE, countyCode);
             });
         }
 
-        String stateOrProvinceCode = city.getStateOrProvince().getCode();
-        stateOrProvinceRepository.findByCode(stateOrProvinceCode).ifPresentOrElse(city::setStateOrProvince, () -> {
-            throw new InvalidDataException(StateOrProvince.class, "stateOrProvinceCode", stateOrProvinceCode);
+        String stateOrProvinceCode = cityDto.getStateOrProvince().getCode();
+        stateOrProvinceRepository.findByCode(stateOrProvinceCode).ifPresentOrElse(stateOrProvince -> {
+            StateOrProvinceDto stateOrProvinceDto = modelMapper.map(stateOrProvince, StateOrProvinceDto.class);
+            cityDto.setStateOrProvince(stateOrProvinceDto);
+        }, () -> {
+            throw new DataNotFoundException(StateOrProvince.class, Fields.CODE, stateOrProvinceCode);
         });
-        return cityRepository.save(city);
-    }
 
-    @Override
-    public Set<City> saveBulk(Set<City> cities) {
-        return cities.stream().map(this::save).collect(Collectors.toSet());
-    }
+        City city = modelMapper.map(cityDto, City.class);
+        City savedCity = cityRepository.save(city);
 
-    @Override
-    public City findById(Long id) {
-        return cityRepository.findById(id).orElseThrow(() -> new DataNotFoundException(City.class, Fields.ID, id));
-    }
-
-    @Override
-    public void deleteById(Long id) {
-        cityRepository.deleteById(id);
-    }
-
-    @Override
-    public City findByCode(String code) {
-        return cityRepository.findByCode(code).orElseThrow(() -> new DataNotFoundException(City.class, Fields.CODE, code));
+        return modelMapper.map(findById(city.getId()), CityDto.class);
     }
 }

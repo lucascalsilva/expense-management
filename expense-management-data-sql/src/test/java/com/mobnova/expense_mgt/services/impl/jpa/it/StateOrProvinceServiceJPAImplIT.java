@@ -1,18 +1,21 @@
 package com.mobnova.expense_mgt.services.impl.jpa.it;
 
+import com.mobnova.expense_mgt.dto.v1.CountryDto;
+import com.mobnova.expense_mgt.dto.v1.StateOrProvinceDto;
 import com.mobnova.expense_mgt.exception.constant.Fields;
 import com.mobnova.expense_mgt.exceptions.DataNotFoundException;
 import com.mobnova.expense_mgt.model.Country;
 import com.mobnova.expense_mgt.model.StateOrProvince;
 import com.mobnova.expense_mgt.repositories.CountryRepository;
 import com.mobnova.expense_mgt.services.impl.jpa.StateOrProvinceServiceJPAImpl;
-import com.mobnova.expense_mgt.util.AssertionsUtil;
+import com.mobnova.expense_mgt.util.AssertionUtils;
 import com.mobnova.expense_mgt.util.IntegrationTestHelper;
 import org.assertj.core.api.Assertions;
 import org.assertj.core.api.AssertionsForClassTypes;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
@@ -37,13 +40,21 @@ class StateOrProvinceServiceJPAImplIT {
     @Autowired
     private IntegrationTestHelper integrationTestHelper;
 
+    @Autowired
+    private ModelMapper modelMapper;
+
+    private Country country;
+    private CountryDto countryDto;
+
     private static Boolean dbInitialized = false;
 
     @BeforeEach
     public void init(){
+        country = Country.builder().code("BR").name("Brazil").build();
+        countryDto = modelMapper.map(country, CountryDto.class);
+
         if(!dbInitialized) {
             integrationTestHelper.cleanAllData();
-            Country country = Country.builder().code("BR").name("Brazil").build();
             countryRepository.save(country);
             dbInitialized = true;
         }
@@ -51,10 +62,10 @@ class StateOrProvinceServiceJPAImplIT {
 
     @Test
     void save() {
-        StateOrProvince stateOrProvince = StateOrProvince.builder().code("RS").name("Rio Grande do Sul")
-                .country(Country.builder().code("BR").build()).build();
+        StateOrProvinceDto stateOrProvinceDto = StateOrProvinceDto.builder().code("RS").name("Rio Grande do Sul")
+                .country(countryDto).build();
 
-        StateOrProvince savedStateOrProvince = stateOrProvinceServiceJPA.save(stateOrProvince);
+        StateOrProvinceDto savedStateOrProvince = stateOrProvinceServiceJPA.save(stateOrProvinceDto);
 
         assertThat(savedStateOrProvince.getId()).isNotNull();
         assertThat(savedStateOrProvince.getCreationDate()).isNotNull();
@@ -65,71 +76,71 @@ class StateOrProvinceServiceJPAImplIT {
 
     @Test
     void saveValidationError() {
-        StateOrProvince stateOrProvince = StateOrProvince.builder().code(null).name("Rio Grande do Sul").build();
+        StateOrProvinceDto stateOrProvinceDto = StateOrProvinceDto.builder().code(null).name("Rio Grande do Sul").build();
 
-        ConstraintViolationException constraintViolationException = assertThrows(ConstraintViolationException.class, () -> stateOrProvinceServiceJPA.save(stateOrProvince));
+        ConstraintViolationException constraintViolationException = assertThrows(ConstraintViolationException.class, () -> stateOrProvinceServiceJPA.save(stateOrProvinceDto));
         Assertions.assertThat(constraintViolationException.getMessage()).contains("save.arg0.code: must not be blank");
     }
 
     @Test
     void update() {
-        StateOrProvince stateOrProvince = StateOrProvince.builder().code("CE").name("Ceara")
-                .country(Country.builder().code("BR").build()).build();
+        StateOrProvinceDto stateOrProvinceDto = StateOrProvinceDto.builder().code("CE").name("Ceara")
+                .country(countryDto).build();
 
-        stateOrProvince = stateOrProvinceServiceJPA.save(stateOrProvince);
+        stateOrProvinceDto = stateOrProvinceServiceJPA.save(stateOrProvinceDto);
 
-        Assertions.assertThat(stateOrProvince).isNotNull();
-        Assertions.assertThat(stateOrProvince.getId()).isNotNull();
+        Assertions.assertThat(stateOrProvinceDto).isNotNull();
+        Assertions.assertThat(stateOrProvinceDto.getId()).isNotNull();
 
-        StateOrProvince updatedStateOrProvince = stateOrProvinceServiceJPA.findById(stateOrProvince.getId());
+        StateOrProvinceDto updatedStateOrProvinceDto = stateOrProvinceServiceJPA.findById(stateOrProvinceDto.getId());
 
-        updatedStateOrProvince.setName("Future 3_1");
+        updatedStateOrProvinceDto.setName("Ceara_1");
 
-        updatedStateOrProvince = stateOrProvinceServiceJPA.save(updatedStateOrProvince);
+        updatedStateOrProvinceDto = stateOrProvinceServiceJPA.save(updatedStateOrProvinceDto);
 
-        AssertionsUtil.entityUpdateAssertions(stateOrProvince, updatedStateOrProvince);
-        Assertions.assertThat(stateOrProvince.getName()).isNotEqualTo(updatedStateOrProvince.getName());
+        AssertionUtils.dtoUpdateAssertions(stateOrProvinceDto, updatedStateOrProvinceDto);
+        Assertions.assertThat(stateOrProvinceDto.getName()).isNotEqualTo(updatedStateOrProvinceDto.getName());
     }
 
     @Test
     void saveBulk() {
-        StateOrProvince stateOrProvince1 = StateOrProvince.builder().code("PR").name("Parana")
-                .country(Country.builder().code("BR").build()).build();
-        StateOrProvince stateOrProvince2 = StateOrProvince.builder().code("SC").name("Santa Catarina")
-                .country(Country.builder().code("BR").build()).build();
-        Set<StateOrProvince> stateOrProvinces = new HashSet<>();
+        StateOrProvinceDto stateOrProvinceDto1 = StateOrProvinceDto.builder().code("PR").name("Parana")
+                .country(countryDto).build();
+        StateOrProvinceDto stateOrProvinceDto2 = StateOrProvinceDto.builder().code("SC").name("Santa Catarina")
+                .country(countryDto).build();
+        Set<StateOrProvinceDto> stateOrProvinceDtos = new HashSet<>();
 
-        stateOrProvinces.add(stateOrProvince1);
-        stateOrProvinces.add(stateOrProvince2);
+        stateOrProvinceDtos.add(stateOrProvinceDto1);
+        stateOrProvinceDtos.add(stateOrProvinceDto2);
 
-        Set<StateOrProvince> savedStateOrProvince = stateOrProvinceServiceJPA.saveBulk(stateOrProvinces);
+        Set<StateOrProvinceDto> savedStateOrProvince = stateOrProvinceServiceJPA.saveBulk(stateOrProvinceDtos);
 
-        for(StateOrProvince stateOrProvince : savedStateOrProvince){
-            assertThat(stateOrProvince.getId()).isNotNull();
-            assertThat(stateOrProvince.getCreationDate()).isNotNull();
+        for(StateOrProvinceDto stateOrProvinceDto : savedStateOrProvince){
+            assertThat(stateOrProvinceDto.getId()).isNotNull();
+            assertThat(stateOrProvinceDto.getCreationDate()).isNotNull();
         }
     }
 
     @Test
     void findById() {
-        StateOrProvince stateOrProvince = StateOrProvince.builder().code("SP").name("Sao Paulo")
-                .country(Country.builder().code("BR").build()).build();
+        StateOrProvinceDto stateOrProvinceDto = StateOrProvinceDto.builder().code("SP").name("Sao Paulo")
+                .country(countryDto).build();
 
-        StateOrProvince savedStateOrProvince = stateOrProvinceServiceJPA.save(stateOrProvince);
-        Long stateOrProvinceId = savedStateOrProvince.getId();
+        StateOrProvinceDto savedStateOrProvinceDto = stateOrProvinceServiceJPA.save(stateOrProvinceDto);
+        Long stateOrProvinceId = savedStateOrProvinceDto.getId();
 
-        StateOrProvince stateOrProvinceById = stateOrProvinceServiceJPA.findById(stateOrProvinceId);
+        StateOrProvinceDto stateOrProvinceById = stateOrProvinceServiceJPA.findById(stateOrProvinceId);
 
-        assertThat(stateOrProvinceById).isEqualTo(savedStateOrProvince);
+        assertThat(stateOrProvinceById).isEqualTo(savedStateOrProvinceDto);
     }
 
     @Test
     void deleteById() {
-        StateOrProvince stateOrProvince = StateOrProvince.builder().code("RJ").name("Rio de Janeiro")
-                .country(Country.builder().code("BR").build()).build();
+        StateOrProvinceDto stateOrProvinceDto = StateOrProvinceDto.builder().code("RJ").name("Rio de Janeiro")
+                .country(countryDto).build();
 
-        StateOrProvince savedStateOrProvince = stateOrProvinceServiceJPA.save(stateOrProvince);
-        Long stateOrProvinceId = savedStateOrProvince.getId();
+        StateOrProvinceDto savedStateOrProvinceDto = stateOrProvinceServiceJPA.save(stateOrProvinceDto);
+        Long stateOrProvinceId = savedStateOrProvinceDto.getId();
 
         stateOrProvinceServiceJPA.deleteById(stateOrProvinceId);
 
@@ -139,22 +150,22 @@ class StateOrProvinceServiceJPAImplIT {
 
     @Test
     void findByCode() {
-        StateOrProvince stateOrProvince = StateOrProvince.builder().code("MG").name("Minas Gerais")
-                .country(Country.builder().code("BR").build()).build();
+        StateOrProvinceDto stateOrProvinceDto = StateOrProvinceDto.builder().code("MG").name("Minas Gerais")
+                .country(countryDto).build();
 
-        StateOrProvince savedStateOrProvince = stateOrProvinceServiceJPA.save(stateOrProvince);
+        StateOrProvinceDto savedStateOrProvince = stateOrProvinceServiceJPA.save(stateOrProvinceDto);
         String stateOrProvinceCode = savedStateOrProvince.getCode();
 
-        StateOrProvince stateOrProvinceByCode = stateOrProvinceServiceJPA.findByCode(stateOrProvinceCode);
+        StateOrProvinceDto stateOrProvinceDtoByCode = stateOrProvinceServiceJPA.findByCode(stateOrProvinceCode);
 
-        assertThat(stateOrProvinceByCode).isEqualTo(stateOrProvince);
+        assertThat(stateOrProvinceDtoByCode).isEqualTo(savedStateOrProvince);
     }
 
     @Test
     void findByCodeNotFound() {
         String code = "1000";
         DataNotFoundException dataNotFoundException = assertThrows(DataNotFoundException.class, () -> stateOrProvinceServiceJPA.findByCode(code));
-        AssertionsForClassTypes.assertThat(dataNotFoundException.getMessage()).containsIgnoringCase(StateOrProvince.class.getName());
+        AssertionsForClassTypes.assertThat(dataNotFoundException.getMessage()).containsIgnoringCase(StateOrProvince.class.getSimpleName());
         AssertionsForClassTypes.assertThat(dataNotFoundException.getMessage()).containsIgnoringCase(Fields.CODE.toString());
         AssertionsForClassTypes.assertThat(dataNotFoundException.getMessage()).containsIgnoringCase(code);
     }
@@ -163,7 +174,7 @@ class StateOrProvinceServiceJPAImplIT {
     void findByIdNotFound() {
         Long id = 1000L;
         DataNotFoundException dataNotFoundException = assertThrows(DataNotFoundException.class, () -> stateOrProvinceServiceJPA.findById(id));
-        AssertionsForClassTypes.assertThat(dataNotFoundException.getMessage()).containsIgnoringCase(StateOrProvince.class.getName());
+        AssertionsForClassTypes.assertThat(dataNotFoundException.getMessage()).containsIgnoringCase(StateOrProvince.class.getSimpleName());
         AssertionsForClassTypes.assertThat(dataNotFoundException.getMessage()).containsIgnoringCase(Fields.ID.toString());
         AssertionsForClassTypes.assertThat(dataNotFoundException.getMessage()).containsIgnoringCase(id.toString());
     }

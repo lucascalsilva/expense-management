@@ -10,12 +10,13 @@ public class ExceptionUtil {
     public static String buildExceptionMessage(Class class_, List<ExceptionVariable> exceptionVariables) {
         StringBuilder stringBuilder = new StringBuilder();
 
-        stringBuilder.append("Object of type ").append(class_.getName()).append(" with ");
+        stringBuilder.append("Object of type ").append(class_.getSimpleName()).append(" with ");
         int i = 0;
         for (ExceptionVariable exceptionVariable  : exceptionVariables) {
-            stringBuilder.append("field ").append(exceptionVariable.getField()).append(" equal to ").append(exceptionVariable.getValue());
+            stringBuilder.append("field ").append("'").append(exceptionVariable.getField()).append("'")
+                    .append(" equal to ").append("'").append(exceptionVariable.getValue()).append("'");
             if(i + 1 == exceptionVariables.size()) {
-                stringBuilder.append(", ");
+                stringBuilder.append(" ");
             }
             else{
                 stringBuilder.append(" and ");
@@ -24,7 +25,7 @@ public class ExceptionUtil {
 
         }
 
-        stringBuilder.append("was not found");
+        stringBuilder.append("was not found.");
 
         return stringBuilder.toString();
     }

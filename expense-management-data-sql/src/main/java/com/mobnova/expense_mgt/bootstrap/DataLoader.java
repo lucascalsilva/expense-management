@@ -61,11 +61,11 @@ public class DataLoader implements CommandLineRunner, ApplicationContextAware {
 
     private void loadDataFile(File file) {
         try {
-            String typeClassName = StringUtils.capitalize(file.getName().replace(".json", "")
+            String baseTypeClassName = StringUtils.capitalize(file.getName().replace(".json", "")
                     .split("-", 0)[1]);
-            String serviceInterfaceName = typeClassName + "Service";
+            String serviceInterfaceName = baseTypeClassName + "Service";
 
-            Class typeClass = Class.forName(dataLoaderConfig.getBaseModelPackage() + "." + typeClassName);
+            Class typeClass = Class.forName(dataLoaderConfig.getBaseDtoPackage() + "." + baseTypeClassName + "Dto");
             Class arrayClass = Array.newInstance(typeClass, 0).getClass();
             Class serviceClass = Class.forName(dataLoaderConfig.getBaseServicePackage() + "." + serviceInterfaceName);
             Optional<Object[]> data = Optional.of((Object[]) mapper.readValue(file, arrayClass));

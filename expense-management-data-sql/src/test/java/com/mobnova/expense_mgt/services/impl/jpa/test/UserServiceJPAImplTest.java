@@ -1,17 +1,20 @@
 package com.mobnova.expense_mgt.services.impl.jpa.test;
 
+import com.mobnova.expense_mgt.config.ModelMapperConfiguration;
+import com.mobnova.expense_mgt.dto.v1.UserDto;
 import com.mobnova.expense_mgt.exception.constant.Fields;
 import com.mobnova.expense_mgt.exceptions.DataNotFoundException;
 import com.mobnova.expense_mgt.model.User;
 import com.mobnova.expense_mgt.repositories.UserRepository;
 import com.mobnova.expense_mgt.services.impl.jpa.UserServiceJPAImpl;
 import org.assertj.core.api.AssertionsForClassTypes;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Spy;
+import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.modelmapper.ModelMapper;
 
 import java.util.HashSet;
 import java.util.Optional;
@@ -26,59 +29,72 @@ import static org.mockito.Mockito.*;
 @ExtendWith(MockitoExtension.class)
 class UserServiceJPAImplTest {
 
-    @InjectMocks
-    @Spy
     private UserServiceJPAImpl userServiceJPA;
 
     @Mock
     private UserRepository userRepository;
 
+    private ModelMapper modelMapper;
+
+    @BeforeEach
+    public void setup() {
+        modelMapper = new ModelMapperConfiguration().globalMapper();
+        userServiceJPA = Mockito.spy(new UserServiceJPAImpl(userRepository, modelMapper));
+    }
+
     @Test
     void save() {
-        User user = User.builder().username("user_one").password("123456").email("lucas.silva@domain.com")
+        UserDto userDto = UserDto.builder().id(1L).username("user_one").password("123456").email("lucas.silva@domain.com")
                 .firstName("Lucas").lastName("Silva").build();
+        User user = modelMapper.map(userDto, User.class);
 
+        when(userRepository.findById(1L)).thenReturn(Optional.of(user));
         doAnswer(returnsFirstArg()).when(userRepository).save(any(User.class));
 
-        User savedUser = userServiceJPA.save(user);
+        UserDto savedUserDto = userServiceJPA.save(userDto);
 
         verify(userRepository, times(1)).save(user);
     }
 
     @Test
     void saveBulk() {
-        User user1 = User.builder().username("user_one").password("123456").email("lucas.silva@domain.com")
+        UserDto userDto1 = UserDto.builder().id(1L).username("user_one").password("123456").email("lucas.silva@domain.com")
                 .firstName("Lucas").lastName("Silva").build();
+        User user1 = modelMapper.map(userDto1, User.class);
 
-        User user2 = User.builder().username("user_two").password("123456").email("silva.lucas@domain.com")
+        UserDto userDto2 = UserDto.builder().id(2L).username("user_two").password("123456").email("silva.lucas@domain.com")
                 .firstName("Silva").lastName("Lucas").build();
+        User user2 = modelMapper.map(userDto2, User.class);
 
-        Set<User> users = new HashSet<>();
-        users.add(user1);
-        users.add(user2);
+        Set<UserDto> userDtos = new HashSet<>();
+        userDtos.add(userDto1);
+        userDtos.add(userDto2);
+
+        when(userRepository.findById(1L)).thenReturn(Optional.of(user1));
+        when(userRepository.findById(2L)).thenReturn(Optional.of(user2));
 
         doAnswer(returnsFirstArg()).when(userRepository).save(any(User.class));
 
-        Set<User> savedUsers = userServiceJPA.saveBulk(users);
+        Set<UserDto> savedUserDtos = userServiceJPA.saveBulk(userDtos);
+        assertThat(savedUserDtos).hasSize(2);
 
-        for(User user : savedUsers){
-            verify(userRepository, times(1)).save(user);
-            verify(userServiceJPA, times(1)).save(user);
-        }
+        verify(userRepository, times(2)).save(any(User.class));
+        verify(userServiceJPA, times(2)).save(any(UserDto.class));
     }
 
     @Test
     void findById() {
-        User user = User.builder().id(1L).username("user_one").password("123456").email("lucas.silva@domain.com")
+        UserDto userDto = UserDto.builder().id(1L).username("user_one").password("123456").email("lucas.silva@domain.com")
                 .firstName("Lucas").lastName("Silva").build();
+        User user = modelMapper.map(userDto, User.class);
 
         when(userRepository.findById(user.getId())).thenReturn(Optional.of(user));
 
-        User userById = userServiceJPA.findById(1L);
+        UserDto userByIdDto = userServiceJPA.findById(1L);
 
         verify(userRepository, times(1)).findById(1L);
 
-        assertThat(userById).isEqualTo(user);
+        assertThat(userByIdDto).isEqualTo(userDto);
     }
 
     @Test
@@ -90,23 +106,24 @@ class UserServiceJPAImplTest {
 
     @Test
     void findByUsername() {
-        User user = User.builder().username("user_one").password("123456").email("lucas.silva@domain.com")
+        UserDto userDto = UserDto.builder().id(1L).username("user_one").password("123456").email("lucas.silva@domain.com")
                 .firstName("Lucas").lastName("Silva").build();
+        User user = modelMapper.map(userDto, User.class);
 
         when(userRepository.findByUsername(user.getUsername())).thenReturn(Optional.of(user));
 
-        User userByUsername = userServiceJPA.findByUsername("user_one");
+        UserDto userByUsernameDto = userServiceJPA.findByUsername("user_one");
 
         verify(userRepository, times(1)).findByUsername(user.getUsername());
 
-        assertThat(userByUsername).isEqualTo(user);
+        assertThat(userByUsernameDto).isEqualTo(userDto);
     }
 
     @Test
     void findByUsernameNotFound() {
         String username = "someUser";
         DataNotFoundException dataNotFoundException = assertThrows(DataNotFoundException.class, () -> userServiceJPA.findByUsername(username));
-        AssertionsForClassTypes.assertThat(dataNotFoundException.getMessage()).containsIgnoringCase(User.class.getName());
+        AssertionsForClassTypes.assertThat(dataNotFoundException.getMessage()).containsIgnoringCase(User.class.getSimpleName());
         AssertionsForClassTypes.assertThat(dataNotFoundException.getMessage()).containsIgnoringCase(Fields.USERNAME.toString());
         AssertionsForClassTypes.assertThat(dataNotFoundException.getMessage()).containsIgnoringCase(username);
     }
@@ -115,7 +132,7 @@ class UserServiceJPAImplTest {
     void findByIdNotFound() {
         Long id = 1000L;
         DataNotFoundException dataNotFoundException = assertThrows(DataNotFoundException.class, () -> userServiceJPA.findById(id));
-        AssertionsForClassTypes.assertThat(dataNotFoundException.getMessage()).containsIgnoringCase(User.class.getName());
+        AssertionsForClassTypes.assertThat(dataNotFoundException.getMessage()).containsIgnoringCase(User.class.getSimpleName());
         AssertionsForClassTypes.assertThat(dataNotFoundException.getMessage()).containsIgnoringCase(Fields.ID.toString());
         AssertionsForClassTypes.assertThat(dataNotFoundException.getMessage()).containsIgnoringCase(id.toString());
     }

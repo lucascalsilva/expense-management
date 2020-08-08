@@ -13,7 +13,7 @@ import org.springframework.stereotype.Component;
 @ConfigurationProperties(prefix = "dataloader")
 public class DataLoaderConfig {
 
-    private String baseModelPackage = "com.mobnova.expense_mgt.model";
-    private String baseServicePackage = "com.mobnova.expense_mgt.com.mobnova.expense_mgt.services";
+    private String baseDtoPackage = "com.mobnova.expense_mgt.dto.v1";
+    private String baseServicePackage = "com.mobnova.expense_mgt.services";
     private String bootstrapFilesFolder = "bootstrap";
 }

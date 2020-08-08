@@ -1,5 +1,9 @@
 package com.mobnova.expense_mgt.services.impl.jpa.test;
 
+import com.mobnova.expense_mgt.config.ModelMapperConfiguration;
+import com.mobnova.expense_mgt.dto.v1.CityDto;
+import com.mobnova.expense_mgt.dto.v1.CountyDto;
+import com.mobnova.expense_mgt.dto.v1.StateOrProvinceDto;
 import com.mobnova.expense_mgt.exception.constant.Fields;
 import com.mobnova.expense_mgt.exceptions.DataNotFoundException;
 import com.mobnova.expense_mgt.model.City;
@@ -13,10 +17,10 @@ import org.assertj.core.api.AssertionsForClassTypes;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Spy;
+import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.modelmapper.ModelMapper;
 
 import java.util.HashSet;
 import java.util.Optional;
@@ -30,8 +34,6 @@ import static org.mockito.Mockito.*;
 @ExtendWith(MockitoExtension.class)
 class CityServiceJPAImplTest {
 
-    @InjectMocks
-    @Spy
     private CityServiceJPAImpl cityServiceJPA;
 
     @Mock
@@ -42,103 +44,127 @@ class CityServiceJPAImplTest {
 
     @Mock
     private StateOrProvinceRepository stateOrProvinceRepository;
+
+    private ModelMapper modelMapper;
+
     private StateOrProvince stateOrProvince;
+    private StateOrProvinceDto stateOrProvinceDto;
+
     private County county;
+    private CountyDto countyDto;
 
     @BeforeEach
     void init(){
-        stateOrProvince = StateOrProvince.builder().id(1L).code("RS")
+        modelMapper = new ModelMapperConfiguration().globalMapper();
+
+        stateOrProvinceDto = StateOrProvinceDto.builder().id(1L).code("RS")
                 .name("Rio Grande do Sul").build();
-        county = County.builder().id(1L).code("POA").name("Porto Alegre").build();
+        stateOrProvince = modelMapper.map(stateOrProvinceDto, StateOrProvince.class);
+
+        countyDto = CountyDto.builder().id(1L).code("POA").name("Porto Alegre").build();
+        county = modelMapper.map(countyDto, County.class);
+
+        cityServiceJPA = Mockito.spy(new CityServiceJPAImpl(cityRepository, countyRepository, stateOrProvinceRepository, modelMapper));
     }
 
 
     @Test
     void save() {
-        City city = City.builder().code("POA").name("Porto Alegre")
-                .stateOrProvince(StateOrProvince.builder().code("RS").build())
-                .county(County.builder().code("POA").build()).build();
+        CityDto cityDto = CityDto.builder().code("POA").name("Porto Alegre")
+                .stateOrProvince(stateOrProvinceDto)
+                .county(countyDto).build();
+        City city = modelMapper.map(cityDto, City.class);
 
         doAnswer(returnsFirstArg()).when(cityRepository).save(any(City.class));
-
         when(stateOrProvinceRepository.findByCode(stateOrProvince.getCode())).thenReturn(Optional.of(stateOrProvince));
         when(countyRepository.findByCode(county.getCode())).thenReturn(Optional.of(county));
+        when(cityRepository.findById(city.getId())).thenReturn(Optional.of(city));
 
-        City savedCity = cityServiceJPA.save(city);
+        CityDto savedCityDto = cityServiceJPA.save(cityDto);
 
         verify(stateOrProvinceRepository, times(1)).findByCode(stateOrProvince.getCode());
         verify(countyRepository, times(1)).findByCode(county.getCode());
-        verify(cityRepository, times(1)).save(city);
+        verify(cityRepository, times(1)).save(any(City.class));
 
-        assertThat(savedCity.getStateOrProvince().getId()).isEqualTo(1L);
-        assertThat(savedCity.getCounty().getId()).isEqualTo(1L);
+        assertThat(savedCityDto.getStateOrProvince().getId()).isEqualTo(1L);
+        assertThat(savedCityDto.getCounty().getId()).isEqualTo(1L);
     }
 
 
     @Test
     void saveNoCounty() {
-        City city = City.builder().code("POA").name("Porto Alegre")
-                .stateOrProvince(StateOrProvince.builder().code("RS").build()).build();
+        CityDto cityDto = CityDto.builder().id(1L).code("POA").name("Porto Alegre")
+                .stateOrProvince(stateOrProvinceDto).build();
+        City city = modelMapper.map(cityDto, City.class);
 
+        when(cityRepository.findById(1L)).thenReturn(Optional.of(city));
         doAnswer(returnsFirstArg()).when(cityRepository).save(any(City.class));
 
         when(stateOrProvinceRepository.findByCode(stateOrProvince.getCode())).thenReturn(Optional.of(stateOrProvince));
 
-        City savedCity = cityServiceJPA.save(city);
+        CityDto savedCityDto = cityServiceJPA.save(cityDto);
 
         verify(stateOrProvinceRepository, times(1)).findByCode(stateOrProvince.getCode());
         verify(countyRepository, times(0)).findByCode(county.getCode());
         verify(cityRepository, times(1)).save(city);
 
-        assertThat(savedCity.getStateOrProvince().getId()).isEqualTo(1L);
-        assertThat(savedCity.getCounty()).isNull();
+        assertThat(savedCityDto.getStateOrProvince().getId()).isEqualTo(1L);
+        assertThat(savedCityDto.getCounty()).isNull();
     }
 
     @Test
     void saveBulk() {
-        City city1 = City.builder().code("POA").name("Porto Alegre")
-                .stateOrProvince(StateOrProvince.builder().code("RS").build())
-                .county(County.builder().code("POA").build()).build();
+        CityDto cityDto1 = CityDto.builder().id(1L).code("POA").name("Porto Alegre")
+                .stateOrProvince(stateOrProvinceDto)
+                .county(countyDto).build();
 
-        City city2 = City.builder().code("CAN").name("Canoas")
-                .stateOrProvince(StateOrProvince.builder().code("RS").build())
-                .county(County.builder().code("POA").build()).build();
+        CityDto cityDto2 = CityDto.builder().id(2L).code("CAN").name("Canoas")
+                .stateOrProvince(stateOrProvinceDto)
+                .county(countyDto).build();
 
-        Set<City> cities = new HashSet<>();
-        cities.add(city1);
-        cities.add(city2);
+        City city1 = modelMapper.map(cityDto1, City.class);
+        City city2 = modelMapper.map(cityDto2, City.class);
+
+        Set<CityDto> cityDtos = new HashSet<>();
+        cityDtos.add(cityDto1);
+        cityDtos.add(cityDto2);
+
+        when(cityRepository.findById(1L)).thenReturn(Optional.of(city1));
+        when(cityRepository.findById(2L)).thenReturn(Optional.of(city2));
 
         doAnswer(returnsFirstArg()).when(cityRepository).save(any(City.class));
 
         when(stateOrProvinceRepository.findByCode(stateOrProvince.getCode())).thenReturn(Optional.of(stateOrProvince));
         when(countyRepository.findByCode(county.getCode())).thenReturn(Optional.of(county));
 
-        Set<City> savedCities = cityServiceJPA.saveBulk(cities);
+        Set<CityDto> savedCityDtos = cityServiceJPA.saveBulk(cityDtos);
 
-        verify(stateOrProvinceRepository, times(cities.size())).findByCode(stateOrProvince.getCode());
-        verify(countyRepository, times(cities.size())).findByCode(county.getCode());
+        assertThat(savedCityDtos).hasSize(2);
+        verify(stateOrProvinceRepository, times(savedCityDtos.size())).findByCode(stateOrProvince.getCode());
+        verify(countyRepository, times(savedCityDtos.size())).findByCode(county.getCode());
 
-        for(City city : savedCities){
-            verify(cityRepository, times(1)).save(city);
-            verify(cityServiceJPA, times(1)).save(city);
+        verify(cityRepository, times(savedCityDtos.size())).save(any(City.class));
+        verify(cityServiceJPA, times(savedCityDtos.size())).save(any(CityDto.class));
 
-            assertThat(city.getStateOrProvince().getId()).isEqualTo(1L);
-            assertThat(city.getCounty().getId()).isEqualTo(1L);
+        for(CityDto cityDto : savedCityDtos){
+            assertThat(cityDto.getStateOrProvince().getId()).isEqualTo(1L);
+            assertThat(cityDto.getCounty().getId()).isEqualTo(1L);
         }
     }
 
     @Test
     void findById() {
-        City city = City.builder().id(1L).code("POA").name("Porto Alegre")
-                .stateOrProvince(StateOrProvince.builder().code("RS").build()).build();
+        CityDto cityDto = CityDto.builder().id(1L).code("POA").name("Porto Alegre")
+                .stateOrProvince(stateOrProvinceDto).build();
+        City city = modelMapper.map(cityDto, City.class);
 
         when(cityRepository.findById(city.getId())).thenReturn(Optional.of(city));
 
-        City cityById = cityServiceJPA.findById(1L);
+        CityDto cityByIdDto = cityServiceJPA.findById(1L);
 
         verify(cityRepository, times(1)).findById(1L);
 
-        assertThat(cityById).isEqualTo(city);
+        assertThat(cityByIdDto).isEqualTo(cityDto);
     }
 
     @Test
@@ -150,23 +176,24 @@ class CityServiceJPAImplTest {
 
     @Test
     void findByCode() {
-        City city = City.builder().id(1L).code("POA").name("Porto Alegre")
-                .stateOrProvince(StateOrProvince.builder().code("RS").build()).build();
+        CityDto cityDto = CityDto.builder().id(1L).code("POA").name("Porto Alegre")
+                .stateOrProvince(stateOrProvinceDto).build();
+        City city = modelMapper.map(cityDto,City.class);
 
         when(cityRepository.findByCode(city.getCode())).thenReturn(Optional.of(city));
 
-        City cityByCode = cityServiceJPA.findByCode("POA");
+        CityDto cityByCodeDto = cityServiceJPA.findByCode("POA");
 
         verify(cityRepository, times(1)).findByCode(city.getCode());
 
-        assertThat(cityByCode).isEqualTo(city);
+        assertThat(cityByCodeDto).isEqualTo(cityDto);
     }
 
     @Test
     void findByCodeNotFound() {
         String code = "1000";
         DataNotFoundException dataNotFoundException = assertThrows(DataNotFoundException.class, () -> cityServiceJPA.findByCode(code));
-        AssertionsForClassTypes.assertThat(dataNotFoundException.getMessage()).containsIgnoringCase(City.class.getName());
+        AssertionsForClassTypes.assertThat(dataNotFoundException.getMessage()).containsIgnoringCase(City.class.getSimpleName());
         AssertionsForClassTypes.assertThat(dataNotFoundException.getMessage()).containsIgnoringCase(Fields.CODE.toString());
         AssertionsForClassTypes.assertThat(dataNotFoundException.getMessage()).containsIgnoringCase(code);
     }
@@ -175,7 +202,7 @@ class CityServiceJPAImplTest {
     void findByIdNotFound() {
         Long id = 1000L;
         DataNotFoundException dataNotFoundException = assertThrows(DataNotFoundException.class, () -> cityServiceJPA.findById(id));
-        AssertionsForClassTypes.assertThat(dataNotFoundException.getMessage()).containsIgnoringCase(City.class.getName());
+        AssertionsForClassTypes.assertThat(dataNotFoundException.getMessage()).containsIgnoringCase(City.class.getSimpleName());
         AssertionsForClassTypes.assertThat(dataNotFoundException.getMessage()).containsIgnoringCase(Fields.ID.toString());
         AssertionsForClassTypes.assertThat(dataNotFoundException.getMessage()).containsIgnoringCase(id.toString());
     }

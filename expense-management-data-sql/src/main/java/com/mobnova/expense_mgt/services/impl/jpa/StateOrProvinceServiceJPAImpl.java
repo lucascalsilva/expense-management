@@ -1,59 +1,46 @@
 package com.mobnova.expense_mgt.services.impl.jpa;
 
+import com.mobnova.expense_mgt.dto.v1.CountryDto;
+import com.mobnova.expense_mgt.dto.v1.StateOrProvinceDto;
 import com.mobnova.expense_mgt.exception.constant.Fields;
 import com.mobnova.expense_mgt.exceptions.DataNotFoundException;
-import com.mobnova.expense_mgt.exceptions.InvalidDataException;
 import com.mobnova.expense_mgt.model.Country;
 import com.mobnova.expense_mgt.model.StateOrProvince;
 import com.mobnova.expense_mgt.repositories.CountryRepository;
 import com.mobnova.expense_mgt.repositories.StateOrProvinceRepository;
 import com.mobnova.expense_mgt.services.StateOrProvinceService;
-import lombok.RequiredArgsConstructor;
+import org.modelmapper.ModelMapper;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
-import java.util.Set;
-import java.util.stream.Collectors;
-
 @Service
 @Profile("jpa")
-@RequiredArgsConstructor
-public class StateOrProvinceServiceJPAImpl implements StateOrProvinceService {
+public class StateOrProvinceServiceJPAImpl extends AbstractNameCodeEntityBaseServiceJPA<StateOrProvince, StateOrProvinceDto, Long> implements StateOrProvinceService {
 
     private final StateOrProvinceRepository stateOrProvinceRepository;
     private final CountryRepository countryRepository;
 
+    public StateOrProvinceServiceJPAImpl(StateOrProvinceRepository stateOrProvinceRepository, CountryRepository countryRepository, ModelMapper modelMapper) {
+        super(stateOrProvinceRepository, modelMapper, StateOrProvince.class, StateOrProvinceDto.class);
+        this.stateOrProvinceRepository = stateOrProvinceRepository;
+        this.countryRepository = countryRepository;
+    }
+
     @Override
-    public StateOrProvince save(StateOrProvince stateOrProvince) {
-        String countryCode = stateOrProvince.getCountry().getCode();
+    public StateOrProvinceDto save(StateOrProvinceDto stateOrProvinceDto) {
+        String countryCode = stateOrProvinceDto.getCountry().getCode();
         countryRepository.findByCode(countryCode)
                 .ifPresentOrElse(country -> {
-                            stateOrProvince.setCountry(country);
+                            CountryDto countryDto = modelMapper.map(country, CountryDto.class);
+                            stateOrProvinceDto.setCountry(countryDto);
                         },
                         () -> {
-                            throw new InvalidDataException(Country.class, "countryCode", countryCode);
+                            throw new DataNotFoundException(Country.class, Fields.CODE, countryCode);
                         });
 
-        return stateOrProvinceRepository.save(stateOrProvince);
-    }
+        StateOrProvince stateOrProvince = modelMapper.map(stateOrProvinceDto, StateOrProvince.class);
+        StateOrProvince savedStateOrProvince = stateOrProvinceRepository.save(stateOrProvince);
 
-    @Override
-    public Set<StateOrProvince> saveBulk(Set<StateOrProvince> stateOrProvinces) {
-        return stateOrProvinces.stream().map(this::save).collect(Collectors.toSet());
-    }
-
-    @Override
-    public StateOrProvince findById(Long id) {
-        return stateOrProvinceRepository.findById(id).orElseThrow(() -> new DataNotFoundException(StateOrProvince.class, Fields.ID, id));
-    }
-
-    @Override
-    public void deleteById(Long id) {
-        stateOrProvinceRepository.deleteById(id);
-    }
-
-    @Override
-    public StateOrProvince findByCode(String code) {
-        return stateOrProvinceRepository.findByCode(code).orElseThrow(() -> new DataNotFoundException(StateOrProvince.class, Fields.CODE, code));
+        return modelMapper.map(findById(savedStateOrProvince.getId()), StateOrProvinceDto.class);
     }
 }

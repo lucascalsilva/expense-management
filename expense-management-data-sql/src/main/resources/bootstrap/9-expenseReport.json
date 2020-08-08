@@ -5,100 +5,26 @@
     "justification": "Some justification...",
     "tripStartDate": "2020-02-29",
     "tripEndDate": "2020-02-29",
-    "country": {
-      "code": "BR"
-    },
-    "user": {
-      "username": "jlucasca"
-    },
+    "countryCode": "BR",
+    "creator": "jlucasca",
     "expenses": [
       {
         "expenseItemNumber": 1,
         "amount": 10,
         "expenseDate": "2020-02-29",
         "picture": "picture this",
-        "category": {
-          "code": "MEAL"
-        },
-        "currency": {
-          "code": "BRL"
-        },
-        "segmentValuePairs": [
-          {
-            "segmentType": {
-              "code": "RE"
-            },
-            "segmentValue": "BR"
-          },
-          {
-            "segmentType": {
-              "code": "LE"
-            },
-            "segmentValue": "BR01"
-          },
-          {
-            "segmentType": {
-              "code": "BU"
-            },
-            "segmentValue": "RS01"
-          },
-          {
-            "segmentType": {
-              "code": "CC"
-            },
-            "segmentValue": "10001"
-          },
-          {
-            "segmentType": {
-              "code": "NA"
-            },
-            "segmentValue": "20001"
-          }
-        ]
+        "expenseCategoryCode": "MEAL",
+        "currencyCode": "BRL",
+        "segmentValuePairs": "BR-BR01-RS01-10001-20001"
       },
       {
         "expenseItemNumber": 2,
         "amount": 10,
         "expenseDate": "2020-02-29",
         "picture": "picture this",
-        "category": {
-          "code": "MEAL"
-        },
-        "currency": {
-          "code": "BRL"
-        },
-        "segmentValuePairs": [
-          {
-            "segmentType": {
-              "code": "RE"
-            },
-            "segmentValue": "BR"
-          },
-          {
-            "segmentType": {
-              "code": "LE"
-            },
-            "segmentValue": "BR01"
-          },
-          {
-            "segmentType": {
-              "code": "BU"
-            },
-            "segmentValue": "RS01"
-          },
-          {
-            "segmentType": {
-              "code": "CC"
-            },
-            "segmentValue": "10001"
-          },
-          {
-            "segmentType": {
-              "code": "NA"
-            },
-            "segmentValue": "20001"
-          }
-        ]
+        "expenseCategoryCode": "MEAL",
+        "currencyCode": "BRL",
+        "segmentValuePairs": "BR-BR01-RS01-10001-20001"
       }
     ]
   },
@@ -108,100 +34,26 @@
     "justification": "Some justification 8888...",
     "tripStartDate": "2020-02-29",
     "tripEndDate": "2020-02-29",
-    "country": {
-      "code": "BR"
-    },
-    "user": {
-      "username": "jlucasca"
-    },
+    "countryCode": "BR",
+    "creator": "jlucasca",
     "expenses": [
       {
         "expenseItemNumber": 1,
         "amount": 15,
         "expenseDate": "2020-02-29",
         "picture": "picture this",
-        "category": {
-          "code": "MEAL"
-        },
-        "currency": {
-          "code": "BRL"
-        },
-        "segmentValuePairs": [
-          {
-            "segmentType": {
-              "code": "RE"
-            },
-            "segmentValue": "BR"
-          },
-          {
-            "segmentType": {
-              "code": "LE"
-            },
-            "segmentValue": "BR01"
-          },
-          {
-            "segmentType": {
-              "code": "BU"
-            },
-            "segmentValue": "RS01"
-          },
-          {
-            "segmentType": {
-              "code": "CC"
-            },
-            "segmentValue": "10001"
-          },
-          {
-            "segmentType": {
-              "code": "NA"
-            },
-            "segmentValue": "20001"
-          }
-        ]
+        "expenseCategoryCode": "MEAL",
+        "currencyCode": "BRL",
+        "segmentValuePairs": "BR-BR01-RS01-10001-20001"
       },
       {
         "expenseItemNumber": 2,
         "amount": 20,
         "expenseDate": "2020-02-29",
         "picture": "picture this",
-        "category": {
-          "code": "FLIGHT"
-        },
-        "currency": {
-          "code": "BRL"
-        },
-        "segmentValuePairs": [
-          {
-            "segmentType": {
-              "code": "RE"
-            },
-            "segmentValue": "BR"
-          },
-          {
-            "segmentType": {
-              "code": "LE"
-            },
-            "segmentValue": "BR01"
-          },
-          {
-            "segmentType": {
-              "code": "BU"
-            },
-            "segmentValue": "RS01"
-          },
-          {
-            "segmentType": {
-              "code": "CC"
-            },
-            "segmentValue": "10001"
-          },
-          {
-            "segmentType": {
-              "code": "NA"
-            },
-            "segmentValue": "20001"
-          }
-        ]
+        "expenseCategoryCode": "MEAL",
+        "currencyCode": "BRL",
+        "segmentValuePairs": "BR-BR01-RS01-10001-20001"
       }
     ]
   }

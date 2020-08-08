@@ -10,7 +10,7 @@ import static com.mobnova.expense_mgt.exception.ExceptionUtil.buildExceptionMess
 public class DataNotFoundException extends RuntimeException {
 
     public DataNotFoundException(Class class_, Fields field, Object value){
-        super("Object of type " +class_.getName()+ " with "+ field +" equal to "+ value +" was not found!");
+        super(class_.getSimpleName()+ " with '" + field + "' equal to '" + value + "' was not found.");
     }
 
     public DataNotFoundException(Class class_, List<ExceptionVariable> exceptionVariables){

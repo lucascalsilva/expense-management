@@ -1,10 +1,11 @@
 package com.mobnova.expense_mgt.services.impl.jpa.it;
 
+import com.mobnova.expense_mgt.dto.v1.CurrencyDto;
 import com.mobnova.expense_mgt.exception.constant.Fields;
 import com.mobnova.expense_mgt.exceptions.DataNotFoundException;
 import com.mobnova.expense_mgt.model.Currency;
 import com.mobnova.expense_mgt.services.impl.jpa.CurrencyServiceJPAImpl;
-import com.mobnova.expense_mgt.util.AssertionsUtil;
+import com.mobnova.expense_mgt.util.AssertionUtils;
 import com.mobnova.expense_mgt.util.IntegrationTestHelper;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -42,76 +43,77 @@ class CurrencyServiceJPAImplIT {
 
     @Test
     void save() {
-        Currency currency = Currency.builder().code("BRL").name("Brazilian Real").build();
+        CurrencyDto currencyDto = CurrencyDto.builder().id(1L).code("BRL").name("Brazilian Real").build();
 
-        Currency savedCurrency  = currencyServiceJPA.save(currency);
+        CurrencyDto savedCurrencyDto  = currencyServiceJPA.save(currencyDto);
 
-        assertThat(savedCurrency.getId()).isNotNull();
-        assertThat(savedCurrency.getCreationDate()).isNotNull();
+        assertThat(savedCurrencyDto.getId()).isNotNull();
+        assertThat(savedCurrencyDto.getCreationDate()).isNotNull();
     }
 
     @Test
     void saveValidationError() {
-        Currency currency = Currency.builder().code(null).name("Brazilian Real").build();
+        CurrencyDto currencyDto = CurrencyDto.builder().code(null).name("Brazilian Real").build();
 
-        ConstraintViolationException constraintViolationException = assertThrows(ConstraintViolationException.class, () -> currencyServiceJPA.save(currency));
-        Assertions.assertThat(constraintViolationException.getMessage()).contains("save.arg0.code: must not be blank");
+        ConstraintViolationException constraintViolationException = assertThrows(ConstraintViolationException.class, () -> currencyServiceJPA.save(currencyDto));
+        Assertions.assertThat(constraintViolationException.getMessage()).contains("code");
+        Assertions.assertThat(constraintViolationException.getMessage()).contains("must not be blank");
     }
 
     @Test
     void update() {
-        Currency currency = Currency.builder().code("CHF").name("Swiss Frank").build();
+        CurrencyDto currencyDto = CurrencyDto.builder().code("CHF").name("Swiss Frank").build();
 
-        currency = currencyServiceJPA.save(currency);
+        currencyDto = currencyServiceJPA.save(currencyDto);
 
-        assertThat(currency).isNotNull();
-        assertThat(currency.getId()).isNotNull();
+        assertThat(currencyDto).isNotNull();
+        assertThat(currencyDto.getId()).isNotNull();
 
-        Currency updatedCurrency = currencyServiceJPA.findById(currency.getId());
+        CurrencyDto updatedCurrencyDto = currencyServiceJPA.findById(currencyDto.getId());
 
-        updatedCurrency.setName("Condado de Torres_1");
+        updatedCurrencyDto.setName("Condado de Torres_1");
 
-        updatedCurrency = currencyServiceJPA.save(updatedCurrency);
+        updatedCurrencyDto = currencyServiceJPA.save(updatedCurrencyDto);
 
-        AssertionsUtil.entityUpdateAssertions(currency, updatedCurrency);
-        assertThat(currency.getName()).isNotEqualTo(updatedCurrency.getName());
+        AssertionUtils.dtoUpdateAssertions(currencyDto, updatedCurrencyDto);
+        assertThat(currencyDto.getName()).isNotEqualTo(updatedCurrencyDto.getName());
     }
 
     @Test
     void saveBulk() {
-        Currency currency1 = Currency.builder().code("USD").name("American Dollar").build();
-        Currency currency2 = Currency.builder().code("EUR").name("Euro").build();
+        CurrencyDto currencyDto1 = CurrencyDto.builder().id(1L).code("USD").name("American Dollar").build();
+        CurrencyDto currencyDto2 = CurrencyDto.builder().id(1L).code("EUR").name("Euro").build();
 
-        Set<Currency> currencies = new HashSet<>();
-        currencies.add(currency1);
-        currencies.add(currency2);
+        Set<CurrencyDto> currencyDtos = new HashSet<>();
+        currencyDtos.add(currencyDto1);
+        currencyDtos.add(currencyDto2);
 
-        Set<Currency> savedCurrencies = currencyServiceJPA.saveBulk(currencies);
+        Set<CurrencyDto> savedCurrencyDtos = currencyServiceJPA.saveBulk(currencyDtos);
 
-        for(Currency currency : currencies){
-            assertThat(currency.getId()).isNotNull();
-            assertThat(currency.getCreationDate()).isNotNull();
+        for(CurrencyDto currencyDto : savedCurrencyDtos){
+            assertThat(currencyDto.getId()).isNotNull();
+            assertThat(currencyDto.getCreationDate()).isNotNull();
         }
     }
 
     @Test
     void findById() {
-        Currency currency = Currency.builder().code("GBP").name("British Pound").build();
+        CurrencyDto currencyDto = CurrencyDto.builder().code("GBP").name("British Pound").build();
 
-        Currency savedCurrency  = currencyServiceJPA.save(currency);
-        Long currencyId = savedCurrency.getId();
+        CurrencyDto savedCurrencyDto  = currencyServiceJPA.save(currencyDto);
+        Long currencyId = savedCurrencyDto.getId();
 
-        Currency currencyById = currencyServiceJPA.findById(currencyId);
+        CurrencyDto currencyDtoById = currencyServiceJPA.findById(currencyId);
 
-        assertThat(currencyById).isEqualTo(savedCurrency);
+        assertThat(currencyDtoById).isEqualTo(savedCurrencyDto);
     }
 
     @Test
     void deleteById() {
-        Currency currency = Currency.builder().code("GBP").name("British Pound").build();
+        CurrencyDto currencyDto = CurrencyDto.builder().code("GBP").name("British Pound").build();
 
-        Currency savedCurrency  = currencyServiceJPA.save(currency);
-        Long currencyId = savedCurrency.getId();
+        CurrencyDto savedCurrencyDto  = currencyServiceJPA.save(currencyDto);
+        Long currencyId = savedCurrencyDto.getId();
 
         currencyServiceJPA.deleteById(currencyId);
 
@@ -120,21 +122,21 @@ class CurrencyServiceJPAImplIT {
 
     @Test
     void findByCode() {
-        Currency currency = Currency.builder().code("GBP").name("British Pound").build();
+        CurrencyDto currencyDto = CurrencyDto.builder().code("GBP").name("British Pound").build();
 
-        Currency savedCurrency  = currencyServiceJPA.save(currency);
-        Long currencyId = savedCurrency.getId();
+        CurrencyDto savedCurrencyDto  = currencyServiceJPA.save(currencyDto);
+        Long currencyId = savedCurrencyDto.getId();
 
-        Currency currencyById = currencyServiceJPA.findById(currencyId);
+        CurrencyDto currencyDtoById = currencyServiceJPA.findById(currencyId);
 
-        assertThat(currencyById).isEqualTo(savedCurrency);
+        assertThat(currencyDtoById).isEqualTo(savedCurrencyDto);
     }
 
     @Test
     void findByCodeNotFound() {
         String code = "1000";
         DataNotFoundException dataNotFoundException = assertThrows(DataNotFoundException.class, () -> currencyServiceJPA.findByCode(code));
-        assertThat(dataNotFoundException.getMessage()).containsIgnoringCase(Currency.class.getName());
+        assertThat(dataNotFoundException.getMessage()).containsIgnoringCase(Currency.class.getSimpleName());
         assertThat(dataNotFoundException.getMessage().compareToIgnoreCase(Fields.CODE.toString()));
         assertThat(dataNotFoundException.getMessage().compareToIgnoreCase(code));
     }
@@ -143,7 +145,7 @@ class CurrencyServiceJPAImplIT {
     void findByIdNotFound() {
         Long id = 1000L;
         DataNotFoundException dataNotFoundException = assertThrows(DataNotFoundException.class, () -> currencyServiceJPA.findById(id));
-        assertThat(dataNotFoundException.getMessage()).containsIgnoringCase(Currency.class.getName());
+        assertThat(dataNotFoundException.getMessage()).containsIgnoringCase(Currency.class.getSimpleName());
         assertThat(dataNotFoundException.getMessage()).containsIgnoringCase(Fields.ID.toString());
         assertThat(dataNotFoundException.getMessage()).containsIgnoringCase(id.toString());
     }

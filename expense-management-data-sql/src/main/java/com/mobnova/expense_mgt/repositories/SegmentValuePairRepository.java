@@ -18,4 +18,12 @@ public interface SegmentValuePairRepository extends JpaRepository<SegmentValuePa
             "AND UPPER(st.code) = UPPER(:segmentTypeCode)")
     Optional<SegmentValuePair> findByValueAndSegmentTypeCode(@Param("segmentValue") String segmentValue,
                                                          @Param("segmentTypeCode") String segmentTypeCode);
+
+    @Query("SELECT sv FROM SegmentValuePair sv " +
+            "INNER JOIN SegmentType st ON(sv.segmentType = st.id) " +
+            "WHERE 1=1 " +
+            "AND UPPER(sv.segmentValue) = UPPER(:segmentValue) " +
+            "AND UPPER(st.order) = UPPER(:order)")
+    Optional<SegmentValuePair> findByValueAndSegmentTypeOrder(@Param("segmentValue") String segmentValue,
+                                                             @Param("order") Long order);
 }

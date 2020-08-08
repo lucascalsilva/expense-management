@@ -1,11 +1,13 @@
 package com.mobnova.expense_mgt.services.impl.jpa.it;
 
+import com.mobnova.expense_mgt.dto.v1.ExpenseItemDto;
+import com.mobnova.expense_mgt.dto.v1.ExpenseReportDto;
 import com.mobnova.expense_mgt.exception.constant.Fields;
 import com.mobnova.expense_mgt.exceptions.DataNotFoundException;
 import com.mobnova.expense_mgt.model.*;
 import com.mobnova.expense_mgt.repositories.*;
 import com.mobnova.expense_mgt.services.impl.jpa.ExpenseReportServiceJPAImpl;
-import com.mobnova.expense_mgt.util.AssertionsUtil;
+import com.mobnova.expense_mgt.util.AssertionUtils;
 import com.mobnova.expense_mgt.util.ExpenseReportTestHelper;
 import com.mobnova.expense_mgt.util.IntegrationTestHelper;
 import org.assertj.core.api.Assertions;
@@ -13,11 +15,13 @@ import org.assertj.core.api.AssertionsForClassTypes;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import javax.validation.ConstraintViolationException;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -25,7 +29,7 @@ import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @ExtendWith(SpringExtension.class)
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.NONE)
+@SpringBootTest
 class ExpenseReportServiceJPAImplIT {
 
     @Autowired
@@ -61,10 +65,13 @@ class ExpenseReportServiceJPAImplIT {
     @Autowired
     private IntegrationTestHelper integrationTestHelper;
 
+    @Autowired
+    private ModelMapper modelMapper;
+
     private static ExpenseReportTestHelper expenseReportTestHelper;
 
-    private final Integer expenseReportQuantity = 3;
-    private final Integer expenseItemQuantity = 3;
+    private final Long expenseReportQuantity = 3L;
+    private final Long expenseItemQuantity = 3L;
 
     private static Boolean dbInitialized = false;
 
@@ -108,38 +115,28 @@ class ExpenseReportServiceJPAImplIT {
 
     @Test
     void save() {
-        ExpenseReport expenseReport = expenseReportTestHelper.createDummyExpenseReport(expenseItemQuantity);
-        ExpenseReport savedExpenseReport = expenseReportServiceJPA.save(expenseReport);
-        assertThat(savedExpenseReport.getId()).isNotNull();
-        assertThat(savedExpenseReport.getCreationDate()).isNotNull();
-        assertThat(savedExpenseReport.getCountry().getId()).isNotNull();
-        assertThat(savedExpenseReport.getUser().getId()).isNotNull();
+        ExpenseReport expenseReport = expenseReportTestHelper.createDummyExpenseReport(null, expenseItemQuantity);
+        ExpenseReportDto expenseReportDto = modelMapper.map(expenseReport, ExpenseReportDto.class);
 
-        for(ExpenseItem expenseItem : savedExpenseReport.getExpenses()){
-            assertThat(expenseItem.getExpenseReport()).isNotNull();
-            assertThat(expenseItem.getExpenseCity().getId()).isNotNull();
-            assertThat(expenseItem.getExpenseCity().getCreationDate()).isNotNull();
+        ExpenseReportDto savedExpenseReportDto = expenseReportServiceJPA.save(expenseReportDto);
 
-            assertThat(expenseItem.getCategory().getId()).isNotNull();
-            assertThat(expenseItem.getCategory().getCreationDate()).isNotNull();
+        assertThat(savedExpenseReportDto.getId()).isNotNull();
+        assertThat(savedExpenseReportDto.getCreationDate()).isNotNull();
 
-            assertThat(expenseItem.getCurrency().getId()).isNotNull();
-            assertThat(expenseItem.getCurrency().getCreationDate()).isNotNull();
-
-            for(SegmentValuePair segmentValuePair : expenseItem.getSegmentValuePairs()){
-                assertThat(segmentValuePair.getId()).isNotNull();
-                assertThat(segmentValuePair.getCreationDate()).isNotNull();
-            }
+        for(ExpenseItemDto expenseItemDto : savedExpenseReportDto.getExpenses()){
+            assertThat(expenseItemDto.getExpenseCity().getId()).isNotNull();
+            assertThat(expenseItemDto.getExpenseCity().getCreationDate()).isNotNull();
         }
     }
 
     @Test
     void saveValidationError() {
         ExpenseReport expenseReport = ExpenseReport.builder().referenceID("12345").build();
+        ExpenseReportDto expenseReportDto = modelMapper.map(expenseReport, ExpenseReportDto.class);
 
-        ConstraintViolationException constraintViolationException = assertThrows(ConstraintViolationException.class, () -> expenseReportServiceJPA.save(expenseReport));
-        Assertions.assertThat(constraintViolationException.getMessage()).contains("save.arg0.user: must not be null");
-        Assertions.assertThat(constraintViolationException.getMessage()).contains("save.arg0.country: must not be null");
+        ConstraintViolationException constraintViolationException = assertThrows(ConstraintViolationException.class, () -> expenseReportServiceJPA.save(expenseReportDto));
+        Assertions.assertThat(constraintViolationException.getMessage()).contains("save.arg0.creator: must not be blank");
+        Assertions.assertThat(constraintViolationException.getMessage()).contains("save.arg0.countryCode: must not be blank");
         Assertions.assertThat(constraintViolationException.getMessage()).contains("save.arg0.tripEndDate: must not be null");
         Assertions.assertThat(constraintViolationException.getMessage()).contains("save.arg0.tripDescription: must not be blank");
         Assertions.assertThat(constraintViolationException.getMessage()).contains("save.arg0.expenses: must not be empty");
@@ -149,69 +146,77 @@ class ExpenseReportServiceJPAImplIT {
 
     @Test
     void update() {
-        ExpenseReport expenseReport = expenseReportTestHelper.createDummyExpenseReport(expenseItemQuantity);
-        expenseReport = expenseReportServiceJPA.save(expenseReport);
+        ExpenseReport expenseReport = expenseReportTestHelper.createDummyExpenseReport(null, expenseItemQuantity);
+        ExpenseReportDto expenseReportDto = modelMapper.map(expenseReport, ExpenseReportDto.class);
 
-        assertThat(expenseReport).isNotNull();
-        assertThat(expenseReport.getId()).isNotNull();
+        expenseReportDto = expenseReportServiceJPA.save(expenseReportDto);
 
-        ExpenseReport updatedExpenseReport = expenseReportServiceJPA.findById(expenseReport.getId());
+        assertThat(expenseReportDto).isNotNull();
+        assertThat(expenseReportDto.getId()).isNotNull();
+
+        ExpenseReportDto updatedExpenseReportDto = expenseReportServiceJPA.findById(expenseReportDto.getId());
 
         String newJustification = "Some other justification";
-        updatedExpenseReport.setJustification(newJustification);
+        updatedExpenseReportDto.setJustification(newJustification);
 
-        updatedExpenseReport = expenseReportServiceJPA.save(updatedExpenseReport);
+        updatedExpenseReportDto = expenseReportServiceJPA.save(updatedExpenseReportDto);
 
-        AssertionsUtil.entityUpdateAssertions(expenseReport, updatedExpenseReport);
-        assertThat(expenseReport.getJustification()).isNotEqualTo(updatedExpenseReport.getJustification());
+        AssertionUtils.dtoUpdateAssertions(expenseReportDto, updatedExpenseReportDto);
+        assertThat(expenseReportDto.getJustification()).isNotEqualTo(updatedExpenseReportDto.getJustification());
     }
 
     @Test
     void saveBulk() {
         Set<ExpenseReport> expenseReports = expenseReportTestHelper
-                .createDummyExpenseReports(expenseReportQuantity, expenseItemQuantity);
+                .createDummyExpenseReports(expenseReportQuantity, expenseItemQuantity, false);
+        Set<ExpenseReportDto> expenseReportDtos = new HashSet<>(Arrays.asList(modelMapper.map(expenseReports, ExpenseReportDto[].class)));
 
-        Set<ExpenseReport> savedExpenseReports = expenseReportServiceJPA.saveBulk(new HashSet<>(expenseReports));
+        Set<ExpenseReportDto> savedExpenseReportDtos = expenseReportServiceJPA.saveBulk(expenseReportDtos);
 
-        for(ExpenseReport expenseReport : savedExpenseReports){
-            assertThat(expenseReport.getId()).isNotNull();
-            assertThat(expenseReport.getCreationDate()).isNotNull();
+        for(ExpenseReportDto expenseReportDto : savedExpenseReportDtos){
+            assertThat(expenseReportDto.getId()).isNotNull();
+            assertThat(expenseReportDto.getCreationDate()).isNotNull();
         }
     }
 
     @Test
     void searchWithLikeByJustification() {
         Set<ExpenseReport> expenseReports = expenseReportTestHelper
-                .createDummyExpenseReports(expenseReportQuantity, expenseItemQuantity);
+                .createDummyExpenseReports(expenseReportQuantity, expenseItemQuantity, false);
+        Set<ExpenseReportDto> expenseReportDtos = new HashSet<>(Arrays.asList(modelMapper.map(expenseReports, ExpenseReportDto[].class)));
 
-        Set<ExpenseReport> savedExpenseReports = expenseReportServiceJPA.saveBulk(new HashSet<>(expenseReports));
+        Set<ExpenseReportDto> savedExpenseReportDtos = expenseReportServiceJPA.saveBulk(expenseReportDtos);
 
-        String queryReferenceID = savedExpenseReports.stream().findFirst().get().getJustification()
+        String queryReferenceID = savedExpenseReportDtos.stream().findFirst().get().getJustification()
                 .replace("Justification ", "");
 
-        Set<ExpenseReport> searchedExpenseReports = expenseReportServiceJPA.search("justification:"+queryReferenceID);
+        Set<ExpenseReportDto> searchedExpenseReportDtos = expenseReportServiceJPA.search("justification:"+queryReferenceID);
 
-        assertThat(searchedExpenseReports).isNotEmpty();
+        assertThat(searchedExpenseReportDtos).isNotEmpty();
     }
 
     @Test
     void findById() {
-        ExpenseReport expenseReport = expenseReportTestHelper.createDummyExpenseReport(expenseItemQuantity);
-        ExpenseReport savedExpenseReport = expenseReportServiceJPA.save(expenseReport);
+        ExpenseReport expenseReport = expenseReportTestHelper.createDummyExpenseReport(null, expenseItemQuantity);
+        ExpenseReportDto expenseReportDto = modelMapper.map(expenseReport, ExpenseReportDto.class);
 
-        Long expenseReportId = savedExpenseReport.getId();
+        ExpenseReportDto savedExpenseReportDto = expenseReportServiceJPA.save(expenseReportDto);
 
-        ExpenseReport expenseReportById = expenseReportServiceJPA.findById(expenseReportId);
+        Long expenseReportId = savedExpenseReportDto.getId();
 
-        assertThat(expenseReportById).isEqualTo(savedExpenseReport);
+        ExpenseReportDto expenseReportDtoById = expenseReportServiceJPA.findById(expenseReportId);
+
+        assertThat(expenseReportDtoById).isEqualTo(savedExpenseReportDto);
     }
 
     @Test
     void deleteById() {
-        ExpenseReport expenseReport = expenseReportTestHelper.createDummyExpenseReport(expenseItemQuantity);
-        ExpenseReport savedExpenseReport = expenseReportServiceJPA.save(expenseReport);
+        ExpenseReport expenseReport = expenseReportTestHelper.createDummyExpenseReport(null, expenseItemQuantity);
+        ExpenseReportDto expenseReportDto = modelMapper.map(expenseReport, ExpenseReportDto.class);
 
-        Long expenseReportId = savedExpenseReport.getId();
+        ExpenseReportDto savedExpenseReportDto = expenseReportServiceJPA.save(expenseReportDto);
+
+        Long expenseReportId = savedExpenseReportDto.getId();
 
         assertThat(expenseReportServiceJPA.findById(expenseReportId)).isNotNull();
 
@@ -222,21 +227,23 @@ class ExpenseReportServiceJPAImplIT {
 
     @Test
     void findByReferenceID() {
-        ExpenseReport expenseReport = expenseReportTestHelper.createDummyExpenseReport(expenseItemQuantity);
-        ExpenseReport savedExpenseReport = expenseReportServiceJPA.save(expenseReport);
-        String expenseReportReferenceID = savedExpenseReport.getReferenceID();
+        ExpenseReport expenseReport = expenseReportTestHelper.createDummyExpenseReport(null, expenseItemQuantity);
+        ExpenseReportDto expenseReportDto = modelMapper.map(expenseReport, ExpenseReportDto.class);
 
-        ExpenseReport expenseReportByReferenceID = expenseReportServiceJPA
+        ExpenseReportDto savedExpenseReportDto = expenseReportServiceJPA.save(expenseReportDto);
+        String expenseReportReferenceID = savedExpenseReportDto.getReferenceID();
+
+        ExpenseReportDto expenseReportDtoByReferenceID = expenseReportServiceJPA
                 .findByReferenceID(expenseReportReferenceID);
 
-        assertThat(expenseReportByReferenceID).isEqualTo(savedExpenseReport);
+        assertThat(expenseReportDtoByReferenceID).isEqualTo(savedExpenseReportDto);
     }
 
     @Test
     void findByReferenceIDNotFound() {
         String referenceID = "1000";
         DataNotFoundException dataNotFoundException = assertThrows(DataNotFoundException.class, () -> expenseReportServiceJPA.findByReferenceID(referenceID));
-        AssertionsForClassTypes.assertThat(dataNotFoundException.getMessage()).containsIgnoringCase(ExpenseReport.class.getName());
+        AssertionsForClassTypes.assertThat(dataNotFoundException.getMessage()).containsIgnoringCase(ExpenseReport.class.getSimpleName());
         AssertionsForClassTypes.assertThat(dataNotFoundException.getMessage()).containsIgnoringCase(Fields.REFERENCE_ID.toString());
         AssertionsForClassTypes.assertThat(dataNotFoundException.getMessage()).containsIgnoringCase(referenceID);
     }
@@ -245,7 +252,7 @@ class ExpenseReportServiceJPAImplIT {
     void findByIdNotFound() {
         Long id = 1000L;
         DataNotFoundException dataNotFoundException = assertThrows(DataNotFoundException.class, () -> expenseReportServiceJPA.findById(id));
-        AssertionsForClassTypes.assertThat(dataNotFoundException.getMessage()).containsIgnoringCase(ExpenseReport.class.getName());
+        AssertionsForClassTypes.assertThat(dataNotFoundException.getMessage()).containsIgnoringCase(ExpenseReport.class.getSimpleName());
         AssertionsForClassTypes.assertThat(dataNotFoundException.getMessage()).containsIgnoringCase(Fields.ID.toString());
         AssertionsForClassTypes.assertThat(dataNotFoundException.getMessage()).containsIgnoringCase(id.toString());
     }

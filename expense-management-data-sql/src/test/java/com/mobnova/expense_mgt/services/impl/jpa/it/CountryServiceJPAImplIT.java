@@ -1,7 +1,9 @@
 package com.mobnova.expense_mgt.services.impl.jpa.it;
 
-import com.mobnova.expense_mgt.model.Country;
+import com.mobnova.expense_mgt.dto.v1.CountryDto;
+import com.mobnova.expense_mgt.exceptions.DataNotFoundException;
 import com.mobnova.expense_mgt.services.impl.jpa.CountryServiceJPAImpl;
+import com.mobnova.expense_mgt.util.AssertionUtils;
 import com.mobnova.expense_mgt.util.IntegrationTestHelper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -9,10 +11,10 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
+import org.springframework.util.StringUtils;
 
-import javax.validation.constraints.NotNull;
+import javax.validation.ConstraintViolationException;
 import java.util.HashSet;
-import java.util.Optional;
 import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -49,29 +51,31 @@ class CountryServiceJPAImplIT {
 
     @Test
     void saveValidationError() {
-        Country country = Country.builder().code(null).build();
+        CountryDto countryDto = CountryDto.builder().code(null).build();
 
-        ConstraintViolationException constraintViolationException = assertThrows(ConstraintViolationException.class, () -> countryServiceJPA.save(country));
-        assertThat(constraintViolationException.getMessage()).contains("save.arg0.code: must not be blank");
+        ConstraintViolationException constraintViolationException = assertThrows(ConstraintViolationException.class, () -> countryServiceJPA.save(countryDto));
+        assertThat(constraintViolationException.getMessage()).contains("code");
+        assertThat(constraintViolationException.getMessage()).contains("name");
+        assertThat(StringUtils.countOccurrencesOf(constraintViolationException.getMessage(), "must not be blank")).isEqualTo(2);
     }
 
     @Test
     void update() {
-        Country country = Country.builder().code("EG").name("Egypt").build();
+        CountryDto countryDto = CountryDto.builder().code("EG").name("Egypt").build();
 
-        country = countryServiceJPA.save(country);
+        countryDto = countryServiceJPA.save(countryDto);
 
-        assertThat(country).isNotNull();
-        assertThat(country.getId()).isNotNull();
+        assertThat(countryDto).isNotNull();
+        assertThat(countryDto.getId()).isNotNull();
 
-        Country updatedCountry = countryServiceJPA.findById(country.getId());
+        CountryDto updatedCountryDto = countryServiceJPA.findById(countryDto.getId());
 
-        updatedCountry.setName("Egypt_1");
+        updatedCountryDto.setName("Egypt_1");
 
-        updatedCountry = countryServiceJPA.save(updatedCountry);
+        updatedCountryDto = countryServiceJPA.save(updatedCountryDto);
 
-        AssertionsUtil.entityUpdateAssertions(country, updatedCountry);
-        assertThat(country.getName()).isNotEqualTo(updatedCountry.getName());
+        AssertionUtils.dtoUpdateAssertions(countryDto, updatedCountryDto);
+        assertThat(countryDto.getName()).isNotEqualTo(updatedCountryDto.getName());
     }
 
     @Test
@@ -85,7 +89,7 @@ class CountryServiceJPAImplIT {
 
         Set<CountryDto> savedCountriesDto = countryServiceJPA.saveBulk(countriesDto);
 
-        for(CountryDto countryDto : countriesDto){
+        for(CountryDto countryDto : savedCountriesDto){
             assertThat(countryDto.getId()).isNotNull();
             assertThat(countryDto.getCreationDate()).isNotNull();
         }
@@ -98,10 +102,9 @@ class CountryServiceJPAImplIT {
         CountryDto savedCountryDto = countryServiceJPA.save(countryDto);
         Long countryId = savedCountryDto.getId();
 
-        Optional<Country> countryById = countryServiceJPA.findById(countryId);
+        CountryDto countryDtoById = countryServiceJPA.findById(countryId);
 
-        assertThat(countryById).isPresent();
-        assertThat(countryById.get()).isEqualTo(savedCountry);
+        assertThat(countryDtoById).isEqualTo(savedCountryDto);
     }
 
     @Test
@@ -113,9 +116,11 @@ class CountryServiceJPAImplIT {
 
         countryServiceJPA.deleteById(countryId);
 
-        Optional<Country> countryById = countryServiceJPA.findById(countryId);
+        DataNotFoundException dataNotFoundException = assertThrows(DataNotFoundException.class, () -> countryServiceJPA.findById(countryId));
 
-        assertThat(countryById).isEmpty();
+        assertThat(dataNotFoundException).hasMessageContaining("Country");
+        assertThat(dataNotFoundException).hasMessageContaining("ID");
+        assertThat(dataNotFoundException).hasMessageContaining(countryId.toString());
     }
 
     @Test
@@ -125,9 +130,8 @@ class CountryServiceJPAImplIT {
         CountryDto savedCountryDto = countryServiceJPA.save(countryDto);
         String countryCode = savedCountryDto.getCode();
 
-        Optional<Country> countryByCode = countryServiceJPA.findByCode(countryCode);
+        CountryDto countryDtoByCode = countryServiceJPA.findByCode(countryCode);
 
-        assertThat(countryByCode).isPresent();
-        assertThat(countryByCode.get()).isEqualTo(country);
+        assertThat(countryDtoByCode).isEqualTo(savedCountryDto);
     }
 }

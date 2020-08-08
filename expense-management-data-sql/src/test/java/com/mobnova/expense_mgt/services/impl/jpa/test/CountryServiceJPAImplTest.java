@@ -1,84 +1,96 @@
 package com.mobnova.expense_mgt.services.impl.jpa.test;
 
+import com.mobnova.expense_mgt.config.ModelMapperConfiguration;
+import com.mobnova.expense_mgt.dto.v1.CountryDto;
 import com.mobnova.expense_mgt.model.Country;
 import com.mobnova.expense_mgt.repositories.CountryRepository;
 import com.mobnova.expense_mgt.services.impl.jpa.CountryServiceJPAImpl;
-import com.mobnova.expense_mgt.validation.BeanValidator;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Spy;
+import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.modelmapper.ModelMapper;
 
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.AdditionalAnswers.returnsFirstArg;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class CountryServiceJPAImplTest {
 
-    @InjectMocks
-    @Spy
     private CountryServiceJPAImpl countryServiceJPA;
 
     @Mock
     private CountryRepository countryRepository;
 
-    @Mock
-    private BeanValidator beanValidator;
+    private ModelMapper modelMapper;
 
-    /*@Test
+    @BeforeEach
+    public void setup(){
+        modelMapper = new ModelMapperConfiguration().globalMapper();
+        countryServiceJPA = Mockito.spy(new CountryServiceJPAImpl(countryRepository, modelMapper));
+    }
+
+    @Test
     void save() {
-        Country country = Country.builder().id(1L).code("BR")
+        CountryDto countryDto = CountryDto.builder().id(1L).code("BR")
                 .name("Brazil").build();
+        Country country = modelMapper.map(countryDto, Country.class);
 
         doAnswer(returnsFirstArg()).when(countryRepository).save(country);
+        when(countryRepository.findById(countryDto.getId())).thenReturn(Optional.of(country));
 
-        countryServiceJPA.save(country);
+        countryServiceJPA.save(countryDto);
 
         verify(countryRepository).save(country);
+        verify(countryRepository).findById(countryDto.getId());
     }
 
     @Test
     void saveBulk() {
-        Country country1 = Country.builder().code("BR")
+        CountryDto countryDto1 = CountryDto.builder().id(1L).code("BR")
                 .name("Brazil").build();
-        Country country2 = Country.builder().code("US")
+        Country country1 = modelMapper.map(countryDto1, Country.class);
+
+        CountryDto countryDto2 = CountryDto.builder().id(2L).code("US")
                 .name("United States of America").build();
+        Country country2 = modelMapper.map(countryDto2, Country.class);
 
-        Set<Country> countries = new HashSet<>();
+        Set<CountryDto> countryDtos = new HashSet<>();
 
-        countries.add(country1);
-        countries.add(country2);
+        countryDtos.add(countryDto1);
+        countryDtos.add(countryDto2);
+
+        when(countryRepository.findById(1L)).thenReturn(Optional.of(country1));
+        when(countryRepository.findById(2L)).thenReturn(Optional.of(country2));
 
         doAnswer(returnsFirstArg()).when(countryRepository).save(any(Country.class));
 
-        Set<Country> savedCountries = countryServiceJPA.saveBulk(countries);
+        Set<CountryDto> savedCountryDtos = countryServiceJPA.saveBulk(countryDtos);
+        assertThat(savedCountryDtos).hasSize(2);
 
-        for(Country country : savedCountries){
-            verify(countryRepository, times(1)).save(country);
-            verify(countryServiceJPA, times(1)).save(country);
-        }
+        verify(countryRepository, times(2)).save(any(Country.class));
+        verify(countryServiceJPA, times(2)).save(any(CountryDto.class));
     }
 
     @Test
     void findById() {
-        Country country = Country.builder().id(1L).code("BR")
+        CountryDto countryDto = CountryDto.builder().id(1L).code("BR")
                 .name("Brazil").build();
+        Country country = modelMapper.map(countryDto, Country.class);
 
         when(countryRepository.findById(country.getId())).thenReturn(Optional.of(country));
 
-        Optional<Country> countryById = countryServiceJPA.findById(1L);
+        CountryDto countryDtoById = countryServiceJPA.findById(1L);
 
-        assertThat(countryById.isPresent());
-        assertThat(countryById.get()).isEqualTo(country);
+        assertThat(countryDtoById.getId()).isEqualTo(country.getId());
     }
 
     @Test
@@ -90,16 +102,16 @@ class CountryServiceJPAImplTest {
 
     @Test
     void findByCode() {
-        Country country = Country.builder().id(1L).code("BR")
+        CountryDto countryDto = CountryDto.builder().id(1L).code("BR")
                 .name("Brazil").build();
+        Country country = modelMapper.map(countryDto, Country.class);
 
         when(countryRepository.findByCode(country.getCode())).thenReturn(Optional.of(country));
 
-        Optional<Country> countryByCode = countryServiceJPA.findByCode("BR");
+        CountryDto countryDtoByCode = countryServiceJPA.findByCode("BR");
 
         verify(countryRepository, times(1)).findByCode(country.getCode());
 
-        assertThat(countryByCode.isPresent());
-        assertThat(countryByCode.get()).isEqualTo(country);
-    }*/
+        assertThat(countryDtoByCode.getId()).isEqualTo(country.getId());
+    }
 }
