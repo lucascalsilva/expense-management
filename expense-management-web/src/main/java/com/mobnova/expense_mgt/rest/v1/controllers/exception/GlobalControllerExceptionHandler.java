@@ -1,4 +1,4 @@
-package com.mobnova.expense_mgt.rest.v1.controllers;
+package com.mobnova.expense_mgt.rest.v1.controllers.exception;
 
 import com.mobnova.expense_mgt.validation.ValidationErrorUtils;
 import org.springframework.http.HttpStatus;
@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
 @ControllerAdvice
-public class GlobalControllerErrorHandler {
+public class GlobalControllerExceptionHandler {
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     protected ResponseEntity handleValidationErrors(MethodArgumentNotValidException exception) {
