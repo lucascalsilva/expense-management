@@ -22,6 +22,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import static com.mobnova.expense_mgt.ApplicationConstants.REST_API_V1_BASEPATH;
+import static com.mobnova.expense_mgt.ApplicationConstants.VALIDATION_ERRORS_MESSAGE;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -89,9 +90,14 @@ class CountryRestControllerTest {
                 .content(objectMapper.writeValueAsBytes(countryDtoInvalid)))
                 .andExpect(status().isBadRequest())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$.[0].object", Matchers.equalTo("countryDto")))
-                .andExpect(jsonPath("$.[0].message", Matchers.equalTo("must not be blank")))
-                .andExpect(jsonPath("$.[0].field", Matchers.equalTo("code")));
+                .andExpect(jsonPath("$.status", Matchers.equalTo("BAD_REQUEST")))
+                .andExpect(jsonPath("$.timestamp", Matchers.notNullValue()))
+                .andExpect(jsonPath("$.message", Matchers.equalTo(VALIDATION_ERRORS_MESSAGE)))
+                .andExpect(jsonPath("$.debugMessage", Matchers.notNullValue()))
+                .andExpect(jsonPath("$.subErrors", Matchers.hasSize(1)))
+                .andExpect(jsonPath("$.subErrors.[0].object", Matchers.equalTo("countryDto")))
+                .andExpect(jsonPath("$.subErrors.[0].field", Matchers.equalTo("code")))
+                .andExpect(jsonPath("$.subErrors.[0].message", Matchers.equalTo("must not be blank")));
 
         verifyNoInteractions(countryService);
     }

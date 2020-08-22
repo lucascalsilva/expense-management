@@ -28,7 +28,6 @@
 	<modules>
 		<module>expense-management-data-sql</module>
 		<module>expense-management-web</module>
-		<module>expense-management-util</module>
         <module>expense-management-common</module>
     </modules>
 
@@ -43,11 +42,6 @@
 				<groupId>com.com.mobnova</groupId>
 				<artifactId>expense-management-web</artifactId>
 				<version>${expense-management-web-version}</version>
-			</dependency>
-			<dependency>
-				<groupId>com.com.mobnova</groupId>
-				<artifactId>expense-management-util</artifactId>
-				<version>${expense-management-util-version}</version>
 			</dependency>
 			<dependency>
 				<groupId>com.com.mobnova</groupId>

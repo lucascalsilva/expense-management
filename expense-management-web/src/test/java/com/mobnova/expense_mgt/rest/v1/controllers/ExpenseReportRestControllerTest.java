@@ -32,6 +32,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import static com.mobnova.expense_mgt.ApplicationConstants.REST_API_V1_BASEPATH;
+import static com.mobnova.expense_mgt.ApplicationConstants.VALIDATION_ERRORS_MESSAGE;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
@@ -140,31 +141,31 @@ class ExpenseReportRestControllerTest {
 
     @Test
     public void createWithValidationErrors() throws Exception {
-        ExpenseReportDto expenseReportDtoInvalid = ExpenseReportDto.builder().referenceID("12345").tripStartDate(LocalDate.now()).build();
+        ExpenseReportDto expenseReportDtoInvalid = ExpenseReportDto.builder().referenceID("12345")
+                .tripStartDate(LocalDate.now()).tripEndDate(LocalDate.now().plusDays(10)).countryCode("BR").build();
 
         ResultActions resultActions = mockMvc.perform(post(REST_API_V1_BASEPATH + "/expense-reports")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsBytes(expenseReportDtoInvalid)))
                 .andExpect(status().isBadRequest())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$.[0].object", Matchers.equalTo("expenseReportDto")))
-                .andExpect(jsonPath("$.[0].message", Matchers.equalTo("must not be blank")))
-                .andExpect(jsonPath("$.[0].field", Matchers.equalTo("countryCode")))
-                .andExpect(jsonPath("$.[1].object", Matchers.equalTo("expenseReportDto")))
-                .andExpect(jsonPath("$.[1].message", Matchers.equalTo("must not be blank")))
-                .andExpect(jsonPath("$.[1].field", Matchers.equalTo("creator")))
-                .andExpect(jsonPath("$.[2].object", Matchers.equalTo("expenseReportDto")))
-                .andExpect(jsonPath("$.[2].message", Matchers.equalTo("must not be empty")))
-                .andExpect(jsonPath("$.[2].field", Matchers.equalTo("expenses")))
-                .andExpect(jsonPath("$.[3].object", Matchers.equalTo("expenseReportDto")))
-                .andExpect(jsonPath("$.[3].message", Matchers.equalTo("must not be blank")))
-                .andExpect(jsonPath("$.[3].field", Matchers.equalTo("justification")))
-                .andExpect(jsonPath("$.[4].object", Matchers.equalTo("expenseReportDto")))
-                .andExpect(jsonPath("$.[4].message", Matchers.equalTo("must not be blank")))
-                .andExpect(jsonPath("$.[4].field", Matchers.equalTo("tripDescription")))
-                .andExpect(jsonPath("$.[5].object", Matchers.equalTo("expenseReportDto")))
-                .andExpect(jsonPath("$.[5].message", Matchers.equalTo("must not be null")))
-                .andExpect(jsonPath("$.[5].field", Matchers.equalTo("tripEndDate")));
+                .andExpect(jsonPath("$.status", Matchers.equalTo("BAD_REQUEST")))
+                .andExpect(jsonPath("$.timestamp", Matchers.notNullValue()))
+                .andExpect(jsonPath("$.message", Matchers.equalTo(VALIDATION_ERRORS_MESSAGE)))
+                .andExpect(jsonPath("$.debugMessage", Matchers.notNullValue()))
+                .andExpect(jsonPath("$.subErrors", Matchers.hasSize(4)))
+                .andExpect(jsonPath("$.subErrors.[0].object", Matchers.equalTo("expenseReportDto")))
+                .andExpect(jsonPath("$.subErrors.[0].field", Matchers.equalTo("creator")))
+                .andExpect(jsonPath("$.subErrors.[0].message", Matchers.equalTo("must not be blank")))
+                .andExpect(jsonPath("$.subErrors.[1].object", Matchers.equalTo("expenseReportDto")))
+                .andExpect(jsonPath("$.subErrors.[1].field", Matchers.equalTo("expenses")))
+                .andExpect(jsonPath("$.subErrors.[1].message", Matchers.equalTo("must not be empty")))
+                .andExpect(jsonPath("$.subErrors.[2].object", Matchers.equalTo("expenseReportDto")))
+                .andExpect(jsonPath("$.subErrors.[2].field", Matchers.equalTo("justification")))
+                .andExpect(jsonPath("$.subErrors.[2].message", Matchers.equalTo("must not be blank")))
+                .andExpect(jsonPath("$.subErrors.[3].object", Matchers.equalTo("expenseReportDto")))
+                .andExpect(jsonPath("$.subErrors.[3].field", Matchers.equalTo("tripDescription")))
+                .andExpect(jsonPath("$.subErrors.[3].message", Matchers.equalTo("must not be blank")));
 
         verifyNoInteractions(expenseReportService);
     }
